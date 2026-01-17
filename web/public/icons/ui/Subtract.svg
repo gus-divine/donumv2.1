@@ -1,0 +1,6 @@
+<svg width="252" height="60" viewBox="0 0 252 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Light gold background with triangular cut-out -->
+<path d="M252 0H0V60H252V44.4593L232 30.3129L252 15.6788V0Z" fill="#FFF8E7" fill-opacity="1"/>
+<!-- Darker gold vertical bar on the left -->
+<rect x="0" y="0" width="4" height="60" fill="#D4AF37"/>
+</svg>

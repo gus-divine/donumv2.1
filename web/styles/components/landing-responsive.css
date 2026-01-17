@@ -1,0 +1,346 @@
+/* ============================================
+   Landing Page Responsive Styles - Donum Theme
+   ============================================ */
+
+/* When content would overlap, switch to compact horizontal layout */
+@media screen and (max-height: 600px) {
+  .landing-layout {
+    justify-content: center;
+    padding: 20px;
+    padding-bottom: 70px; /* Ensure space for trust signals */
+  }
+
+  .landing-main-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+  }
+
+  .landing-trust-signals {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    margin-top: 20px;
+    width: 100%;
+  }
+
+  .landing-logo-section {
+    flex-shrink: 1;
+  }
+
+  .landing-logo {
+    max-width: 200px;
+  }
+
+  .landing-header {
+    font-size: 18px;
+  }
+
+  .landing-title {
+    font-size: 24px;
+  }
+
+  .action-buttons-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .action-button {
+    padding: 20px 24px;
+    min-height: 120px;
+  }
+
+  .button-icon {
+    font-size: 32px;
+  }
+
+  .button-title {
+    font-size: 16px;
+  }
+
+  .button-subtitle {
+    font-size: 12px;
+  }
+}
+
+/* When content doesn't fit vertically, switch to horizontal layout */
+@media screen and (max-height: 800px) and (min-height: 601px) {
+  .landing-layout {
+    justify-content: center;
+    padding-bottom: 85px; /* Ensure space for trust signals */
+  }
+
+  .landing-main-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 60px;
+  }
+
+  .landing-trust-signals {
+    bottom: 20px;
+  }
+
+  .landing-logo {
+    max-width: 240px;
+  }
+
+  .landing-header {
+    font-size: 20px;
+  }
+
+  .landing-title {
+    font-size: 30px;
+  }
+}
+
+/* Very small screens - prevent overlap */
+@media screen and (max-height: 500px) {
+  .landing-layout {
+    padding: 10px;
+    padding-bottom: 60px; /* Ensure space for trust signals */
+  }
+
+  .landing-main-content {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .landing-logo-section {
+    gap: 16px;
+  }
+
+  .landing-logo {
+    max-width: 160px;
+  }
+
+  .landing-header {
+    font-size: 14px;
+  }
+
+  .landing-title {
+    font-size: 20px;
+  }
+
+  .action-buttons-grid {
+    gap: 12px;
+    max-width: 400px;
+  }
+
+  .action-button {
+    padding: 14px 16px;
+    min-height: 80px;
+    max-width: 120px;
+  }
+
+  .button-title {
+    font-size: 12px;
+  }
+
+  .button-subtitle {
+    font-size: 10px;
+  }
+
+  .landing-trust-signals {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    margin-top: 10px;
+    font-size: 11px;
+    gap: 8px;
+  }
+
+  .button-subtitle.discreet-subtitle {
+    font-size: 10px;
+  }
+}
+
+/* ============================================
+   Responsive Styles
+   ============================================ */
+
+/* Mobile devices (up to 768px) */
+@media screen and (max-width: 768px) {
+  .landing-page {
+    padding: 16px;
+    justify-content: center;
+    padding-top: 60px;
+    min-height: 100vh;
+  }
+
+  .theme-toggle-container {
+    top: 16px;
+    right: 16px;
+  }
+
+  .theme-toggle-btn {
+    padding: 6px;
+  }
+
+  .landing-layout {
+    gap: 30px;
+    padding-bottom: 80px; /* Adjust for mobile */
+  }
+
+  .landing-main-content {
+    gap: 30px;
+  }
+
+  .landing-logo {
+    max-width: 240px;
+  }
+
+  .landing-header {
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+
+  .landing-title {
+    font-size: 28px;
+    letter-spacing: 2px;
+  }
+
+  .action-buttons-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    max-width: 100%;
+  }
+
+  .apply-link-container {
+    margin-top: 20px;
+  }
+
+  .apply-link {
+    font-size: 13px;
+  }
+
+  .button-subtitle.discreet-subtitle {
+    font-size: 11px;
+  }
+
+  .action-button {
+    padding: 18px 20px;
+    min-height: 110px;
+    max-width: none;
+  }
+
+  .landing-trust-signals {
+    gap: 12px;
+    font-size: 12px;
+    bottom: 16px;
+  }
+
+  .landing-page::before {
+    width: 200%;
+    height: 200%;
+  }
+}
+
+/* Mobile landscape orientation */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+  .landing-layout {
+    justify-content: center;
+  }
+
+  .landing-main-content {
+    flex-direction: row;
+    gap: 40px;
+    align-items: center;
+  }
+
+  .landing-trust-signals {
+    bottom: 20px;
+  }
+
+  .landing-actions {
+    max-width: 350px;
+  }
+}
+
+/* Small tablets (769px to 1024px) */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .landing-layout {
+    gap: 50px;
+    padding-bottom: 90px; /* Adjust for tablets */
+  }
+
+  .landing-logo {
+    max-width: 240px;
+  }
+
+  .landing-header {
+    font-size: 20px;
+  }
+
+  .landing-title {
+    font-size: 32px;
+  }
+
+  .action-buttons-grid {
+    max-width: 550px;
+  }
+
+  .action-button {
+    padding: 22px 26px;
+    min-height: 130px;
+    max-width: 260px;
+  }
+}
+
+/* Desktop (1025px+) */
+@media screen and (min-width: 1025px) {
+  .landing-layout {
+    gap: 70px;
+  }
+
+  .landing-logo {
+    max-width: 320px;
+  }
+
+  .landing-title {
+    font-size: 42px;
+  }
+
+  .action-button {
+    padding: 26px 32px;
+    min-height: 150px;
+    max-width: 300px;
+  }
+
+  .button-title {
+    font-size: 19px;
+  }
+}
+
+/* High screens - switch to horizontal layout */
+@media screen and (max-height: 900px) and (min-width: 1025px) {
+  .landing-layout {
+    justify-content: center;
+    padding-bottom: 95px; /* Ensure space for trust signals */
+  }
+
+  .landing-main-content {
+    flex-direction: row;
+    align-items: center;
+    gap: 80px;
+  }
+
+  .landing-trust-signals {
+    bottom: 20px;
+  }
+
+  .landing-logo {
+    max-width: 240px;
+  }
+
+  .landing-header {
+    font-size: 20px;
+  }
+
+  .landing-title {
+    font-size: 32px;
+  }
+}

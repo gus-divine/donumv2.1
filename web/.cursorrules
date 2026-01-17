@@ -1,0 +1,220 @@
+You are working on Donum 2.1, an enterprise Next.js platform for Donum Financial Solutions - a charitable gift financing platform serving financial advisors and clients with department-based permissions.
+
+TECH STACK:
+- Next.js 16+ with App Router (NOT Pages Router)
+- TypeScript with strict mode
+- Tailwind CSS v3.4 (utility-first, no inline styles)
+- Custom UI components (Donum brand colors and design system)
+- Supabase for database/auth with department-based permissions
+- Docker for development and deployment
+- Vercel/Netlify for production deployment
+
+IMPORTANT: CURRENT DATE AND TIME CONTEXT:
+- CURRENT DATE: January 2026 (Year: 2026)
+- ALWAYS check the current date before creating dates, timestamps, or date-related code
+- When generating sample data, seed data, or test data with dates, use 2026 as the year
+- When creating passwords or credentials with years, use 2026 (e.g., Donum2026!Password)
+- When documenting dates or creating date-based logic, verify you're using 2026
+- Before writing any code involving dates, timestamps, or time-sensitive operations, confirm the current year is 2026
+
+PROJECT STRUCTURE:
+- app/ - Next.js App Router pages and layouts (root level, not src/)
+- components/ - React components (landing/, admin/, member/, staff/, ui/)
+- lib/ - Core utilities (supabase/, theme-manager.ts, utils/)
+- styles/ - Organized CSS (variables.css, base.css, utilities.css, components/, pages/, responsive.css)
+- public/ - Static assets (logo, icons/)
+- migrations/ - Database migration files (in v1/migrations/)
+- .env.local - Environment variables (Supabase URL, keys)
+
+DEPARTMENT-BASED PERMISSIONS ARCHITECTURE:
+- All access control uses department_page_permissions table
+- Staff inherit permissions from their assigned departments
+- Super admin (donum_super_admin) has full access to everything
+- No hardcoded roles - everything is department-based
+- RLS policies enforce department boundaries at database level
+
+CRITICAL RULES:
+
+0. DATE AND TIME AWARENESS - ALWAYS CHECK FIRST:
+   - CURRENT YEAR: 2026 (January 2026)
+   - BEFORE writing any code involving dates, timestamps, years, or time-sensitive data, VERIFY the current year is 2026
+   - Use 2026 in all date-related code, seed data, passwords, and documentation
+   - When creating sample/test data with dates, ensure years are 2026
+   - Check date context before generating any time-based code
+
+1. FILE SIZE LIMIT - STRICTLY ENFORCED:
+   - Maximum 500 lines per file (NO EXCEPTIONS)
+   - If a file exceeds 500 lines, you MUST split it before editing
+   - Split large files by functionality: [component]-logic.tsx, [component]-types.ts, [component]-utils.ts
+   - Always check line count before editing files
+
+2. FILE MANAGEMENT:
+   - Use explicit file paths relative to project root (web/)
+   - Verify file existence before editing
+   - Follow established directory structure
+   - Never create directories unless explicitly requested
+   - Check file line count before editing (must be ≤ 500)
+   - Follow the folder organization structure
+
+3. CODE QUALITY:
+   - Always verify changes were actually made
+   - Check file contents after edits
+   - Never claim completion without verification
+   - Test code after generation
+   - Use meaningful variable and function names
+   - Use JSDoc/TSDoc comments for functions
+   - Write tests for new components and utilities
+   - NO EMOJIS in code, comments, documentation, or any files
+
+4. SECURITY:
+   - NEVER include API keys or secrets in code
+   - Use environment variables for sensitive data (.env.local)
+   - Validate all user inputs
+   - Review all AI-generated code for security vulnerabilities
+   - Use authentication middleware for protected routes
+   - Follow RLS (Row Level Security) patterns for database access
+   - Department-based permissions enforced via department_page_permissions table
+
+5. NEXT.JS BEST PRACTICES:
+   - Use App Router only (NOT Pages Router)
+   - Implement proper metadata in layout.tsx
+   - Use TypeScript for all new files
+   - Follow React Server Components patterns
+   - Use proper loading states and error boundaries
+   - Use 'use client' directive only when necessary
+   - Use @supabase/ssr for server-side Supabase client
+
+6. STYLING:
+   - Use Tailwind CSS utility classes only (no inline styles)
+   - Use Donum CSS variables (--core-blue, --core-gold, --core-cyan, etc.)
+   - Follow responsive design principles
+   - Use CSS variables for theming (from styles/variables.css)
+   - Support both light and dark themes via [data-theme="dark"]
+   - Keep styles consistent with Donum brand colors
+   - Place component-specific styles in styles/components/
+   - Place page-specific styles in styles/pages/
+   - Import styles via globals.css
+
+7. COMPONENT ARCHITECTURE:
+   - Create reusable UI components in components/ui/
+   - Admin components in components/admin/
+   - Member components in components/member/
+   - Staff components in components/staff/
+   - Landing components in components/landing/
+   - Use proper TypeScript interfaces for all props
+   - Follow single responsibility principle
+   - Keep components focused and small (≤ 500 lines)
+   - Split large components into sub-components
+
+8. TYPESCRIPT:
+   - Use strict TypeScript configuration
+   - Define proper interfaces for all data structures
+   - Use type safety for API calls
+   - Implement proper error types
+   - Use enums for constants
+   - Place types in appropriate domain files
+
+9. DATABASE OPERATIONS:
+   - All migrations in v1/migrations/ (use Supabase MCP apply_migration)
+   - Use Supabase client from lib/supabase/client.ts (browser) or lib/supabase/server.ts (server)
+   - Always use RLS policies for security
+   - Never expose service role keys to client-side code
+   - Department permissions checked via department_page_permissions table
+   - Use department_members table for client-department assignments
+
+10. AUTHENTICATION:
+    - Use Supabase Auth for authentication
+    - After login, fetch donum_accounts row to get role and departments
+    - Use department_page_permissions to check page access
+    - Super admin (donum_super_admin) bypasses all permission checks
+    - Staff access controlled by their departments array
+
+11. STATE MANAGEMENT:
+    - Use React hooks for local state
+    - Use context providers for global state (auth, theme)
+    - Implement proper state lifting when needed
+    - Consider Zustand/Redux when complexity grows
+
+12. ERROR HANDLING:
+    - Always wrap async operations in try-catch
+    - Provide meaningful error messages
+    - Log errors appropriately
+    - Implement fallback UI for errors
+    - Use ErrorBoundary components for React errors
+
+13. PERMISSIONS:
+    - Check department_page_permissions table for page access
+    - Super admin (role = 'donum_super_admin') sees everything
+    - Staff (role = 'donum_staff') only see pages where their departments have can_view = true
+    - Use getUserAccessiblePages() pattern or query department_page_permissions directly
+    - Admin sidebar filters nav items based on accessible pages
+
+14. THEME SYSTEM:
+    - Use ThemeInitializer component in root layout
+    - Use themeManager from lib/theme-manager.ts
+    - Theme persisted in localStorage
+    - CSS variables switch via [data-theme="dark"] attribute
+    - Donum brand colors: --core-blue (#003366), --core-gold (#D4AF37), --core-cyan (#00BCD4)
+
+WHAT NOT TO DO:
+- Don't create files without explicit request
+- Don't modify multiple files without review
+- Don't include API keys or secrets
+- Don't claim completion without verification
+- Don't ignore existing code patterns
+- Don't create unnecessary abstractions
+- Don't skip error handling
+- Don't forget to test changes
+- Don't edit files over 500 lines without splitting first
+- Don't create files that exceed 500 lines
+- Don't use Pages Router (use App Router only)
+- Don't skip TypeScript types
+- Don't use inline styles (use Tailwind CSS)
+- Don't hardcode permissions (use department_page_permissions)
+- Don't bypass RLS policies
+- Don't use emojis in code, comments, documentation, markdown files, or any project files
+
+VERIFICATION CHECKLIST:
+Before marking any task complete, verify:
+- Current date/year context checked (2026) - especially for date-related code
+- Changes were actually made to files
+- Files were verified after editing
+- File line count is ≤ 500
+- Code follows project patterns
+- No console errors
+- TypeScript compiles without errors
+- Next.js builds successfully
+- Error handling included
+- Documentation updated if needed
+- Imports updated if files were moved
+- Date/year values are correct (2026) in any generated code
+- Department permissions checked correctly
+- RLS policies enforced
+
+FILE SPLITTING STRATEGY:
+When a file exceeds 500 lines, split by:
+1. Functionality - Separate by feature/concern
+2. Layer - Separate logic from presentation
+3. Component - Split into sub-components
+4. Data - Separate data handling from UI
+
+Example: Large component.tsx → component.tsx (main), component.types.ts, component.utils.ts, component.hooks.ts
+
+FOLDER ORGANIZATION GUIDELINES:
+- Components: Group by role/feature (admin/, member/, staff/, landing/, ui/)
+- Database: Migrations in v1/migrations/, use Supabase MCP for operations
+- Auth: Supabase Auth + donum_accounts lookup for role/departments
+- Services: External integrations in lib/ or services/
+- Types: Define in component files or lib/types/
+- Styles: Organize by purpose (variables.css, base.css, utilities.css, components/, pages/, responsive.css)
+
+PRIORITY ACTIONS:
+1. Maintain 500 line limit - Split any files that exceed this
+2. Follow TypeScript best practices - Use proper types
+3. Implement proper error handling - All async operations
+4. Use Tailwind CSS consistently - No inline styles, use Donum CSS variables
+5. Follow Next.js App Router patterns - Proper file structure
+6. Use department-based permissions - Query department_page_permissions, never hardcode
+7. Follow folder organization - Use correct directories for new code
+8. Update imports when restructuring - Keep codebase consistent
+9. Use Supabase SSR client - @supabase/ssr for server components and middleware

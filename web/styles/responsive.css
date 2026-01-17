@@ -1,0 +1,216 @@
+/* ============================================
+   Responsive Styles
+   ============================================ */
+
+/* Mobile devices (up to 480px) */
+@media screen and (max-width: 480px) {
+  .theme-toggle-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+  }
+
+  .theme-toggle-btn svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .form-group-row {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .signin-header {
+    height: 40px;
+    padding: 0 20px;
+  }
+
+  .signin-header-title {
+    font-size: 18px;
+  }
+
+  .signin-header-link {
+    font-size: 13px;
+  }
+
+  .signin-page-footer {
+    height: 60px;
+    padding: 16px 20px;
+    margin-top: auto;
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .signin-page-footer-links {
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .signin-page-footer-link {
+    font-size: 12px;
+  }
+
+  .signin-page-footer-copyright {
+    font-size: 11px;
+  }
+
+  .signin-overlay {
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    padding-bottom: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .signin-overlay-content {
+    margin: 0;
+    padding-top: 60px;
+    padding-bottom: 0;
+    flex: 1 0 auto;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    gap: 24px;
+    padding: 20px 16px 40px;
+    align-items: center;
+    justify-items: center;
+    min-height: auto;
+    width: 100%;
+    max-width: 100%;
+    position: relative;
+  }
+
+  .signin-overlay-backdrop {
+    position: fixed;
+    height: 100vh;
+  }
+
+  .signin-logo-container {
+    grid-column: 1;
+    grid-row: 1;
+    width: 200px;
+    height: 200px;
+    justify-self: center;
+  }
+
+  .signin-logo {
+    max-width: 200px;
+  }
+
+  .signin-title {
+    font-size: 28px;
+    margin-bottom: 6px;
+  }
+
+  .signin-subtitle {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .signin-form {
+    gap: 18px;
+    width: 100%;
+  }
+
+  .form-group-visible {
+    max-height: 150px;
+  }
+
+  .form-group input {
+    padding: 12px 14px;
+    font-size: 15px;
+    height: 44px;
+  }
+
+  .signin-btn {
+    padding: 14px 28px;
+    font-size: 15px;
+    width: 100%;
+  }
+}
+
+/* Tablet devices (481px to 768px) */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  .theme-toggle-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+  }
+
+  .theme-toggle-btn svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .form-group-row {
+    gap: 16px;
+  }
+
+  .signin-overlay-content {
+    gap: 32px 60px;
+    padding: 32px;
+    max-width: 90%;
+  }
+
+  .signin-logo-container {
+    width: 220px;
+    height: 220px;
+  }
+
+  .signin-logo {
+    max-width: 220px;
+  }
+
+  .signin-title {
+    font-size: 30px;
+  }
+
+  .signin-subtitle {
+    font-size: 15px;
+  }
+
+  .signin-form {
+    gap: 22px;
+  }
+}
+
+/* Small desktop (769px to 1024px) */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .signin-overlay-content {
+    gap: 40px 80px;
+    padding: 36px;
+  }
+}
+
+/* Mobile landscape orientation */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+  .signin-overlay-content {
+    grid-template-columns: auto 1fr;
+    gap: 40px 60px;
+    padding: 20px;
+  }
+
+  .signin-logo-container {
+    width: 180px;
+    height: 180px;
+  }
+
+  .signin-logo {
+    max-width: 180px;
+  }
+
+  .signin-title {
+    font-size: 26px;
+    margin-bottom: 4px;
+  }
+
+  .signin-subtitle {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .signin-form {
+    gap: 16px;
+  }
+}

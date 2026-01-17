@@ -1,0 +1,21 @@
+name: donum2.1
+
+services:
+  donum-web:
+    build: .
+    image: donum2.1-web
+    container_name: Donum2.1
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env.local
+    command: npm run dev
+    networks:
+      - donum2.1-network
+
+networks:
+  donum2.1-network:
+    name: donum2.1-network
