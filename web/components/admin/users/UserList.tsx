@@ -135,6 +135,15 @@ export function UserList({ onEdit, onViewDetails, filters, onFiltersChange }: Us
     setSearchTerm(localSearchTerm);
   }
 
+  // Real-time search filtering with debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchTerm(localSearchTerm);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timer);
+  }, [localSearchTerm]);
+
   function handleRoleFilterChange(value: string) {
     if (value === 'all') {
       setRoleFilter(undefined);

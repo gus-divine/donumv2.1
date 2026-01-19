@@ -7,6 +7,7 @@ import { AdminApplicationEditForm } from '@/components/admin/applications/AdminA
 import { getApplication, type Application } from '@/lib/api/applications';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollToTop } from '@/components/ui/scroll-to-top';
 
 export default function ApplicationEditPage() {
   const params = useParams();
@@ -251,6 +252,7 @@ export default function ApplicationEditPage() {
               saveHandlerRef.current = handler;
             }}
           />
+          <ScrollToTop />
         </div>
       </main>
     </PermissionGuard>

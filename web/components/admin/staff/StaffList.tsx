@@ -107,6 +107,15 @@ export function StaffList({ filters, onFiltersChange, onEdit }: StaffListProps) 
     setSearchTerm(localSearchTerm);
   }
 
+  // Real-time search filtering with debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchTerm(localSearchTerm);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timer);
+  }, [localSearchTerm]);
+
   function handleDepartmentFilterChange(value: string) {
     setDepartmentFilter(value);
   }

@@ -30,6 +30,7 @@ export function PlanForm({ plan, onSuccess, onCancel, submitRef, onLoadingChange
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Track initial values to detect changes
   const [initialValues, setInitialValues] = useState<{
@@ -179,6 +180,30 @@ export function PlanForm({ plan, onSuccess, onCancel, submitRef, onLoadingChange
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setFieldErrors({});
+
+    // Validate required fields
+    const errors: Record<string, string> = {};
+    if (!plan && !code.trim()) {
+      errors.code = 'Plan code is required';
+    }
+    if (!name.trim()) {
+      errors.name = 'Plan name is required';
+    }
+    if (!taxDeductionPercent.trim()) {
+      errors.taxDeductionPercent = 'Tax deduction percent is required';
+    } else {
+      const taxPercent = parseFloat(taxDeductionPercent);
+      if (isNaN(taxPercent) || taxPercent < 0 || taxPercent > 100) {
+        errors.taxDeductionPercent = 'Tax deduction percent must be a number between 0 and 100';
+      }
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setLoading(false);
+      return;
+    }
 
     try {
       // Parse calculator config
@@ -187,7 +212,7 @@ export function PlanForm({ plan, onSuccess, onCancel, submitRef, onLoadingChange
         try {
           parsedCalculatorConfig = JSON.parse(calculatorConfig);
         } catch (err) {
-          setError('Invalid JSON in calculator config');
+          setFieldErrors({ calculatorConfig: 'Invalid JSON in calculator config' });
           setLoading(false);
           return;
         }
@@ -214,11 +239,6 @@ export function PlanForm({ plan, onSuccess, onCancel, submitRef, onLoadingChange
         await updatePlan(plan.id, input);
       } else {
         // Create new plan
-        if (!code.trim()) {
-          setError('Plan code is required');
-          setLoading(false);
-          return;
-        }
         const input: CreatePlanInput = {
           code: code.trim(),
           name,
@@ -296,10 +316,24 @@ export function PlanForm({ plan, onSuccess, onCancel, submitRef, onLoadingChange
               required={!plan}
               disabled={!!plan}
               value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              onChange={(e) => {
+                setCode(e.target.value);
+                if (fieldErrors.code) {
+                  setFieldErrors(prev => {
+                    const newErrors = { ...prev };
+                    delete newErrors.code;
+                    return newErrors;
+                  });
+                }
+              }}
+              className={`w-full px-3 py-2 border rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed ${
+                fieldErrors.code ? 'border-red-500 focus:ring-red-500' : 'border-[var(--border)]'
+              }`}
               placeholder="e.g., defund, diversion, divest"
             />
+            {fieldErrors.code && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.code}</p>
+            )}
             {plan && (
               <p className="mt-1 text-xs text-[var(--text-secondary)]">Code cannot be changed after creation</p>
             )}
@@ -314,10 +348,24 @@ export function PlanForm({ plan, onSuccess, onCancel, submitRef, onLoadingChange
               type="text"
               required
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
+              onChange={(e) => {
+                setName(e.target.value);
+                if (fieldErrors.name) {
+                  setFieldErrors(prev => {
+                    const newErrors = { ...prev };
+                    delete newErrors.name;
+                    return newErrors;
+                  });
+                }
+              }}
+              className={`w-full px-3 py-2 border rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent ${
+                fieldErrors.name ? 'border-red-500 focus:ring-red-500' : 'border-[var(--border)]'
+              }`}
               placeholder="e.g., Donum Defund"
             />
+            {fieldErrors.name && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.name}</p>
+            )}
           </div>
         </div>
 
@@ -494,14 +542,30 @@ export function PlanForm({ plan, onSuccess, onCancel, submitRef, onLoadingChange
         <textarea
           id="calculatorConfig"
           value={calculatorConfig}
-          onChange={(e) => setCalculatorConfig(e.target.value)}
+          onChange={(e) => {
+            setCalculatorConfig(e.target.value);
+            if (fieldErrors.calculatorConfig) {
+              setFieldErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors.calculatorConfig;
+                return newErrors;
+              });
+            }
+          }}
           rows={8}
-          className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
+          className={`w-full px-3 py-2 border rounded-lg bg-[var(--background)] text-[var(--text-primary)] font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent ${
+            fieldErrors.calculatorConfig ? 'border-red-500 focus:ring-red-500' : 'border-[var(--border)]'
+          }`}
           placeholder='{"formula": "...", "variables": {...}}'
         />
-        <p className="text-xs text-[var(--text-secondary)]">
-          Enter valid JSON for calculator configuration. Leave empty if not needed.
-        </p>
+        {fieldErrors.calculatorConfig && (
+          <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.calculatorConfig}</p>
+        )}
+        {!fieldErrors.calculatorConfig && (
+          <p className="text-xs text-[var(--text-secondary)]">
+            Enter valid JSON for calculator configuration. Leave empty if not needed.
+          </p>
+        )}
       </div>
 
       {/* Status */}

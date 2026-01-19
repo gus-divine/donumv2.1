@@ -173,7 +173,11 @@ export async function getLoans(filters?: LoanFilters): Promise<Loan[]> {
     .order('created_at', { ascending: false });
 
   if (filters?.search) {
-    query = query.or(`loan_number.ilike.%${filters.search}%,applicant:donum_accounts.email.ilike.%${filters.search}%`);
+    const searchTerm = filters.search.toLowerCase();
+    // Search by loan number, applicant email, first name, last name, or full name
+    query = query.or(`loan_number.ilike.%${searchTerm}%`);
+    // Note: We'll filter by applicant name in JavaScript after fetching
+    // because Supabase doesn't support nested field filtering in OR queries easily
   }
 
   if (filters?.status) {
@@ -203,7 +207,25 @@ export async function getLoans(filters?: LoanFilters): Promise<Loan[]> {
     throw new Error(`Failed to fetch loans: ${error.message}`);
   }
 
-  return (data || []) as Loan[];
+  let loans = (data || []) as Loan[];
+
+  // Apply search filter on applicant name/email if needed (after fetching)
+  if (filters?.search) {
+    const searchTerm = filters.search.toLowerCase();
+    loans = loans.filter((loan) => {
+      const loanNumberMatch = loan.loan_number?.toLowerCase().includes(searchTerm);
+      const applicantEmailMatch = loan.applicant?.email?.toLowerCase().includes(searchTerm);
+      const applicantFirstNameMatch = loan.applicant?.first_name?.toLowerCase().includes(searchTerm);
+      const applicantLastNameMatch = loan.applicant?.last_name?.toLowerCase().includes(searchTerm);
+      const applicantFullNameMatch = loan.applicant?.first_name && loan.applicant?.last_name
+        ? `${loan.applicant.first_name} ${loan.applicant.last_name}`.toLowerCase().includes(searchTerm)
+        : false;
+      
+      return loanNumberMatch || applicantEmailMatch || applicantFirstNameMatch || applicantLastNameMatch || applicantFullNameMatch;
+    });
+  }
+
+  return loans;
 }
 
 /**

@@ -8,6 +8,7 @@ import { getUser, type User } from '@/lib/api/users';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { useRef } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollToTop } from '@/components/ui/scroll-to-top';
 
 export default function EditUserPage() {
   const params = useParams();
@@ -199,6 +200,7 @@ export default function EditUserPage() {
             onHasChangesChange={setHasUnsavedChanges}
             showActions={false}
           />
+          <ScrollToTop />
         </div>
       </main>
     </PermissionGuard>

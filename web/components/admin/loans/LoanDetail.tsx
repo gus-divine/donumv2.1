@@ -75,6 +75,7 @@ export function LoanDetail({ loan, onBack, onLoanUpdated }: LoanDetailProps) {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<LoanPayment | null>(null);
+  const [documentRefreshKey, setDocumentRefreshKey] = useState(0);
 
   useEffect(() => {
     async function loadPayments() {
@@ -383,7 +384,8 @@ export function LoanDetail({ loan, onBack, onLoanUpdated }: LoanDetailProps) {
               applicantId={loan.applicant_id}
               loanId={loan.id}
               onUploadSuccess={() => {
-                // Reload could be added here if needed
+                // Trigger DocumentList refresh
+                setDocumentRefreshKey(prev => prev + 1);
               }}
             />
           </div>
@@ -392,8 +394,12 @@ export function LoanDetail({ loan, onBack, onLoanUpdated }: LoanDetailProps) {
         <div>
           <h4 className="text-sm font-medium text-[var(--text-primary)] mb-4">Uploaded Documents</h4>
           <DocumentList
+            key={documentRefreshKey}
             filters={{ loan_id: loan.id }}
             showActions={true}
+            onDocumentUpdate={() => {
+              setDocumentRefreshKey(prev => prev + 1);
+            }}
           />
         </div>
       </div>

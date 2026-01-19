@@ -30,6 +30,7 @@ import { useRouter } from 'next/navigation';
 import DocumentList from '@/components/admin/documents/DocumentList';
 import DocumentUpload from '@/components/documents/DocumentUpload';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 interface ApplicationFormProps {
   application: Application;
@@ -59,6 +60,8 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
   const [selectedAssignmentDepartment, setSelectedAssignmentDepartment] = useState<string>('');
   const [newAssignmentStaffId, setNewAssignmentStaffId] = useState<string>('');
   const [newAssignmentNotes, setNewAssignmentNotes] = useState<string>('');
+  const [showRemoveStaffConfirm, setShowRemoveStaffConfirm] = useState(false);
+  const [removeStaffTarget, setRemoveStaffTarget] = useState<{ staffId: string; staffName: string } | null>(null);
   const [showPrequalification, setShowPrequalification] = useState(() => {
     // Show by default if prequalification data exists
     const workflowData = application.workflow_data as any;
@@ -802,9 +805,9 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
             <button
               type="button"
               onClick={() => setIsAddingAssignment(true)}
-              className="text-sm text-[var(--core-blue)] dark:text-[var(--text-secondary)] hover:text-[var(--core-blue-light)] dark:hover:text-[var(--text-primary)] transition-colors"
+              className="px-4 py-2 text-sm font-medium bg-[var(--core-blue)] text-white hover:bg-[var(--core-blue-light)] rounded-lg transition-colors shadow-sm hover:shadow-md"
             >
-              Add Staff
+              + Add Staff
             </button>
           )}
         </div>
@@ -850,30 +853,16 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
                   </div>
                   <button
                     type="button"
-                    onClick={async () => {
-                      if (!confirm(`Remove ${assignedStaff?.name || assignedStaff?.email || 'this staff member'}?`)) {
-                        return;
-                      }
-                      
-                      setLoading(true);
-                      try {
-                        await unassignStaffFromProspect(application.applicant_id, assignment.staff_id);
-                        
-                        // Reload assignments
-                        const assignmentsData = await getProspectStaffAssignments(application.applicant_id);
-                        setProspectAssignments(assignmentsData);
-                      } catch (err) {
-                        console.error('Error removing assignment:', err);
-                        setError(err instanceof Error ? err.message : 'Failed to remove assignment');
-                      } finally {
-                        setLoading(false);
-                      }
+                    onClick={() => {
+                      const staffName = assignedStaff?.name || assignedStaff?.email || 'this staff member';
+                      setRemoveStaffTarget({ staffId: assignment.staff_id, staffName });
+                      setShowRemoveStaffConfirm(true);
                     }}
                     disabled={loading}
                     className="text-xs text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50 transition-colors ml-4"
                     title="Remove staff assignment"
                   >
-                    {loading ? 'Removing...' : 'Remove'}
+                    Remove
                   </button>
                 </div>
               );
@@ -1024,7 +1013,7 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
                   }
                 }}
                 disabled={loading || !newAssignmentStaffId || !selectedAssignmentDepartment}
-                className="px-4 py-2 text-sm text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue)]/80 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 text-sm font-medium bg-[var(--core-blue)] text-white hover:bg-[var(--core-blue-light)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm hover:shadow-md"
               >
                 {loading ? 'Adding...' : 'Add Staff'}
               </button>
@@ -1197,6 +1186,41 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
             loadData(); // Reload to refresh assignments
           }}
           onUpdate={loadData}
+        />
+      )}
+
+      {/* Remove Staff Confirmation Dialog */}
+      {removeStaffTarget && (
+        <ConfirmationDialog
+          isOpen={showRemoveStaffConfirm}
+          title="Remove Staff Assignment"
+          message={`Are you sure you want to remove ${removeStaffTarget.staffName} from this application?`}
+          confirmText="Remove"
+          cancelText="Cancel"
+          variant="danger"
+          onConfirm={async () => {
+            if (!removeStaffTarget || !application.applicant_id) return;
+            
+            setShowRemoveStaffConfirm(false);
+            setLoading(true);
+            try {
+              await unassignStaffFromProspect(application.applicant_id, removeStaffTarget.staffId);
+              
+              // Reload assignments
+              const assignmentsData = await getProspectStaffAssignments(application.applicant_id);
+              setProspectAssignments(assignmentsData);
+            } catch (err) {
+              console.error('Error removing assignment:', err);
+              setError(err instanceof Error ? err.message : 'Failed to remove assignment');
+            } finally {
+              setLoading(false);
+              setRemoveStaffTarget(null);
+            }
+          }}
+          onCancel={() => {
+            setShowRemoveStaffConfirm(false);
+            setRemoveStaffTarget(null);
+          }}
         />
       )}
     </form>

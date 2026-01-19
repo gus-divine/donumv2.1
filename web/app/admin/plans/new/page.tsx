@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { PermissionGuard } from '@/components/admin/shared/PermissionGuard';
 import { PlanForm } from '@/components/admin/plans/PlanForm';
 import { useState, useRef } from 'react';
+import { ScrollToTop } from '@/components/ui/scroll-to-top';
 
 export default function CreatePlanPage() {
   const router = useRouter();
@@ -69,6 +70,7 @@ export default function CreatePlanPage() {
             submitRef={formSubmitRef}
             onLoadingChange={setIsSaving}
           />
+          <ScrollToTop />
         </div>
       </main>
     </PermissionGuard>

@@ -12,6 +12,7 @@ import { usePermissions } from '@/lib/hooks/usePermissions';
 import { USER_ROLES } from '@/lib/api/users';
 import { APPLICATION_STATUSES, APPLICATION_STATUS_COLORS } from '@/lib/api/applications';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 // Format date helper
 function formatDate(dateString: string | null): string {
@@ -46,6 +47,8 @@ export default function MemberDetailPage() {
   const [newAssignmentStaffId, setNewAssignmentStaffId] = useState<string>('');
   const [newAssignmentNotes, setNewAssignmentNotes] = useState<string>('');
   const [loadingStaffData, setLoadingStaffData] = useState(false);
+  const [showRemoveStaffConfirm, setShowRemoveStaffConfirm] = useState(false);
+  const [removeStaffTarget, setRemoveStaffTarget] = useState<{ staffId: string; staffName: string } | null>(null);
 
   async function loadStaffData() {
     if (!memberId) return;
@@ -172,7 +175,7 @@ export default function MemberDetailPage() {
     }
   }
 
-  async function handleRemoveStaffAssignment(staffId: string) {
+  function handleRemoveStaffAssignment(staffId: string) {
     if (!memberId) return;
     
     const assignedStaff = staff.find(s => s.id === staffId);
@@ -181,13 +184,17 @@ export default function MemberDetailPage() {
                        ? `${assignedStaff.first_name || ''} ${assignedStaff.last_name || ''}`.trim()
                        : assignedStaff?.email || 'this staff member');
     
-    if (!confirm(`Remove ${staffName}?`)) {
-      return;
-    }
+    setRemoveStaffTarget({ staffId, staffName });
+    setShowRemoveStaffConfirm(true);
+  }
+
+  async function handleRemoveStaffConfirm() {
+    if (!removeStaffTarget || !memberId) return;
     
+    setShowRemoveStaffConfirm(false);
     try {
       setLoadingStaffData(true);
-      await unassignStaffFromProspect(memberId, staffId);
+      await unassignStaffFromProspect(memberId, removeStaffTarget.staffId);
       
       // Reload assignments
       const assignments = await getProspectStaffAssignments(memberId);
@@ -197,7 +204,13 @@ export default function MemberDetailPage() {
       setError(err instanceof Error ? err.message : 'Failed to remove staff assignment');
     } finally {
       setLoadingStaffData(false);
+      setRemoveStaffTarget(null);
     }
+  }
+
+  function handleRemoveStaffCancel() {
+    setShowRemoveStaffConfirm(false);
+    setRemoveStaffTarget(null);
   }
 
   if (loading) {
@@ -892,6 +905,20 @@ export default function MemberDetailPage() {
           </div>
         </div>
       </main>
+
+      {/* Remove Staff Confirmation Dialog */}
+      {removeStaffTarget && (
+        <ConfirmationDialog
+          isOpen={showRemoveStaffConfirm}
+          title="Remove Staff Assignment"
+          message={`Are you sure you want to remove ${removeStaffTarget.staffName} from this member?`}
+          confirmText="Remove"
+          cancelText="Cancel"
+          variant="danger"
+          onConfirm={handleRemoveStaffConfirm}
+          onCancel={handleRemoveStaffCancel}
+        />
+      )}
     </PermissionGuard>
   );
 }

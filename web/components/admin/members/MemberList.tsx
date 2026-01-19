@@ -173,6 +173,15 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
     setSearchTerm(localSearchTerm);
   }
 
+  // Real-time search filtering with debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchTerm(localSearchTerm);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timer);
+  }, [localSearchTerm]);
+
   function handleStatusFilterChange(value: string) {
     if (value === 'all') {
       setStatusFilter(undefined);

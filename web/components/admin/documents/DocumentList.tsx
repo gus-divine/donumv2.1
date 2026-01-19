@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getDocuments, reviewDocument, deleteDocument, type Document, type DocumentFilters } from '@/lib/api/documents';
 import { CheckCircle, XCircle, Clock, Download, Trash2, FileText } from 'lucide-react';
+import { RejectionReasonDialog } from '@/components/ui/rejection-reason-dialog';
 
 interface DocumentListProps {
   filters?: DocumentFilters;
@@ -16,6 +17,8 @@ export default function DocumentList({ filters, showActions = true, onDocumentUp
   const [error, setError] = useState<string | null>(null);
   const [reviewing, setReviewing] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [rejectTargetId, setRejectTargetId] = useState<string | null>(null);
 
   useEffect(() => {
     loadDocuments();
@@ -49,13 +52,18 @@ export default function DocumentList({ filters, showActions = true, onDocumentUp
     }
   };
 
-  const handleReject = async (documentId: string) => {
-    const reason = prompt('Please provide a rejection reason:');
-    if (!reason) return;
+  const handleReject = (documentId: string) => {
+    setRejectTargetId(documentId);
+    setShowRejectDialog(true);
+  };
 
-    setReviewing(documentId);
+  const handleRejectConfirm = async (reason: string) => {
+    if (!rejectTargetId) return;
+    
+    setShowRejectDialog(false);
+    setReviewing(rejectTargetId);
     try {
-      await reviewDocument(documentId, 'rejected', reason);
+      await reviewDocument(rejectTargetId, 'rejected', reason);
       await loadDocuments();
       onDocumentUpdate?.();
     } catch (err) {
@@ -63,7 +71,13 @@ export default function DocumentList({ filters, showActions = true, onDocumentUp
       setError(err instanceof Error ? err.message : 'Failed to reject document');
     } finally {
       setReviewing(null);
+      setRejectTargetId(null);
     }
+  };
+
+  const handleRejectCancel = () => {
+    setShowRejectDialog(false);
+    setRejectTargetId(null);
   };
 
   const handleDelete = async (documentId: string) => {
@@ -182,6 +196,8 @@ export default function DocumentList({ filters, showActions = true, onDocumentUp
             <div className="flex items-center gap-1 ml-4">
               <a
                 href={`/api/documents/${document.id}/download`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 title="Download"
               >
@@ -221,6 +237,18 @@ export default function DocumentList({ filters, showActions = true, onDocumentUp
           )}
         </div>
       ))}
+
+      {/* Rejection Reason Dialog */}
+      <RejectionReasonDialog
+        isOpen={showRejectDialog}
+        title="Reject Document"
+        message="Please provide a reason for rejecting this document:"
+        placeholder="Enter rejection reason..."
+        confirmText="Reject"
+        cancelText="Cancel"
+        onConfirm={handleRejectConfirm}
+        onCancel={handleRejectCancel}
+      />
     </div>
   );
 }

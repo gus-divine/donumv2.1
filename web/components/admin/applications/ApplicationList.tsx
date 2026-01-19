@@ -13,6 +13,7 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { Select } from '@/components/ui/select';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { RejectionReasonDialog } from '@/components/ui/rejection-reason-dialog';
 import { getDepartments } from '@/lib/api/departments';
 import type { Department } from '@/lib/api/departments';
 import { getUsers, type User } from '@/lib/api/users';
@@ -47,6 +48,8 @@ export function ApplicationList({ onEdit, filters, onFiltersChange }: Applicatio
   const [expandedApplicants, setExpandedApplicants] = useState<Set<string>>(new Set());
   const [applicantAppCounts, setApplicantAppCounts] = useState<Record<string, number>>({});
   const [processingAppId, setProcessingAppId] = useState<string | null>(null);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [rejectTargetId, setRejectTargetId] = useState<string | null>(null);
   const loadingRef = useRef(false);
   
   // Sorting state
@@ -314,6 +317,15 @@ export function ApplicationList({ onEdit, filters, onFiltersChange }: Applicatio
     setSearchTerm(localSearchTerm);
   }
 
+  // Real-time search filtering with debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchTerm(localSearchTerm);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timer);
+  }, [localSearchTerm]);
+
   function handleStatusFilterChange(value: string) {
     if (value === 'all') {
       setStatusFilter(undefined);
@@ -358,28 +370,36 @@ export function ApplicationList({ onEdit, filters, onFiltersChange }: Applicatio
     }
   }
 
-  async function handleQuickReject(applicationId: string) {
+  function handleQuickReject(applicationId: string) {
     if (!canEdit('/admin/applications')) {
       setErrorMessage('You do not have permission to reject applications');
       return;
     }
+    setRejectTargetId(applicationId);
+    setShowRejectDialog(true);
+  }
 
-    const reason = prompt('Please provide a reason for rejection:');
-    if (!reason || !reason.trim()) {
-      return;
-    }
-
-    setProcessingAppId(applicationId);
+  async function handleRejectConfirm(reason: string) {
+    if (!rejectTargetId) return;
+    
+    setShowRejectDialog(false);
+    setProcessingAppId(rejectTargetId);
     setError(null);
     try {
-      await rejectApplication(applicationId, reason.trim());
+      await rejectApplication(rejectTargetId, reason);
       await loadApplications();
     } catch (err) {
       console.error('[ApplicationList] Error rejecting application:', err);
       setErrorMessage(err instanceof Error ? err.message : 'Failed to reject application');
     } finally {
       setProcessingAppId(null);
+      setRejectTargetId(null);
     }
+  }
+
+  function handleRejectCancel() {
+    setShowRejectDialog(false);
+    setRejectTargetId(null);
   }
 
   function toggleApplicantExpansion(applicantId: string) {
@@ -855,7 +875,7 @@ export function ApplicationList({ onEdit, filters, onFiltersChange }: Applicatio
                       {canEdit('/admin/applications') && (
                         <button
                           onClick={() => onEdit(application)}
-                          className="px-3 py-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg"
+                          className="px-4 py-2 text-sm font-medium bg-[var(--core-blue)] text-white hover:bg-[var(--core-blue-light)] rounded-lg transition-colors shadow-sm hover:shadow-md"
                         >
                           View
                         </button>
@@ -979,6 +999,18 @@ export function ApplicationList({ onEdit, filters, onFiltersChange }: Applicatio
           onCancel={() => setErrorMessage(null)}
         />
       )}
+
+      {/* Rejection Reason Dialog */}
+      <RejectionReasonDialog
+        isOpen={showRejectDialog}
+        title="Reject Application"
+        message="Please provide a reason for rejecting this application:"
+        placeholder="Enter rejection reason..."
+        confirmText="Reject"
+        cancelText="Cancel"
+        onConfirm={handleRejectConfirm}
+        onCancel={handleRejectCancel}
+      />
     </div>
   );
 }

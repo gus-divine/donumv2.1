@@ -314,30 +314,15 @@ export async function updateUser(id: string, input: UpdateUserInput): Promise<Us
 }
 
 export async function deleteUser(id: string): Promise<void> {
-  const supabase = createSupabaseClient();
+  // Use API route for proper deletion (handles both donum_accounts and auth user)
+  const response = await fetch(`/api/admin/users/${id}`, {
+    method: 'DELETE',
+  });
 
-  // Delete from donum_accounts (this will cascade delete related records)
-  // Note: Auth user deletion requires API route with service role key
-  // TODO: Create API route /api/admin/users/[id] for proper user deletion
-  const { error: accountError } = await supabase
-    .from('donum_accounts')
-    .delete()
-    .eq('id', id);
-
-  if (accountError) {
-    console.error('[Users API] Error deleting user account:', {
-      message: accountError.message,
-      code: accountError.code,
-      details: accountError.details,
-      hint: accountError.hint,
-      id,
-    });
-    throw new Error(`Failed to delete user: ${accountError.message}`);
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to delete user');
   }
-
-  // Note: Auth user deletion should be handled via API route
-  // The donum_accounts record is deleted, auth user will need manual cleanup
-  // or API route implementation
 }
 
 export async function updateUserPassword(id: string, newPassword: string): Promise<void> {
