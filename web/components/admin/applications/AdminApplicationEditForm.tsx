@@ -32,7 +32,7 @@ export function AdminApplicationEditForm({
   onSavingChange,
   onSaveReady
 }: AdminApplicationEditFormProps) {
-  const { user: currentUser, role: userRole } = useAuth();
+  const { user: currentUser, role: userRole, departments: userDepartments } = useAuth();
   const { canEdit: canEditPage } = usePermissions('/admin/applications');
   const canEdit = canEditPage('/admin/applications');
   const [application, setApplication] = useState<Application | null>(null);
@@ -126,7 +126,6 @@ export function AdminApplicationEditForm({
 
         // Check if prospect is assigned to staff's department
         const memberDepartments = await getMemberDepartments(applicantId);
-        const userDepartments = currentUser.departments || [];
         const hasDepartmentAccess = memberDepartments.some(dept => userDepartments.includes(dept));
 
         if (!hasDepartmentAccess) {
