@@ -546,7 +546,7 @@ export default function ProspectDetailPage() {
                           <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
                             APPLICATION_STATUS_COLORS[application.status] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
                           }`}>
-                            {APPLICATION_STATUSES[application.status] || application.status}
+                            {APPLICATION_STATUSES.find(s => s.value === application.status)?.label || application.status}
                           </span>
                         </td>
                         <td className="p-4 text-[var(--text-primary)]">
