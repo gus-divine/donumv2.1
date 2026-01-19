@@ -238,6 +238,11 @@ export function AdminApplicationEditForm({
       return;
     }
 
+    if (!application || !applicant) {
+      setError('Application or applicant data not available');
+      return;
+    }
+
     setSaving(true);
     setError(null);
 
