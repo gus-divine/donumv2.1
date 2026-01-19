@@ -3,10 +3,11 @@ import { getDocumentDownloadUrl } from '@/lib/api/documents';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const documentId = params.id;
+    const { id } = await params;
+    const documentId = id;
     const downloadUrl = await getDocumentDownloadUrl(documentId);
     
     // Redirect to the signed URL
