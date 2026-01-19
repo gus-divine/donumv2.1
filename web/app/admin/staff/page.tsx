@@ -16,25 +16,21 @@ export default function StaffPage() {
   const [filters, setFilters] = useState<UserFilters>({});
 
   function handleCreate() {
-    console.log('[Staff Page] Switching to create mode');
     setSelectedStaff(null);
     setViewMode('create');
   }
 
   function handleEdit(staff: User) {
-    console.log('[Staff Page] Switching to edit mode:', { id: staff.id, email: staff.email });
     setSelectedStaff(staff);
     setViewMode('edit');
   }
 
   function handleSuccess() {
-    console.log('[Staff Page] Operation successful, returning to list');
     setViewMode('list');
     setSelectedStaff(null);
   }
 
   function handleCancel() {
-    console.log('[Staff Page] Operation cancelled, returning to list');
     setViewMode('list');
     setSelectedStaff(null);
   }
@@ -53,7 +49,7 @@ export default function StaffPage() {
         {viewMode === 'list' && (
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Staff Management</h1>
+              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Staff</h1>
               <p className="mt-2 text-sm text-[var(--text-secondary)]">
                 Manage staff members and their department assignments. Assign staff to departments to control access and permissions.
               </p>

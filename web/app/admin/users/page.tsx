@@ -16,25 +16,21 @@ export default function UsersPage() {
   const [filters, setFilters] = useState<UserFilters>({});
 
   function handleCreate() {
-    console.log('[Users Page] Switching to create mode');
     setSelectedUser(null);
     setViewMode('create');
   }
 
   function handleEdit(user: User) {
-    console.log('[Users Page] Switching to edit mode:', { id: user.id, email: user.email });
     setSelectedUser(user);
     setViewMode('edit');
   }
 
   function handleSuccess() {
-    console.log('[Users Page] Operation successful, returning to list');
     setViewMode('list');
     setSelectedUser(null);
   }
 
   function handleCancel() {
-    console.log('[Users Page] Operation cancelled, returning to list');
     setViewMode('list');
     setSelectedUser(null);
   }
@@ -53,7 +49,7 @@ export default function UsersPage() {
         {viewMode === 'list' && (
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-[var(--text-primary)]">User Management</h1>
+              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Users</h1>
               <p className="mt-2 text-sm text-[var(--text-secondary)]">
                 Manage users, roles, and department assignments.
               </p>

@@ -210,34 +210,34 @@ export function StaffDetail({ staff, onBack, onStaffUpdated }: StaffDetailProps)
           ) : (
             <>
               <div>
-                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Name</label>
+                <span className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Name</span>
                 <p className="text-[var(--text-primary)]">{staffName}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Email</label>
+                <span className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Email</span>
                 <p className="text-[var(--text-primary)]">{staff.email}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Role</label>
+                <span className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Role</span>
                 <p className="text-[var(--text-primary)]">
                   {USER_ROLES.find(r => r.value === staff.role)?.label || staff.role}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Status</label>
+                <span className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Status</span>
                 <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${getStatusBadgeColor(staff.status)}`}>
                   {staff.status || 'active'}
                 </span>
               </div>
               {staff.phone && (
                 <div>
-                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Phone</label>
+                  <span className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Phone</span>
                   <p className="text-[var(--text-primary)]">{staff.phone}</p>
                 </div>
               )}
               {staff.cell_phone && (
                 <div>
-                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Cell Phone</label>
+                  <span className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Cell Phone</span>
                   <p className="text-[var(--text-primary)]">{staff.cell_phone}</p>
                 </div>
               )}
@@ -350,25 +350,25 @@ export function StaffDetail({ staff, onBack, onStaffUpdated }: StaffDetailProps)
           ) : (
             <>
               <div>
-                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Timezone</label>
+                <span className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Timezone</span>
                 <p className="text-[var(--text-primary)]">{staff.timezone || '—'}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Language</label>
+                <span className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Language</span>
                 <p className="text-[var(--text-primary)]">{staff.language || '—'}</p>
               </div>
               {staff.notes && (
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Notes</label>
+                  <span className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Notes</span>
                   <p className="text-[var(--text-primary)] whitespace-pre-wrap">{staff.notes}</p>
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Created</label>
+                <span className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Created</span>
                 <p className="text-[var(--text-primary)]">{formatDate(staff.created_at)}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Last Login</label>
+                <span className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Last Login</span>
                 <p className="text-[var(--text-primary)]">{formatDate(staff.last_login_at)}</p>
               </div>
             </>

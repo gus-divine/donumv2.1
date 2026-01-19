@@ -15,25 +15,21 @@ export default function PlansPage() {
   const [selectedPlan, setSelectedPlan] = useState<DonumPlan | null>(null);
 
   function handleCreate() {
-    console.log('[Plans Page] Switching to create mode');
     setSelectedPlan(null);
     setViewMode('create');
   }
 
   function handleEdit(plan: DonumPlan) {
-    console.log('[Plans Page] Switching to edit mode:', { id: plan.id, code: plan.code });
     setSelectedPlan(plan);
     setViewMode('edit');
   }
 
   function handleSuccess() {
-    console.log('[Plans Page] Operation successful, returning to list');
     setViewMode('list');
     setSelectedPlan(null);
   }
 
   function handleCancel() {
-    console.log('[Plans Page] Operation cancelled, returning to list');
     setViewMode('list');
     setSelectedPlan(null);
   }
@@ -43,7 +39,7 @@ export default function PlansPage() {
       <main className="min-h-screen p-8">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Plan Management</h1>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Plans</h1>
             <p className="mt-2 text-sm text-[var(--text-secondary)]">
               Manage Donum plan templates (Defund, Diversion, Divest) and their requirements.
             </p>

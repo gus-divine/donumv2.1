@@ -22,7 +22,6 @@ export interface CreateDepartmentMemberInput {
  * Get all active members assigned to a department
  */
 export async function getDepartmentMembers(departmentName: string): Promise<DepartmentMember[]> {
-  console.log('[Department Members API] Fetching members for department:', { departmentName });
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('department_members')
@@ -42,7 +41,6 @@ export async function getDepartmentMembers(departmentName: string): Promise<Depa
     throw new Error(`Failed to fetch department members: ${error.message}`);
   }
 
-  console.log('[Department Members API] Department members fetched:', { departmentName, count: data?.length || 0 });
   return data || [];
 }
 
@@ -50,10 +48,6 @@ export async function getDepartmentMembers(departmentName: string): Promise<Depa
  * Assign a member to a department
  */
 export async function assignMemberToDepartment(input: CreateDepartmentMemberInput): Promise<DepartmentMember> {
-  console.log('[Department Members API] Assigning member to department:', { 
-    departmentName: input.department_name, 
-    memberId: input.member_id 
-  });
   const supabase = createSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -101,7 +95,6 @@ export async function assignMemberToDepartment(input: CreateDepartmentMemberInpu
     throw new Error(`Failed to assign member: ${error.message}`);
   }
 
-  console.log('[Department Members API] Member assigned successfully:', { id: data.id });
   return data;
 }
 
@@ -112,10 +105,6 @@ export async function unassignMemberFromDepartment(
   departmentName: string,
   memberId: string
 ): Promise<void> {
-  console.log('[Department Members API] Unassigning member from department:', { 
-    departmentName, 
-    memberId 
-  });
   const supabase = createSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -141,15 +130,12 @@ export async function unassignMemberFromDepartment(
     });
     throw new Error(`Failed to unassign member: ${error.message}`);
   }
-
-  console.log('[Department Members API] Member unassigned successfully');
 }
 
 /**
  * Get all departments a member is assigned to
  */
 export async function getMemberDepartments(memberId: string): Promise<string[]> {
-  console.log('[Department Members API] Fetching departments for member:', { memberId });
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('department_members')

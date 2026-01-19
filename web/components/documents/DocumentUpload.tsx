@@ -63,10 +63,6 @@ export default function DocumentUpload({
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('[DocumentUpload] Input change event triggered', {
-      files: e.target.files?.length || 0,
-      fileName: e.target.files?.[0]?.name
-    });
     const file = e.target.files?.[0];
     if (file) {
       handleFileSelect(file);

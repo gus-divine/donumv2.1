@@ -48,7 +48,6 @@ export interface UpdateDepartmentInput {
 }
 
 export async function getDepartments(): Promise<Department[]> {
-  console.log('[Departments API] Fetching all departments...');
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('departments')
@@ -65,12 +64,10 @@ export async function getDepartments(): Promise<Department[]> {
     throw new Error(`Failed to fetch departments: ${error.message}`);
   }
 
-  console.log('[Departments API] Departments fetched successfully:', { count: data?.length || 0 });
   return data || [];
 }
 
 export async function getDepartment(id: string): Promise<Department | null> {
-  console.log('[Departments API] Fetching department:', { id });
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('departments')
@@ -89,12 +86,10 @@ export async function getDepartment(id: string): Promise<Department | null> {
     return null;
   }
 
-  console.log('[Departments API] Department fetched:', { id, name: data?.name });
   return data;
 }
 
 export async function createDepartment(input: CreateDepartmentInput): Promise<Department> {
-  console.log('[Departments API] Creating department:', { name: input.name, color: input.color, icon: input.icon });
   const supabase = createSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -125,12 +120,10 @@ export async function createDepartment(input: CreateDepartmentInput): Promise<De
     throw new Error(`Failed to create department: ${error.message}`);
   }
 
-  console.log('[Departments API] Department created successfully:', { id: data.id, name: data.name });
   return data;
 }
 
 export async function updateDepartment(id: string, input: UpdateDepartmentInput): Promise<Department> {
-  console.log('[Departments API] Updating department:', { id, updates: input });
   const supabase = createSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -165,12 +158,10 @@ export async function updateDepartment(id: string, input: UpdateDepartmentInput)
     throw new Error(`Failed to update department: ${error.message}`);
   }
 
-  console.log('[Departments API] Department updated successfully:', { id: data.id, name: data.name });
   return data;
 }
 
 export async function deleteDepartment(id: string): Promise<void> {
-  console.log('[Departments API] Deleting department:', { id });
   const supabase = createSupabaseClient();
   const { error } = await supabase
     .from('departments')
@@ -187,12 +178,9 @@ export async function deleteDepartment(id: string): Promise<void> {
     });
     throw new Error(`Failed to delete department: ${error.message}`);
   }
-
-  console.log('[Departments API] Department deleted successfully:', { id });
 }
 
 export async function getDepartmentPermissions(departmentName: string): Promise<DepartmentPagePermission[]> {
-  console.log('[Departments API] Fetching permissions for department:', { departmentName });
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('department_page_permissions')
@@ -211,7 +199,6 @@ export async function getDepartmentPermissions(departmentName: string): Promise<
     throw new Error(`Failed to fetch permissions: ${error.message}`);
   }
 
-  console.log('[Departments API] Permissions fetched:', { departmentName, count: data?.length || 0 });
   return data || [];
 }
 
@@ -224,11 +211,6 @@ export async function updateDepartmentPermissions(
     can_delete: boolean;
   }>
 ): Promise<void> {
-  console.log('[Departments API] Updating permissions for department:', { 
-    departmentName, 
-    permissionCount: permissions.length,
-    permissions: permissions.map(p => ({ page: p.page_path, view: p.can_view, edit: p.can_edit, delete: p.can_delete }))
-  });
   const supabase = createSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -259,8 +241,6 @@ export async function updateDepartmentPermissions(
       throw new Error(`Failed to update permissions: ${error.message}`);
     }
   }
-
-  console.log('[Departments API] Permissions updated successfully:', { departmentName });
 }
 
 export const ADMIN_PAGES = [

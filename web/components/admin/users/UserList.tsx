@@ -32,12 +32,10 @@ export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
 
   const loadUsers = useCallback(async () => {
     if (loadingRef.current) {
-      console.log('[UserList] Already loading, skipping duplicate call');
       return;
     }
 
     try {
-      console.log('[UserList] Loading users...', { filters });
       loadingRef.current = true;
       setLoading(true);
       setError(null);
@@ -50,7 +48,6 @@ export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
       };
       
       const data = await getUsers(currentFilters);
-      console.log('[UserList] Users loaded:', { count: data.length });
       setUsers(data);
       
       if (onFiltersChange) {
@@ -84,10 +81,8 @@ export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
 
     setShowDeleteConfirm(false);
     try {
-      console.log('[UserList] Deleting user:', { id: deleteTarget.id, email: deleteTarget.email });
       setDeletingId(deleteTarget.id);
       await deleteUser(deleteTarget.id);
-      console.log('[UserList] User deleted, reloading list...');
       await loadUsers();
       setDeleteTarget(null);
     } catch (err) {

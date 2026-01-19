@@ -73,7 +73,6 @@ export function DepartmentForm({ department, onSuccess, onCancel }: DepartmentFo
 
     try {
       if (department) {
-        console.log('[DepartmentForm] Updating department:', { id: department.id, name });
         const input: UpdateDepartmentInput = {
           name,
           description: description || undefined,
@@ -84,9 +83,7 @@ export function DepartmentForm({ department, onSuccess, onCancel }: DepartmentFo
           member_assignment_enabled: memberAssignmentEnabled,
         };
         await updateDepartment(department.id, input);
-        console.log('[DepartmentForm] Department updated successfully');
       } else {
-        console.log('[DepartmentForm] Creating new department:', { name, color, icon });
         const input: CreateDepartmentInput = {
           name,
           description: description || undefined,
@@ -97,7 +94,6 @@ export function DepartmentForm({ department, onSuccess, onCancel }: DepartmentFo
           member_assignment_enabled: memberAssignmentEnabled,
         };
         await createDepartment(input);
-        console.log('[DepartmentForm] Department created successfully');
       }
       onSuccess();
     } catch (err) {
@@ -176,7 +172,7 @@ export function DepartmentForm({ department, onSuccess, onCancel }: DepartmentFo
         </div>
 
         <div>
-          <label htmlFor="icon" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+          <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
             Icon
           </label>
           <div className="grid grid-cols-4 gap-2 p-2 border border-[var(--border)] rounded-lg bg-[var(--background)]">

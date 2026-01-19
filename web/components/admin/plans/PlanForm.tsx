@@ -325,7 +325,11 @@ export function PlanForm({ plan, onSuccess, onCancel }: PlanFormProps) {
         
         {benefits.map((benefit, index) => (
           <div key={index} className="flex gap-2">
+            <label htmlFor={`benefit-${index}`} className="sr-only">
+              Benefit {index + 1}
+            </label>
             <input
+              id={`benefit-${index}`}
               type="text"
               value={benefit}
               onChange={(e) => updateBenefit(index, e.target.value)}
@@ -347,8 +351,11 @@ export function PlanForm({ plan, onSuccess, onCancel }: PlanFormProps) {
 
       {/* Calculator Config */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Calculator Configuration (JSON)</h3>
+        <label htmlFor="calculatorConfig" className="block text-lg font-semibold text-[var(--text-primary)]">
+          Calculator Configuration (JSON)
+        </label>
         <textarea
+          id="calculatorConfig"
           value={calculatorConfig}
           onChange={(e) => setCalculatorConfig(e.target.value)}
           rows={8}

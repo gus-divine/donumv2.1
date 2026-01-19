@@ -60,12 +60,10 @@ export function ApplicationList({ onEdit, filters, onFiltersChange }: Applicatio
 
   const loadApplications = useCallback(async () => {
     if (loadingRef.current) {
-      console.log('[ApplicationList] Already loading, skipping duplicate call');
       return;
     }
 
     try {
-      console.log('[ApplicationList] Loading applications...', { filters });
       loadingRef.current = true;
       setLoading(true);
       setError(null);
@@ -80,7 +78,6 @@ export function ApplicationList({ onEdit, filters, onFiltersChange }: Applicatio
       };
       
       const data = await getApplications(currentFilters);
-      console.log('[ApplicationList] Applications loaded:', { count: data.length });
       
       // Store all applications
       setAllApplications(data);
@@ -293,10 +290,8 @@ export function ApplicationList({ onEdit, filters, onFiltersChange }: Applicatio
 
     setShowDeleteConfirm(false);
     try {
-      console.log('[ApplicationList] Deleting application:', { id: deleteTarget.id, applicationNumber: deleteTarget.applicationNumber });
       setDeletingId(deleteTarget.id);
       await deleteApplication(deleteTarget.id);
-      console.log('[ApplicationList] Application deleted, reloading list...');
       await loadApplications();
       setDeleteTarget(null);
     } catch (err) {

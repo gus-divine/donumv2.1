@@ -8,12 +8,13 @@ interface UserFormProps {
   user?: User | null;
   onSuccess: () => void;
   onCancel: () => void;
+  defaultRole?: CreateUserInput['role'];
 }
 
-export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
+export function UserForm({ user, onSuccess, onCancel, defaultRole = 'donum_prospect' }: UserFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<CreateUserInput['role']>('donum_prospect');
+  const [role, setRole] = useState<CreateUserInput['role']>(defaultRole);
   const [status, setStatus] = useState<CreateUserInput['status']>('pending');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -45,8 +46,11 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       setTimezone(user.timezone || 'America/New_York');
       setLanguage(user.language || 'en');
       setNotes(user.notes || '');
+    } else {
+      // Set default role for new users
+      setRole(defaultRole);
     }
-  }, [user]);
+  }, [user, defaultRole]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -55,7 +59,6 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
 
     try {
       if (user) {
-        console.log('[UserForm] Updating user:', { id: user.id, email });
         const input: UpdateUserInput = {
           email,
           role,
@@ -73,14 +76,12 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           notes: notes || undefined,
         };
         await updateUser(user.id, input);
-        console.log('[UserForm] User updated successfully');
       } else {
         if (!password) {
           setError('Password is required for new users');
           setLoading(false);
           return;
         }
-        console.log('[UserForm] Creating new user:', { email, role });
         const input: CreateUserInput = {
           email,
           password,
@@ -96,7 +97,6 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           language,
         };
         await createUser(input);
-        console.log('[UserForm] User created successfully');
       }
       onSuccess();
     } catch (err) {
@@ -108,261 +108,285 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-0">
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg shadow-sm mb-6">
+          <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Email *
-          </label>
-          <input
-            id="email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-            placeholder="user@example.com"
-          />
-        </div>
-
-        {!user && (
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-              Password *
+      {/* Account Information */}
+      <div className="pt-4 border-t-2 border-[var(--core-gold)] pb-6 mb-6">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Account Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label htmlFor="email" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+              Email *
             </label>
             <input
-              id="password"
-              type="password"
-              required={!user}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-              placeholder="••••••••"
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
+              placeholder="user@example.com"
             />
           </div>
-        )}
-      </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="role" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Role *
-          </label>
-          <select
-            id="role"
-            required
-            value={role}
-            onChange={(e) => setRole(e.target.value as CreateUserInput['role'])}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-          >
-            {USER_ROLES.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label}
-              </option>
-            ))}
-          </select>
-        </div>
+          {!user && (
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                Temporary Password *
+              </label>
+              <input
+                id="password"
+                type="password"
+                required={!user}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
+                placeholder="••••••••"
+              />
+              <p className="text-xs text-[var(--text-secondary)]">
+                They will be prompted to change this on first login.
+              </p>
+            </div>
+          )}
 
-        <div>
-          <label htmlFor="status" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Status *
-          </label>
-          <select
-            id="status"
-            required
-            value={status}
-            onChange={(e) => setStatus(e.target.value as CreateUserInput['status'])}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-          >
-            {USER_STATUSES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+          <div className="space-y-2">
+            <label htmlFor="status" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+              Status *
+            </label>
+            <Select
+              id="status"
+              required
+              value={status}
+              onChange={(e) => setStatus(e.target.value as CreateUserInput['status'])}
+              options={USER_STATUSES}
+              className="w-full"
+            />
+          </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="firstName" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            First Name
-          </label>
-          <input
-            id="firstName"
-            type="text"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-            placeholder="John"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="lastName" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Last Name
-          </label>
-          <input
-            id="lastName"
-            type="text"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-            placeholder="Doe"
-          />
+          {!user && (
+            <div className="space-y-2">
+              <label htmlFor="role" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                Role
+              </label>
+              <Select
+                id="role"
+                required
+                value={role}
+                onChange={(e) => setRole(e.target.value as CreateUserInput['role'])}
+                options={USER_ROLES}
+                className="w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!!defaultRole && !user}
+              />
+              {defaultRole && !user && (
+                <p className="text-xs text-[var(--text-secondary)]">
+                  Role is set to Prospect for new prospects.
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Phone
-          </label>
-          <input
-            id="phone"
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-            placeholder="(555) 123-4567"
-          />
-        </div>
+      {/* Personal Information */}
+      <div className="pt-6 border-t border-[var(--core-blue)] pb-6 mb-6">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Personal Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label htmlFor="firstName" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+              First Name
+            </label>
+            <input
+              id="firstName"
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
+              placeholder="John"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="cellPhone" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Cell Phone
-          </label>
-          <input
-            id="cellPhone"
-            type="tel"
-            value={cellPhone}
-            onChange={(e) => setCellPhone(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-            placeholder="(555) 123-4567"
-          />
+          <div className="space-y-2">
+            <label htmlFor="lastName" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+              Last Name
+            </label>
+            <input
+              id="lastName"
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
+              placeholder="Doe"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="phone" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+              Phone
+            </label>
+            <input
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
+              placeholder="(555) 123-4567"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="cellPhone" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+              Cell Phone
+            </label>
+            <input
+              id="cellPhone"
+              type="tel"
+              value={cellPhone}
+              onChange={(e) => setCellPhone(e.target.value)}
+              className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
+              placeholder="(555) 123-4567"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="company" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Company
-          </label>
-          <input
-            id="company"
-            type="text"
-            value={company}
-            onChange={(e) => setCompany(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-            placeholder="Company Name"
-          />
-        </div>
+      {/* Professional Information */}
+      <div className="pt-6 border-t border-[var(--core-blue)] pb-6 mb-6">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Professional Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label htmlFor="company" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+              Company
+            </label>
+            <input
+              id="company"
+              type="text"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
+              placeholder="Company Name"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Title
-          </label>
-          <input
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-            placeholder="Job Title"
-          />
+          <div className="space-y-2">
+            <label htmlFor="title" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+              Title
+            </label>
+            <input
+              id="title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
+              placeholder="Job Title"
+            />
+          </div>
         </div>
       </div>
 
-      {(role === 'donum_admin' || role === 'donum_super_admin') && (
-        <div>
-          <label htmlFor="adminLevel" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Admin Level
-          </label>
-          <select
-            id="adminLevel"
-            value={adminLevel}
-            onChange={(e) => setAdminLevel(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-          >
-            <option value="">None</option>
-            <option value="super">Super</option>
-            <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
-            <option value="support">Support</option>
-          </select>
+      {/* Additional Settings - Only show for editing existing users */}
+      {user && (
+        <div className="pt-6 border-t border-[var(--core-blue)] pb-6 mb-6">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Additional Settings</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {(role === 'donum_admin' || role === 'donum_super_admin') && (
+              <div className="space-y-2">
+                <label htmlFor="adminLevel" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                  Admin Level
+                </label>
+                <select
+                  id="adminLevel"
+                  value={adminLevel}
+                  onChange={(e) => setAdminLevel(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
+                >
+                  <option value="">None</option>
+                  <option value="super">Super</option>
+                  <option value="admin">Admin</option>
+                  <option value="manager">Manager</option>
+                  <option value="support">Support</option>
+                </select>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label htmlFor="timezone" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                Timezone
+              </label>
+              <Select
+                id="timezone"
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+                options={[
+                  { value: 'America/New_York', label: 'Eastern Time' },
+                  { value: 'America/Chicago', label: 'Central Time' },
+                  { value: 'America/Denver', label: 'Mountain Time' },
+                  { value: 'America/Los_Angeles', label: 'Pacific Time' },
+                  { value: 'UTC', label: 'UTC' },
+                ]}
+                className="w-full"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="language" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                Language
+              </label>
+              <select
+                id="language"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
+              >
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="notes" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                Notes
+              </label>
+              <textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
+                placeholder="Internal notes about this user..."
+              />
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="timezone" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Timezone
-          </label>
-          <select
-            id="timezone"
-            value={timezone}
-            onChange={(e) => setTimezone(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-          >
-            <option value="America/New_York">Eastern Time</option>
-            <option value="America/Chicago">Central Time</option>
-            <option value="America/Denver">Mountain Time</option>
-            <option value="America/Los_Angeles">Pacific Time</option>
-            <option value="UTC">UTC</option>
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="language" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Language
-          </label>
-          <select
-            id="language"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-          >
-            <option value="en">English</option>
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-          </select>
-        </div>
-      </div>
-
-      <div>
-        <label htmlFor="notes" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-          Notes
-        </label>
-        <textarea
-          id="notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={3}
-          className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-          placeholder="Internal notes about this user..."
-        />
-      </div>
-
-      <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+      {/* Form Actions */}
+      <div className="flex justify-end gap-3 pt-6 border-t border-[var(--core-blue)]">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg border border-[var(--border)] transition-colors"
+          className="px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 text-sm bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-3 py-1.5 text-sm font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Saving...' : user ? 'Update User' : 'Create User'}
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <span className="animate-spin rounded-full h-3 w-3 border-2 border-[var(--core-blue)] border-t-transparent"></span>
+              {user ? 'Updating...' : 'Creating...'}
+            </span>
+          ) : (
+            user ? 'Update User' : 'Create Prospect'
+          )}
         </button>
       </div>
     </form>

@@ -253,7 +253,6 @@ export default function ApplicationPage() {
           purpose: loanPurpose === 'Other' ? loanPurposeOther : (loanPurpose || 'Full application submission'),
           notes: `Comprehensive application submitted. Marital status: ${maritalStatus || 'Not provided'}, Dependents: ${dependents || '0'}, How heard: ${hearAbout || 'Not provided'}`,
         });
-        console.log('Full application created successfully');
       } catch (appError) {
         console.error('Error creating application:', appError);
         // Don't fail the whole submission if application creation fails

@@ -17,43 +17,36 @@ export default function DepartmentsPage() {
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
 
   function handleCreate() {
-    console.log('[Departments Page] Switching to create mode');
     setSelectedDepartment(null);
     setViewMode('create');
   }
 
   function handleEdit(department: Department) {
-    console.log('[Departments Page] Switching to edit mode:', { id: department.id, name: department.name });
     setSelectedDepartment(department);
     setViewMode('edit');
   }
 
   function handleViewPermissions(department: Department) {
-    console.log('[Departments Page] Switching to permissions mode:', { id: department.id, name: department.name });
     setSelectedDepartment(department);
     setViewMode('permissions');
   }
 
   function handleManageStaff(department: Department) {
-    console.log('[Departments Page] Switching to staff management mode:', { id: department.id, name: department.name });
     setSelectedDepartment(department);
     setViewMode('staff');
   }
 
   function handleManageMembers(department: Department) {
-    console.log('[Departments Page] Switching to member management mode:', { id: department.id, name: department.name });
     setSelectedDepartment(department);
     setViewMode('members');
   }
 
   function handleSuccess() {
-    console.log('[Departments Page] Operation successful, returning to list');
     setViewMode('list');
     setSelectedDepartment(null);
   }
 
   function handleCancel() {
-    console.log('[Departments Page] Operation cancelled, returning to list');
     setViewMode('list');
     setSelectedDepartment(null);
   }
@@ -72,7 +65,7 @@ export default function DepartmentsPage() {
         {viewMode === 'list' && (
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Department Management</h1>
+              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Departments</h1>
               <p className="mt-2 text-sm text-[var(--text-secondary)]">
                 Manage departments and configure their page permissions.
               </p>

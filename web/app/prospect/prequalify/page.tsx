@@ -240,7 +240,6 @@ export default function PrequalifyPage() {
             charitable_intent: charitableIntent,
           },
         });
-        console.log('Prequalification application created successfully');
       } catch (appError) {
         console.error('Error creating application:', appError);
         setError('Failed to save your prequalification. Please try again.');
@@ -584,12 +583,13 @@ export default function PrequalifyPage() {
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <span className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                   Do you have charitable giving intentions? <span className="text-red-500">*</span>
-                </label>
+                </span>
                 <div className="flex gap-4">
-                  <label className="flex items-center">
+                  <label htmlFor="charitableIntent-yes" className="flex items-center">
                     <input
+                      id="charitableIntent-yes"
                       type="radio"
                       name="charitableIntent"
                       checked={charitableIntent === true}
@@ -601,8 +601,9 @@ export default function PrequalifyPage() {
                     />
                     <span className="text-[var(--text-primary)]">Yes</span>
                   </label>
-                  <label className="flex items-center">
+                  <label htmlFor="charitableIntent-no" className="flex items-center">
                     <input
+                      id="charitableIntent-no"
                       type="radio"
                       name="charitableIntent"
                       checked={charitableIntent === false}
@@ -618,13 +619,14 @@ export default function PrequalifyPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <span className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                   Asset Types (Select all that apply)
-                </label>
+                </span>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {assetTypeOptions.map((option) => (
-                    <label key={option.value} className="flex items-center">
+                    <label key={option.value} htmlFor={`assetType-${option.value}`} className="flex items-center">
                       <input
+                        id={`assetType-${option.value}`}
                         type="checkbox"
                         checked={assetTypes.includes(option.value)}
                         onChange={() => handleAssetTypeToggle(option.value)}

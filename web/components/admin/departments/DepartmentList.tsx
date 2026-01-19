@@ -78,17 +78,14 @@ export function DepartmentList({ onEdit, onViewPermissions, onManageStaff }: Dep
   const loadDepartments = useCallback(async () => {
     // Prevent duplicate simultaneous calls
     if (loadingRef.current) {
-      console.log('[DepartmentList] Already loading, skipping duplicate call');
       return;
     }
 
     try {
-      console.log('[DepartmentList] Loading departments...');
       loadingRef.current = true;
       setLoading(true);
       setError(null);
       const data = await getDepartments();
-      console.log('[DepartmentList] Departments loaded:', { count: data.length });
       setDepartments(data);
     } catch (err) {
       console.error('[DepartmentList] Error loading departments:', err);
@@ -138,10 +135,8 @@ export function DepartmentList({ onEdit, onViewPermissions, onManageStaff }: Dep
 
     setShowDeleteConfirm(false);
     try {
-      console.log('[DepartmentList] Deleting department:', { id: deleteTarget.id, name: deleteTarget.name });
       setDeletingId(deleteTarget.id);
       await deleteDepartment(deleteTarget.id);
-      console.log('[DepartmentList] Department deleted, reloading list...');
       await loadDepartments();
       setDeleteTarget(null);
     } catch (err) {

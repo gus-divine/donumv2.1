@@ -63,7 +63,6 @@ export function StaffForm({ staff, onSuccess, onCancel }: StaffFormProps) {
 
     try {
       if (staff) {
-        console.log('[StaffForm] Updating staff:', { id: staff.id, email });
         const input: UpdateUserInput = {
           email,
           role,
@@ -78,14 +77,12 @@ export function StaffForm({ staff, onSuccess, onCancel }: StaffFormProps) {
           notes: notes || undefined,
         };
         await updateUser(staff.id, input);
-        console.log('[StaffForm] Staff updated successfully');
       } else {
         if (!password) {
           setError('Password is required for new staff members');
           setLoading(false);
           return;
         }
-        console.log('[StaffForm] Creating new staff:', { email, role });
         const input: CreateUserInput = {
           email,
           password,
@@ -100,7 +97,6 @@ export function StaffForm({ staff, onSuccess, onCancel }: StaffFormProps) {
           language,
         };
         await createUser(input);
-        console.log('[StaffForm] Staff created successfully');
       }
       onSuccess();
     } catch (err) {

@@ -127,33 +127,53 @@ export default function ProspectProfilePage() {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen p-8">
-        {/* Back Button Skeleton */}
-        <div className="mb-4">
-          <Skeleton height="1.5rem" width="8rem" />
-        </div>
+      <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Back Button Skeleton */}
+          <div className="mb-6">
+            <Skeleton height="1.5rem" width="8rem" />
+          </div>
 
-        <div className="max-w-4xl mx-auto">
           {/* Header Skeleton */}
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6 mb-6">
-            <div className="flex items-center justify-between">
+          <div className="mb-8">
+            <div className="flex items-start justify-between">
               <div className="space-y-2">
                 <Skeleton height="2rem" width="12rem" />
                 <Skeleton height="1rem" width="20rem" />
               </div>
-              <Skeleton height="2.5rem" width="8rem" />
+              <Skeleton height="2rem" width="6rem" />
             </div>
           </div>
 
-          {/* Profile Form Skeleton */}
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <Skeleton height="0.875rem" width="6rem" />
+          {/* Profile Sections Skeleton */}
+          <div className="space-y-6">
+            <div className="pt-4 border-t-2 border-[var(--core-gold)] pb-6">
+              <Skeleton height="1.5rem" width="10rem" className="mb-4" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton height="0.875rem" width="6rem" />
+                    <Skeleton height="2.5rem" width="100%" />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="pt-6 border-t border-[var(--core-blue)] pb-6">
+              <Skeleton height="1.5rem" width="8rem" className="mb-4" />
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Skeleton height="0.875rem" width="8rem" />
                   <Skeleton height="2.5rem" width="100%" />
                 </div>
-              ))}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="space-y-2">
+                      <Skeleton height="0.875rem" width="5rem" />
+                      <Skeleton height="2.5rem" width="100%" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -162,243 +182,323 @@ export default function ProspectProfilePage() {
   }
 
   return (
-    <main className="min-h-screen p-8">
-      <button
-        onClick={() => router.push('/prospect/dashboard')}
-        className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-4 transition-colors"
-      >
-        ← Back to Dashboard
-      </button>
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Profile</h1>
-              <p className="text-[var(--text-secondary)]">
-                View and edit your profile information.
-              </p>
-            </div>
-            {!isEditing && (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="px-4 py-2 bg-[var(--core-blue)] text-white rounded hover:bg-[var(--core-blue-light)] transition-colors"
-              >
-                Edit Profile
-              </button>
-            )}
+    <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
+      <div className="max-w-6xl mx-auto">
+        <button
+          onClick={() => router.push('/prospect/dashboard')}
+          className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-6 transition-colors"
+        >
+          ← Back to Dashboard
+        </button>
+        
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
+              {profileData.firstName && profileData.lastName
+                ? `${profileData.firstName} ${profileData.lastName}`
+                : 'Profile'}
+            </h1>
+            <p className="text-sm text-[var(--text-secondary)]">
+              View and edit your profile information.
+            </p>
           </div>
+          {!isEditing && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="px-3 py-1.5 text-sm font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors"
+            >
+              Edit Profile
+            </button>
+          )}
         </div>
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
-            <p className="text-red-600 dark:text-red-400">{error}</p>
+          <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg shadow-sm mb-6">
+            <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
           </div>
         )}
 
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
+        {/* Personal Information Section */}
+        <div className="pt-4 border-t-2 border-[var(--core-gold)] pb-6 mb-6">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Personal Information</h3>
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                  First Name
-                </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                {isEditing ? (
+                  <label htmlFor="firstName" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    First Name
+                  </label>
+                ) : (
+                  <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    First Name
+                  </span>
+                )}
                 {isEditing ? (
                   <input
+                    id="firstName"
                     type="text"
                     value={profileData.firstName}
                     onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                   />
                 ) : (
-                  <p className="text-[var(--text-secondary)]">{profileData.firstName || 'Not provided'}</p>
+                  <p className="text-[var(--text-primary)]">{profileData.firstName || '-'}</p>
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                  Last Name
-                </label>
+              <div className="space-y-2">
+                {isEditing ? (
+                  <label htmlFor="lastName" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Last Name
+                  </label>
+                ) : (
+                  <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Last Name
+                  </span>
+                )}
                 {isEditing ? (
                   <input
+                    id="lastName"
                     type="text"
                     value={profileData.lastName}
                     onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                   />
                 ) : (
-                  <p className="text-[var(--text-secondary)]">{profileData.lastName || 'Not provided'}</p>
+                  <p className="text-[var(--text-primary)]">{profileData.lastName || '-'}</p>
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+              <div className="space-y-2">
+                <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
                   Email
-                </label>
-                <p className="text-[var(--text-secondary)]">{profileData.email}</p>
+                </span>
+                <p className="text-[var(--text-primary)]">{profileData.email}</p>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                  Phone
-                </label>
+              <div className="space-y-2">
+                {isEditing ? (
+                  <label htmlFor="phone" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Phone
+                  </label>
+                ) : (
+                  <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Phone
+                  </span>
+                )}
                 {isEditing ? (
                   <input
+                    id="phone"
                     type="tel"
                     value={profileData.phone}
                     onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
+                    placeholder="(555) 123-4567"
                   />
                 ) : (
-                  <p className="text-[var(--text-secondary)]">{profileData.phone || 'Not provided'}</p>
+                  <p className="text-[var(--text-primary)]">{profileData.phone || '-'}</p>
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                  Cell Phone
-                </label>
+              <div className="space-y-2">
+                {isEditing ? (
+                  <label htmlFor="cellPhone" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Cell Phone
+                  </label>
+                ) : (
+                  <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Cell Phone
+                  </span>
+                )}
                 {isEditing ? (
                   <input
+                    id="cellPhone"
                     type="tel"
                     value={profileData.cellPhone}
                     onChange={(e) => setProfileData({ ...profileData, cellPhone: e.target.value })}
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
+                    placeholder="(555) 123-4567"
                   />
                 ) : (
-                  <p className="text-[var(--text-secondary)]">{profileData.cellPhone || 'Not provided'}</p>
+                  <p className="text-[var(--text-primary)]">{profileData.cellPhone || '-'}</p>
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                  Date of Birth
-                </label>
+              <div className="space-y-2">
+                {isEditing ? (
+                  <label htmlFor="dateOfBirth" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Date of Birth
+                  </label>
+                ) : (
+                  <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Date of Birth
+                  </span>
+                )}
                 {isEditing ? (
                   <input
+                    id="dateOfBirth"
                     type="date"
                     value={profileData.dateOfBirth}
                     onChange={(e) => setProfileData({ ...profileData, dateOfBirth: e.target.value })}
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                   />
                 ) : (
-                  <p className="text-[var(--text-secondary)]">
-                    {profileData.dateOfBirth ? new Date(profileData.dateOfBirth).toLocaleDateString() : 'Not provided'}
+                  <p className="text-[var(--text-primary)]">
+                    {profileData.dateOfBirth ? new Date(profileData.dateOfBirth).toLocaleDateString() : '-'}
                   </p>
                 )}
               </div>
             </div>
+          </div>
+        </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                Address Line 1
-              </label>
+        {/* Address Section */}
+        <div className="pt-6 border-t border-[var(--core-blue)] pb-6">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Address</h3>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              {isEditing ? (
+                <label htmlFor="addressLine1" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                  Address Line 1
+                </label>
+              ) : (
+                <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                  Address Line 1
+                </span>
+              )}
               {isEditing ? (
                 <input
+                  id="addressLine1"
                   type="text"
                   value={profileData.addressLine1}
                   onChange={(e) => setProfileData({ ...profileData, addressLine1: e.target.value })}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)]"
+                  className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                 />
               ) : (
-                <p className="text-[var(--text-secondary)]">{profileData.addressLine1 || 'Not provided'}</p>
+                <p className="text-[var(--text-primary)]">{profileData.addressLine1 || '-'}</p>
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                Address Line 2
-              </label>
+            <div className="space-y-2">
+              {isEditing ? (
+                <label htmlFor="addressLine2" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                  Address Line 2
+                </label>
+              ) : (
+                <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                  Address Line 2
+                </span>
+              )}
               {isEditing ? (
                 <input
+                  id="addressLine2"
                   type="text"
                   value={profileData.addressLine2}
                   onChange={(e) => setProfileData({ ...profileData, addressLine2: e.target.value })}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)]"
+                  className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                 />
               ) : (
-                <p className="text-[var(--text-secondary)]">{profileData.addressLine2 || 'Not provided'}</p>
+                <p className="text-[var(--text-primary)]">{profileData.addressLine2 || '-'}</p>
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                  City
-                </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                {isEditing ? (
+                  <label htmlFor="city" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    City
+                  </label>
+                ) : (
+                  <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    City
+                  </span>
+                )}
                 {isEditing ? (
                   <input
+                    id="city"
                     type="text"
                     value={profileData.city}
                     onChange={(e) => setProfileData({ ...profileData, city: e.target.value })}
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                   />
                 ) : (
-                  <p className="text-[var(--text-secondary)]">{profileData.city || 'Not provided'}</p>
+                  <p className="text-[var(--text-primary)]">{profileData.city || '-'}</p>
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                  State
-                </label>
+              <div className="space-y-2">
+                {isEditing ? (
+                  <label htmlFor="state" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    State
+                  </label>
+                ) : (
+                  <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    State
+                  </span>
+                )}
                 {isEditing ? (
                   <input
+                    id="state"
                     type="text"
                     value={profileData.state}
                     onChange={(e) => setProfileData({ ...profileData, state: e.target.value })}
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                   />
                 ) : (
-                  <p className="text-[var(--text-secondary)]">{profileData.state || 'Not provided'}</p>
+                  <p className="text-[var(--text-primary)]">{profileData.state || '-'}</p>
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                  ZIP Code
-                </label>
+              <div className="space-y-2">
+                {isEditing ? (
+                  <label htmlFor="zipCode" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    ZIP Code
+                  </label>
+                ) : (
+                  <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    ZIP Code
+                  </span>
+                )}
                 {isEditing ? (
                   <input
+                    id="zipCode"
                     type="text"
                     value={profileData.zipCode}
                     onChange={(e) => setProfileData({ ...profileData, zipCode: e.target.value })}
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                   />
                 ) : (
-                  <p className="text-[var(--text-secondary)]">{profileData.zipCode || 'Not provided'}</p>
+                  <p className="text-[var(--text-primary)]">{profileData.zipCode || '-'}</p>
                 )}
               </div>
             </div>
           </div>
-
-          {isEditing && (
-            <div className="flex justify-end gap-4 mt-6 pt-6 border-t border-[var(--border)]">
-              <button
-                onClick={handleCancel}
-                className="px-6 py-2 border border-[var(--border)] rounded text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="px-6 py-2 bg-[var(--core-blue)] text-white rounded hover:bg-[var(--core-blue-light)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSaving ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
-                  </>
-                ) : (
-                  'Save Changes'
-                )}
-              </button>
-            </div>
-          )}
         </div>
+
+        {isEditing && (
+          <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-[var(--core-blue)]">
+            <button
+              onClick={handleCancel}
+              className="px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-3 py-1.5 text-sm font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSaving ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin rounded-full h-3 w-3 border-2 border-[var(--core-blue)] border-t-transparent"></span>
+                  Saving...
+                </span>
+              ) : (
+                'Save Changes'
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </main>
   );

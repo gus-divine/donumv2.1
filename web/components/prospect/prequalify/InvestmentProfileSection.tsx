@@ -1,5 +1,7 @@
 'use client';
 
+import { Select } from '@/components/ui/select';
+
 interface InvestmentProfileSectionProps {
   riskTolerance: string;
   investmentGoals: string[];
@@ -12,6 +14,22 @@ interface InvestmentProfileSectionProps {
   onDependentsChange: (value: string) => void;
   onHearAboutChange: (value: string) => void;
 }
+
+const MARITAL_STATUS_OPTIONS = [
+  { value: '', label: 'Select status' },
+  { value: 'Single', label: 'Single' },
+  { value: 'Married', label: 'Married' },
+  { value: 'Divorced', label: 'Divorced' },
+  { value: 'Widowed', label: 'Widowed' },
+];
+
+const HEAR_ABOUT_OPTIONS = [
+  { value: '', label: 'Select option' },
+  { value: 'Google', label: 'Google Search' },
+  { value: 'Referral', label: 'Referral' },
+  { value: 'Social Media', label: 'Social Media' },
+  { value: 'Other', label: 'Other' },
+];
 
 export function InvestmentProfileSection({
   riskTolerance,
@@ -26,17 +44,16 @@ export function InvestmentProfileSection({
   onHearAboutChange,
 }: InvestmentProfileSectionProps) {
   return (
-    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-      <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">Investment Profile</h2>
-      
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
           Risk Tolerance <span className="text-red-500">*</span>
         </label>
         <div className="space-y-2">
           {['Conservative', 'Moderate', 'Aggressive'].map((level) => (
-            <label key={level} className="flex items-center">
+            <label key={level} htmlFor={`riskTolerance-${level.toLowerCase()}`} className="flex items-center">
               <input
+                id={`riskTolerance-${level.toLowerCase()}`}
                 type="radio"
                 name="riskTolerance"
                 value={level.toLowerCase()}
@@ -45,14 +62,14 @@ export function InvestmentProfileSection({
                 className="mr-2"
                 required
               />
-              <span className="text-[var(--text-primary)]">{level}</span>
+              <span className="text-sm text-[var(--text-primary)]">{level}</span>
             </label>
           ))}
         </div>
       </div>
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+      <div className="space-y-2">
+        <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
           Investment Goals
         </label>
         <div className="space-y-2">
@@ -63,40 +80,36 @@ export function InvestmentProfileSection({
             { value: 'charitable_giving', label: 'Charitable Giving' },
             { value: 'other', label: 'Other' },
           ].map((goal) => (
-            <label key={goal.value} className="flex items-center">
+            <label key={goal.value} htmlFor={`investmentGoal-${goal.value}`} className="flex items-center">
               <input
+                id={`investmentGoal-${goal.value}`}
                 type="checkbox"
                 checked={investmentGoals.includes(goal.value)}
                 onChange={() => onInvestmentGoalToggle(goal.value)}
                 className="mr-2"
               />
-              <span className="text-[var(--text-primary)]">{goal.label}</span>
+              <span className="text-sm text-[var(--text-primary)]">{goal.label}</span>
             </label>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="maritalStatus" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+      <div className="grid grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <label htmlFor="maritalStatus" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
             Marital Status
           </label>
-          <select
+          <Select
             id="maritalStatus"
             value={maritalStatus}
             onChange={(e) => onMaritalStatusChange(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-colors"
-          >
-            <option value="">Select status</option>
-            <option value="Single">Single</option>
-            <option value="Married">Married</option>
-            <option value="Divorced">Divorced</option>
-            <option value="Widowed">Widowed</option>
-          </select>
+            options={MARITAL_STATUS_OPTIONS}
+            className="w-full"
+          />
         </div>
 
-        <div>
-          <label htmlFor="dependents" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+        <div className="space-y-2">
+          <label htmlFor="dependents" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
             Dependents
           </label>
           <input
@@ -105,27 +118,22 @@ export function InvestmentProfileSection({
             min="0"
             value={dependents}
             onChange={(e) => onDependentsChange(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-colors"
+            className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
           />
         </div>
       </div>
 
-      <div className="mt-4">
-        <label htmlFor="hearAbout" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+      <div className="space-y-2">
+        <label htmlFor="hearAbout" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
           How did you hear about Donum?
         </label>
-        <select
+        <Select
           id="hearAbout"
           value={hearAbout}
           onChange={(e) => onHearAboutChange(e.target.value)}
-          className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-        >
-          <option value="">Select option</option>
-          <option value="Google">Google Search</option>
-          <option value="Referral">Referral</option>
-          <option value="Social Media">Social Media</option>
-          <option value="Other">Other</option>
-        </select>
+          options={HEAR_ABOUT_OPTIONS}
+          className="w-full"
+        />
       </div>
     </div>
   );

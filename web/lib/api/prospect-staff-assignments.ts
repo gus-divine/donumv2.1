@@ -31,7 +31,6 @@ export interface UpdateProspectStaffAssignmentInput {
  * Get all active staff assignments for a prospect
  */
 export async function getProspectStaffAssignments(prospectId: string): Promise<ProspectStaffAssignment[]> {
-  console.log('[Prospect Staff Assignments API] Fetching assignments for prospect:', { prospectId });
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('prospect_staff_assignments')
@@ -52,7 +51,6 @@ export async function getProspectStaffAssignments(prospectId: string): Promise<P
     throw new Error(`Failed to fetch prospect staff assignments: ${error.message}`);
   }
 
-  console.log('[Prospect Staff Assignments API] Assignments fetched:', { prospectId, count: data?.length || 0 });
   return data || [];
 }
 
@@ -60,7 +58,6 @@ export async function getProspectStaffAssignments(prospectId: string): Promise<P
  * Get all prospects assigned to a staff member
  */
 export async function getStaffProspectAssignments(staffId: string): Promise<ProspectStaffAssignment[]> {
-  console.log('[Prospect Staff Assignments API] Fetching assignments for staff:', { staffId });
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('prospect_staff_assignments')
@@ -88,11 +85,6 @@ export async function getStaffProspectAssignments(staffId: string): Promise<Pros
  * Assign a staff member to a prospect
  */
 export async function assignStaffToProspect(input: CreateProspectStaffAssignmentInput): Promise<ProspectStaffAssignment> {
-  console.log('[Prospect Staff Assignments API] Assigning staff to prospect:', { 
-    prospectId: input.prospect_id, 
-    staffId: input.staff_id,
-    isPrimary: input.is_primary 
-  });
   const supabase = createSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -144,7 +136,6 @@ export async function assignStaffToProspect(input: CreateProspectStaffAssignment
       throw new Error(`Failed to update assignment: ${error.message}`);
     }
 
-    console.log('[Prospect Staff Assignments API] Assignment updated:', { id: data.id });
     return data;
   }
 
@@ -173,7 +164,6 @@ export async function assignStaffToProspect(input: CreateProspectStaffAssignment
     throw new Error(`Failed to assign staff: ${error.message}`);
   }
 
-  console.log('[Prospect Staff Assignments API] Assignment created:', { id: data.id });
   return data;
 }
 
@@ -184,7 +174,6 @@ export async function updateProspectStaffAssignment(
   assignmentId: string,
   input: UpdateProspectStaffAssignmentInput
 ): Promise<ProspectStaffAssignment> {
-  console.log('[Prospect Staff Assignments API] Updating assignment:', { assignmentId, input });
   const supabase = createSupabaseClient();
 
   // If setting as primary, unset any existing primary assignment for this prospect
@@ -234,7 +223,6 @@ export async function updateProspectStaffAssignment(
     throw new Error(`Failed to update assignment: ${error.message}`);
   }
 
-  console.log('[Prospect Staff Assignments API] Assignment updated:', { id: data.id });
   return data;
 }
 
@@ -245,10 +233,6 @@ export async function unassignStaffFromProspect(
   prospectId: string,
   staffId: string
 ): Promise<void> {
-  console.log('[Prospect Staff Assignments API] Unassigning staff from prospect:', { 
-    prospectId, 
-    staffId 
-  });
   const supabase = createSupabaseClient();
 
   // Find the active assignment
@@ -281,15 +265,12 @@ export async function unassignStaffFromProspect(
     });
     throw new Error(`Failed to unassign staff: ${error.message}`);
   }
-
-  console.log('[Prospect Staff Assignments API] Staff unassigned successfully');
 }
 
 /**
  * Get primary staff for a prospect
  */
 export async function getPrimaryStaffForProspect(prospectId: string): Promise<ProspectStaffAssignment | null> {
-  console.log('[Prospect Staff Assignments API] Fetching primary staff for prospect:', { prospectId });
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('prospect_staff_assignments')

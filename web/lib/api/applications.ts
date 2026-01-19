@@ -135,13 +135,10 @@ export const APPLICATION_STATUS_COLORS: Record<ApplicationStatus, string> = {
 export async function getApplications(filters?: ApplicationFilters): Promise<Application[]> {
   const supabase = createSupabaseClient();
   
+  // Fetch applications without relationships to avoid caching
   let query = supabase
     .from('applications')
-    .select(`
-      *,
-      applicant:donum_accounts!applications_applicant_id_fkey(id, email, first_name, last_name, name),
-      primary_staff:donum_accounts!applications_primary_staff_id_fkey(id, email, first_name, last_name, name)
-    `)
+    .select('*')
     .order('created_at', { ascending: false });
 
   if (filters) {
@@ -170,7 +167,10 @@ export async function getApplications(filters?: ApplicationFilters): Promise<App
     }
 
     if (filters.search) {
-      query = query.or(`application_number.ilike.%${filters.search}%,applicant:donum_accounts.email.ilike.%${filters.search}%,applicant:donum_accounts.first_name.ilike.%${filters.search}%,applicant:donum_accounts.last_name.ilike.%${filters.search}%`);
+      // For search, we need to join with donum_accounts to search by name/email
+      // But we'll fetch fresh data after
+      query = query.or(`application_number.ilike.%${filters.search}%`);
+      // Note: We'll filter by applicant name/email after fetching fresh applicant data
     }
   }
 
@@ -181,19 +181,59 @@ export async function getApplications(filters?: ApplicationFilters): Promise<App
     throw new Error(`Failed to fetch applications: ${error.message}`);
   }
 
+  // Always fetch fresh applicant data directly to avoid caching
+  if (data && data.length > 0) {
+    const applicantIds = [...new Set(data.map((app: any) => app.applicant_id).filter(Boolean))];
+    const staffIds = [...new Set(data.map((app: any) => app.primary_staff_id).filter(Boolean))];
+    const allUserIds = [...new Set([...applicantIds, ...staffIds])];
+    
+    if (allUserIds.length > 0) {
+      const { data: usersData } = await supabase
+        .from('donum_accounts')
+        .select('id, email, first_name, last_name, name')
+        .in('id', allUserIds);
+      
+      if (usersData) {
+        const usersMap = new Map(usersData.map((u: any) => [u.id, u]));
+        
+        data.forEach((app: any) => {
+          if (app.applicant_id && usersMap.has(app.applicant_id)) {
+            app.applicant = usersMap.get(app.applicant_id);
+          }
+          if (app.primary_staff_id && usersMap.has(app.primary_staff_id)) {
+            app.primary_staff = usersMap.get(app.primary_staff_id);
+          }
+        });
+      }
+    }
+    
+    // Apply search filter on applicant name/email if needed
+    if (filters?.search) {
+      const searchLower = filters.search.toLowerCase();
+      return data.filter((app: any) => {
+        const applicant = app.applicant;
+        if (!applicant) return false;
+        return (
+          app.application_number?.toLowerCase().includes(searchLower) ||
+          applicant.email?.toLowerCase().includes(searchLower) ||
+          applicant.first_name?.toLowerCase().includes(searchLower) ||
+          applicant.last_name?.toLowerCase().includes(searchLower) ||
+          applicant.name?.toLowerCase().includes(searchLower)
+        );
+      }) as Application[];
+    }
+  }
+
   return (data || []) as Application[];
 }
 
 export async function getApplication(id: string): Promise<Application | null> {
   const supabase = createSupabaseClient();
 
+  // Fetch application without relationship to avoid caching
   const { data, error } = await supabase
     .from('applications')
-    .select(`
-      *,
-      applicant:donum_accounts!applications_applicant_id_fkey(id, email, first_name, last_name, name),
-      primary_staff:donum_accounts!applications_primary_staff_id_fkey(id, email, first_name, last_name, name)
-    `)
+    .select('*')
     .eq('id', id)
     .single();
 
@@ -203,6 +243,34 @@ export async function getApplication(id: string): Promise<Application | null> {
     }
     console.error('Error fetching application:', error);
     throw new Error(`Failed to fetch application: ${error.message}`);
+  }
+
+  // Always fetch fresh applicant data directly
+  if (data && (data as any).applicant_id) {
+    const { data: applicantData, error: applicantError } = await supabase
+      .from('donum_accounts')
+      .select('id, email, first_name, last_name, name')
+      .eq('id', (data as any).applicant_id)
+      .single();
+    
+    if (applicantError) {
+      console.error('[Applications API] Error fetching applicant:', applicantError);
+    } else if (applicantData) {
+      (data as any).applicant = applicantData;
+    }
+  }
+
+  // Fetch primary staff if exists
+  if (data && (data as any).primary_staff_id) {
+    const { data: staffData } = await supabase
+      .from('donum_accounts')
+      .select('id, email, first_name, last_name, name')
+      .eq('id', (data as any).primary_staff_id)
+      .single();
+    
+    if (staffData) {
+      (data as any).primary_staff = staffData;
+    }
   }
 
   return data as Application;
@@ -299,20 +367,48 @@ export async function updateApplication(id: string, input: UpdateApplicationInpu
     }
   }
 
+  // Update without relationship query to avoid caching
   const { data, error } = await supabase
     .from('applications')
     .update(updateData)
     .eq('id', id)
-    .select(`
-      *,
-      applicant:donum_accounts!applications_applicant_id_fkey(id, email, first_name, last_name, name),
-      primary_staff:donum_accounts!applications_primary_staff_id_fkey(id, email, first_name, last_name, name)
-    `)
+    .select('*')
     .single();
 
   if (error) {
     console.error('Error updating application:', error);
     throw new Error(`Failed to update application: ${error.message}`);
+  }
+
+  // Always fetch fresh applicant data directly with a delay to ensure user update has propagated
+  if (data && (data as any).applicant_id) {
+    // Small delay to ensure the user update has propagated
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    const { data: applicantData, error: applicantError } = await supabase
+      .from('donum_accounts')
+      .select('id, email, first_name, last_name, name')
+      .eq('id', (data as any).applicant_id)
+      .single();
+    
+    if (applicantError) {
+      console.error('[Applications API] Error fetching applicant:', applicantError);
+    } else if (applicantData) {
+      (data as any).applicant = applicantData;
+    }
+  }
+
+  // Fetch primary staff if exists
+  if (data && (data as any).primary_staff_id) {
+    const { data: staffData } = await supabase
+      .from('donum_accounts')
+      .select('id, email, first_name, last_name, name')
+      .eq('id', (data as any).primary_staff_id)
+      .single();
+    
+    if (staffData) {
+      (data as any).primary_staff = staffData;
+    }
   }
 
   return data as Application;

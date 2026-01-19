@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { getUsers, type User, type UserFilters } from '@/lib/api/users';
 import { useAuth } from '@/lib/auth/auth-context';
 import { usePermissions } from '@/lib/hooks/usePermissions';
-import { USER_ROLES } from '@/lib/api/users';
-import { ProspectStaffAssignment } from '@/components/admin/shared/ProspectStaffAssignment';
 import { getProspectStaffAssignments } from '@/lib/api/prospect-staff-assignments';
 import { Select } from '@/components/ui/select';
 import { getApplications } from '@/lib/api/applications';
@@ -19,21 +17,20 @@ interface ProspectListProps {
 export function ProspectList({ filters, onFiltersChange }: ProspectListProps) {
   const router = useRouter();
   const { session, loading: authLoading } = useAuth();
-  const { canEdit } = usePermissions('/admin/prospects');
   const [prospects, setProspects] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [localSearchTerm, setLocalSearchTerm] = useState(filters?.search || '');
   const [searchTerm, setSearchTerm] = useState(filters?.search || '');
-  const [roleFilter, setRoleFilter] = useState<UserFilters['role']>(filters?.role);
   const [statusFilter, setStatusFilter] = useState<UserFilters['status']>(filters?.status);
-  const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
-  const [selectedProspectName, setSelectedProspectName] = useState<string>('');
   const [applicationCounts, setApplicationCounts] = useState<Record<string, number>>({});
+  const [staffAssignments, setStaffAssignments] = useState<Record<string, any[]>>({});
+  const [staffUsers, setStaffUsers] = useState<User[]>([]);
+  const [prospectDepartments, setProspectDepartments] = useState<Record<string, string[]>>({});
   const loadingRef = useRef(false);
 
   // Prospect roles that should be shown in this list
-  const prospectRoles: string[] = ['donum_prospect', 'donum_lead', 'donum_member'];
+  const prospectRoles: string[] = ['donum_prospect', 'donum_member'];
 
   const loadProspects = useCallback(async () => {
     if (loadingRef.current) {
@@ -47,7 +44,6 @@ export function ProspectList({ filters, onFiltersChange }: ProspectListProps) {
       
       const currentFilters: UserFilters = {
         search: searchTerm || undefined,
-        role: roleFilter,
         status: statusFilter,
         department: filters?.department,
       };
@@ -59,20 +55,55 @@ export function ProspectList({ filters, onFiltersChange }: ProspectListProps) {
       
       setProspects(prospectUsers);
 
-      // Load application counts for each prospect
+      // Load application counts and staff assignments for each prospect
       const counts: Record<string, number> = {};
+      const assignments: Record<string, any[]> = {};
+      
+      // Load all staff users once (including admins and super admins who can also be assigned)
+      const allUsersForStaff = await getUsers();
+      const allStaffUsers = allUsersForStaff.filter(user => 
+        user.role === 'donum_staff' || 
+        user.role === 'donum_admin' || 
+        user.role === 'donum_super_admin'
+      );
+      setStaffUsers(allStaffUsers);
+      
+      const departmentsMap: Record<string, string[]> = {};
+      
       await Promise.all(
         prospectUsers.map(async (prospect) => {
           try {
-            const applications = await getApplications({ applicant_id: prospect.id });
+            const [applications, prospectAssignments] = await Promise.all([
+              getApplications({ applicant_id: prospect.id }),
+              getProspectStaffAssignments(prospect.id).catch(() => [])
+            ]);
             counts[prospect.id] = applications.length;
+            assignments[prospect.id] = prospectAssignments.filter(a => a.is_active);
+            
+            // Get departments from assigned staff members
+            const activeAssignments = prospectAssignments.filter(a => a.is_active);
+            const assignedStaffIds = activeAssignments.map(a => a.staff_id);
+            const assignedStaff = allStaffUsers.filter(s => assignedStaffIds.includes(s.id));
+            
+            // Collect all unique departments from assigned staff
+            const deptSet = new Set<string>();
+            assignedStaff.forEach(staff => {
+              if (staff.departments && Array.isArray(staff.departments)) {
+                staff.departments.forEach(dept => deptSet.add(dept));
+              }
+            });
+            departmentsMap[prospect.id] = Array.from(deptSet);
           } catch (err) {
-            console.error(`[ProspectList] Error loading applications for prospect ${prospect.id}:`, err);
+            console.error(`[ProspectList] Error loading data for prospect ${prospect.id}:`, err);
             counts[prospect.id] = 0;
+            assignments[prospect.id] = [];
+            departmentsMap[prospect.id] = [];
           }
         })
       );
       setApplicationCounts(counts);
+      setStaffAssignments(assignments);
+      setProspectDepartments(departmentsMap);
       
       if (onFiltersChange) {
         onFiltersChange(currentFilters);
@@ -84,7 +115,7 @@ export function ProspectList({ filters, onFiltersChange }: ProspectListProps) {
       setLoading(false);
       loadingRef.current = false;
     }
-  }, [searchTerm, roleFilter, statusFilter, filters?.department, onFiltersChange]);
+  }, [searchTerm, statusFilter, filters?.department, onFiltersChange]);
 
   useEffect(() => {
     if (!authLoading && session) {
@@ -95,9 +126,9 @@ export function ProspectList({ filters, onFiltersChange }: ProspectListProps) {
     }
   }, [authLoading, session, loadProspects]);
 
-  function handleViewApplications(prospect: User) {
-    // Navigate to applications page with applicant_id filter
-    router.push(`/admin/applications?applicant_id=${prospect.id}`);
+  function handleViewProspect(prospect: User) {
+    // Navigate to prospect detail page
+    router.push(`/admin/prospects/${prospect.id}`);
   }
 
   function handleAssignStaff(prospect: User) {
@@ -120,14 +151,6 @@ export function ProspectList({ filters, onFiltersChange }: ProspectListProps) {
     setSearchTerm(localSearchTerm);
   }
 
-  function handleRoleFilterChange(value: string) {
-    if (value === 'all') {
-      setRoleFilter(undefined);
-    } else {
-      setRoleFilter(value as UserFilters['role']);
-    }
-  }
-
   function handleStatusFilterChange(value: string) {
     if (value === 'all') {
       setStatusFilter(undefined);
@@ -139,7 +162,6 @@ export function ProspectList({ filters, onFiltersChange }: ProspectListProps) {
   function handleClearFilters() {
     setLocalSearchTerm('');
     setSearchTerm('');
-    setRoleFilter(undefined);
     setStatusFilter(undefined);
   }
 
@@ -183,22 +205,6 @@ export function ProspectList({ filters, onFiltersChange }: ProspectListProps) {
               </div>
             </div>
           </form>
-
-          {/* Role Filter */}
-          <Select
-            id="prospect-role-filter"
-            name="prospect-role-filter"
-            value={roleFilter || 'all'}
-            onChange={(e) => handleRoleFilterChange(e.target.value)}
-            options={[
-              { value: 'all', label: 'All Roles' },
-              ...USER_ROLES.filter(r => prospectRoles.includes(r.value)).map(role => ({
-                value: role.value,
-                label: role.label
-              }))
-            ]}
-            className="w-40"
-          />
 
           {/* Status Filter */}
           <Select
@@ -253,13 +259,10 @@ export function ProspectList({ filters, onFiltersChange }: ProspectListProps) {
               <tr className="border-b border-[var(--border)]">
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Name</th>
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Email</th>
-                <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Role</th>
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Status</th>
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Applications</th>
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Departments</th>
-                {canEdit('/admin/prospects') && (
-                  <th className="text-right p-4 text-sm font-semibold text-[var(--text-primary)]">Actions</th>
-                )}
+                <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Staff</th>
               </tr>
             </thead>
             <tbody>
@@ -273,53 +276,72 @@ export function ProspectList({ filters, onFiltersChange }: ProspectListProps) {
                   <tr 
                     key={prospect.id} 
                     className="border-b border-[var(--border)] hover:bg-[var(--surface-hover)] cursor-pointer"
-                    onClick={() => handleViewApplications(prospect)}
+                    onClick={() => handleViewProspect(prospect)}
                   >
                     <td className="p-4">
                       <div className="font-medium text-[var(--text-primary)]">{name}</div>
                     </td>
                     <td className="p-4 text-[var(--text-secondary)] text-sm">{prospect.email}</td>
-                    <td className="p-4 text-[var(--text-secondary)] text-sm">
-                      {USER_ROLES.find(r => r.value === prospect.role)?.label || prospect.role}
-                    </td>
                     <td className="p-4">
-                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                      <span className={`inline-flex items-center text-xs font-medium ${
                         prospect.status === 'active'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                          ? 'text-green-600 dark:text-green-400'
                           : prospect.status === 'inactive'
-                          ? 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
-                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                          ? 'text-gray-600 dark:text-gray-400'
+                          : 'text-yellow-600 dark:text-yellow-400'
                       }`}>
                         {prospect.status || 'active'}
                       </span>
                     </td>
                     <td className="p-4 text-[var(--text-secondary)] text-sm">
                       {appCount > 0 ? (
-                        <span className="font-medium text-[var(--text-primary)]">{appCount}</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/admin/applications?applicant_id=${prospect.id}`);
+                          }}
+                          className="font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 hover:underline transition-colors"
+                        >
+                          {appCount}
+                        </button>
                       ) : (
                         <span className="text-[var(--text-secondary)]">-</span>
                       )}
                     </td>
                     <td className="p-4 text-[var(--text-secondary)] text-sm">
-                      {prospect.departments && prospect.departments.length > 0
-                        ? prospect.departments.join(', ')
+                      {prospectDepartments[prospect.id] && prospectDepartments[prospect.id].length > 0
+                        ? prospectDepartments[prospect.id].join(', ')
                         : '-'}
                     </td>
-                    {canEdit('/admin/prospects') && (
-                      <td className="p-4">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAssignStaff(prospect);
-                            }}
-                            className="px-3 py-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded"
-                          >
-                            Assign Staff
-                          </button>
-                        </div>
-                      </td>
-                    )}
+                    <td className="p-4 text-[var(--text-secondary)] text-sm">
+                      {(() => {
+                        const assignments = staffAssignments[prospect.id] || [];
+                        if (assignments.length === 0) {
+                          return <span className="text-[var(--text-secondary)]">-</span>;
+                        }
+                        const staffNames = assignments
+                          .map(assignment => {
+                            const staff = staffUsers.find(s => s.id === assignment.staff_id);
+                            return staff?.name || 
+                                   (staff?.first_name || staff?.last_name
+                                     ? `${staff.first_name || ''} ${staff.last_name || ''}`.trim()
+                                     : staff?.email || 'Unknown');
+                          })
+                          .filter(Boolean);
+                        return (
+                          <div className="space-y-1">
+                            {staffNames.map((name, idx) => (
+                              <div key={idx} className="text-sm">
+                                {assignments[idx]?.is_primary && (
+                                  <span className="text-xs text-[var(--text-secondary)] mr-1">•</span>
+                                )}
+                                {name}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </td>
                   </tr>
                 );
               })}
@@ -328,15 +350,6 @@ export function ProspectList({ filters, onFiltersChange }: ProspectListProps) {
         </div>
       )}
 
-      {/* Staff Assignment Modal */}
-      {selectedProspectId && (
-        <ProspectStaffAssignment
-          prospectId={selectedProspectId}
-          prospectName={selectedProspectName}
-          onClose={handleCloseAssignment}
-          onUpdate={loadProspects}
-        />
-      )}
     </div>
   );
 }

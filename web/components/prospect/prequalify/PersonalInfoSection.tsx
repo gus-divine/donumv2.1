@@ -42,12 +42,10 @@ export function PersonalInfoSection({
   onZipCodeChange,
 }: PersonalInfoSectionProps) {
   return (
-    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-      <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">Personal Information</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="firstName" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <label htmlFor="firstName" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
             First Name <span className="text-red-500">*</span>
           </label>
           <input
@@ -55,13 +53,13 @@ export function PersonalInfoSection({
             type="text"
             value={firstName}
             onChange={(e) => onFirstNameChange(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-colors"
+            className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
             required
           />
         </div>
 
-        <div>
-          <label htmlFor="lastName" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+        <div className="space-y-2">
+          <label htmlFor="lastName" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
             Last Name <span className="text-red-500">*</span>
           </label>
           <input
@@ -69,13 +67,13 @@ export function PersonalInfoSection({
             type="text"
             value={lastName}
             onChange={(e) => onLastNameChange(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-colors"
+            className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
             required
           />
         </div>
 
-        <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+        <div className="space-y-2">
+          <label htmlFor="phone" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
             Phone Number <span className="text-red-500">*</span>
           </label>
           <input
@@ -83,14 +81,14 @@ export function PersonalInfoSection({
             type="tel"
             value={phone}
             onChange={(e) => onPhoneChange(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-colors"
+            className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
             placeholder="(555) 123-4567"
             required
           />
         </div>
 
-        <div>
-          <label htmlFor="dateOfBirth" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+        <div className="space-y-2">
+          <label htmlFor="dateOfBirth" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
             Date of Birth
           </label>
           <input
@@ -98,13 +96,13 @@ export function PersonalInfoSection({
             type="date"
             value={dateOfBirth}
             onChange={(e) => onDateOfBirthChange(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-colors"
+            className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
           />
         </div>
       </div>
 
-      <div className="mt-4">
-        <label htmlFor="addressLine1" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+      <div className="space-y-2">
+        <label htmlFor="addressLine1" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
           Address Line 1
         </label>
         <input
@@ -112,12 +110,12 @@ export function PersonalInfoSection({
           type="text"
           value={addressLine1}
           onChange={(e) => onAddressLine1Change(e.target.value)}
-          className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
+          className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
         />
       </div>
 
-      <div className="mt-4">
-        <label htmlFor="addressLine2" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+      <div className="space-y-2">
+        <label htmlFor="addressLine2" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
           Address Line 2
         </label>
         <input
@@ -125,13 +123,13 @@ export function PersonalInfoSection({
           type="text"
           value={addressLine2}
           onChange={(e) => onAddressLine2Change(e.target.value)}
-          className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
+          className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-        <div>
-          <label htmlFor="city" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-2">
+          <label htmlFor="city" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
             City
           </label>
           <input
@@ -139,12 +137,12 @@ export function PersonalInfoSection({
             type="text"
             value={city}
             onChange={(e) => onCityChange(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-colors"
+            className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
           />
         </div>
 
-        <div>
-          <label htmlFor="state" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+        <div className="space-y-2">
+          <label htmlFor="state" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
             State
           </label>
           <input
@@ -152,12 +150,12 @@ export function PersonalInfoSection({
             type="text"
             value={state}
             onChange={(e) => onStateChange(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-colors"
+            className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
           />
         </div>
 
-        <div>
-          <label htmlFor="zipCode" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+        <div className="space-y-2">
+          <label htmlFor="zipCode" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
             ZIP Code
           </label>
           <input
@@ -165,7 +163,7 @@ export function PersonalInfoSection({
             type="text"
             value={zipCode}
             onChange={(e) => onZipCodeChange(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-colors"
+            className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
           />
         </div>
       </div>

@@ -68,10 +68,8 @@ export default function DocumentList({ filters, showActions = true, onDocumentUp
 
   const handleDelete = async (documentId: string) => {
     try {
-      console.log('[DocumentList] Deleting document:', { documentId });
       setDeletingId(documentId);
       await deleteDocument(documentId);
-      console.log('[DocumentList] Document deleted, reloading list...');
       await loadDocuments();
       onDocumentUpdate?.();
     } catch (err) {

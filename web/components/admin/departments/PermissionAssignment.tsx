@@ -27,7 +27,6 @@ export function PermissionAssignment({ department, onClose }: PermissionAssignme
 
   async function loadPermissions() {
     try {
-      console.log('[PermissionAssignment] Loading permissions for department:', { departmentName: department.name });
       setLoading(true);
       setError(null);
       const existing = await getDepartmentPermissions(department.name);
@@ -43,11 +42,6 @@ export function PermissionAssignment({ department, onClose }: PermissionAssignme
         };
       });
       
-      console.log('[PermissionAssignment] Permissions loaded:', { 
-        departmentName: department.name, 
-        existingCount: existing.length,
-        totalPages: ADMIN_PAGES.length 
-      });
       setPermissions(permMap);
     } catch (err) {
       console.error('[PermissionAssignment] Error loading permissions:', err);
@@ -58,12 +52,6 @@ export function PermissionAssignment({ department, onClose }: PermissionAssignme
   }
 
   function updatePermission(pagePath: string, field: 'can_view' | 'can_edit' | 'can_delete', value: boolean) {
-    console.log('[PermissionAssignment] Updating permission:', { 
-      departmentName: department.name, 
-      pagePath, 
-      field, 
-      value 
-    });
     setPermissions((prev) => ({
       ...prev,
       [pagePath]: {
@@ -77,12 +65,10 @@ export function PermissionAssignment({ department, onClose }: PermissionAssignme
 
   async function handleSave() {
     try {
-      console.log('[PermissionAssignment] Saving permissions for department:', { departmentName: department.name });
       setSaving(true);
       setError(null);
       const permArray = Object.values(permissions);
       await updateDepartmentPermissions(department.name, permArray);
-      console.log('[PermissionAssignment] Permissions saved successfully');
       onClose();
     } catch (err) {
       console.error('[PermissionAssignment] Error saving permissions:', err);

@@ -15,12 +15,12 @@ interface AdminLayoutProps {
 function getPageTitle(pathname: string): string {
   const titleMap: Record<string, string> = {
     '/admin/dashboard': 'Admin Dashboard',
-    '/admin/users': 'User Management',
-    '/admin/staff': 'Staff Management',
-    '/admin/members': 'Member Management',
-    '/admin/applications': 'Application Management',
-    '/admin/loans': 'Loan Management',
-    '/admin/departments': 'Department Management',
+    '/admin/users': 'Users',
+    '/admin/staff': 'Staff',
+    '/admin/members': 'Members',
+    '/admin/applications': 'Applications',
+    '/admin/loans': 'Loans',
+    '/admin/departments': 'Departments',
     '/admin/finance': 'Financial Overview',
     '/admin/system': 'System Health',
   };

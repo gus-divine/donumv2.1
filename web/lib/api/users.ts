@@ -132,7 +132,6 @@ export interface UserFilters {
 }
 
 export async function getUsers(filters?: UserFilters): Promise<User[]> {
-  console.log('[Users API] Fetching users...', { filters });
   const supabase = createSupabaseClient();
   
   let query = supabase
@@ -168,12 +167,10 @@ export async function getUsers(filters?: UserFilters): Promise<User[]> {
     throw new Error(`Failed to fetch users: ${error.message}`);
   }
 
-  console.log('[Users API] Users fetched successfully:', { count: data?.length || 0 });
   return data || [];
 }
 
 export async function getUser(id: string): Promise<User | null> {
-  console.log('[Users API] Fetching user:', { id });
   const supabase = createSupabaseClient();
   const { data, error } = await supabase
     .from('donum_accounts')
@@ -192,12 +189,10 @@ export async function getUser(id: string): Promise<User | null> {
     return null;
   }
 
-  console.log('[Users API] User fetched:', { id, email: data?.email });
   return data;
 }
 
 export async function createUser(input: CreateUserInput): Promise<User> {
-  console.log('[Users API] Creating user:', { email: input.email, role: input.role });
   const supabase = createSupabaseClient();
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -218,12 +213,10 @@ export async function createUser(input: CreateUserInput): Promise<User> {
     throw new Error(data.error || 'Failed to create user');
   }
 
-  console.log('[Users API] User created successfully:', { id: data.id, email: data.email });
   return data;
 }
 
 export async function updateUser(id: string, input: UpdateUserInput): Promise<User> {
-  console.log('[Users API] Updating user:', { id, updates: input });
   const supabase = createSupabaseClient();
   const { data: { user: currentUser } } = await supabase.auth.getUser();
 
@@ -231,60 +224,96 @@ export async function updateUser(id: string, input: UpdateUserInput): Promise<Us
     updated_at: new Date().toISOString(),
   };
 
-  if (input.email !== undefined) updateData.email = input.email;
+  // Helper to convert empty strings to null
+  const nullIfEmpty = (value: string | undefined): string | null | undefined => {
+    if (value === undefined) return undefined;
+    return value === '' ? null : value;
+  };
+
+  if (input.email !== undefined) updateData.email = nullIfEmpty(input.email) ?? input.email;
   if (input.role !== undefined) updateData.role = input.role;
   if (input.status !== undefined) updateData.status = input.status;
-  if (input.first_name !== undefined) updateData.first_name = input.first_name;
-  if (input.last_name !== undefined) updateData.last_name = input.last_name;
-  if (input.phone !== undefined) updateData.phone = input.phone;
-  if (input.cell_phone !== undefined) updateData.cell_phone = input.cell_phone;
-  if (input.date_of_birth !== undefined) updateData.date_of_birth = input.date_of_birth;
-  if (input.address_line_1 !== undefined) updateData.address_line_1 = input.address_line_1;
-  if (input.address_line_2 !== undefined) updateData.address_line_2 = input.address_line_2;
-  if (input.city !== undefined) updateData.city = input.city;
-  if (input.state !== undefined) updateData.state = input.state;
-  if (input.zip_code !== undefined) updateData.zip_code = input.zip_code;
-  if (input.country !== undefined) updateData.country = input.country;
-  if (input.company !== undefined) updateData.company = input.company;
-  if (input.title !== undefined) updateData.title = input.title;
-  if (input.job_title !== undefined) updateData.job_title = input.job_title;
-  if (input.annual_income !== undefined) updateData.annual_income = input.annual_income;
-  if (input.net_worth !== undefined) updateData.net_worth = input.net_worth;
-  if (input.tax_bracket !== undefined) updateData.tax_bracket = input.tax_bracket;
-  if (input.risk_tolerance !== undefined) updateData.risk_tolerance = input.risk_tolerance;
-  if (input.investment_goals !== undefined) updateData.investment_goals = input.investment_goals;
-  if (input.marital_status !== undefined) updateData.marital_status = input.marital_status;
-  if (input.dependents !== undefined) updateData.dependents = input.dependents;
+  if (input.first_name !== undefined) {
+    const processedValue = nullIfEmpty(input.first_name);
+    updateData.first_name = processedValue;
+  }
+  if (input.last_name !== undefined) {
+    const processedValue = nullIfEmpty(input.last_name);
+    updateData.last_name = processedValue;
+  }
+  if (input.phone !== undefined) updateData.phone = nullIfEmpty(input.phone);
+  if (input.cell_phone !== undefined) updateData.cell_phone = nullIfEmpty(input.cell_phone);
+  if (input.date_of_birth !== undefined) updateData.date_of_birth = input.date_of_birth || null;
+  if (input.address_line_1 !== undefined) updateData.address_line_1 = nullIfEmpty(input.address_line_1);
+  if (input.address_line_2 !== undefined) updateData.address_line_2 = nullIfEmpty(input.address_line_2);
+  if (input.city !== undefined) updateData.city = nullIfEmpty(input.city);
+  if (input.state !== undefined) updateData.state = nullIfEmpty(input.state);
+  if (input.zip_code !== undefined) updateData.zip_code = nullIfEmpty(input.zip_code);
+  if (input.country !== undefined) updateData.country = nullIfEmpty(input.country);
+  if (input.company !== undefined) updateData.company = nullIfEmpty(input.company);
+  if (input.title !== undefined) updateData.title = nullIfEmpty(input.title);
+  if (input.job_title !== undefined) updateData.job_title = nullIfEmpty(input.job_title);
+  if (input.annual_income !== undefined) updateData.annual_income = input.annual_income ?? null;
+  if (input.net_worth !== undefined) updateData.net_worth = input.net_worth ?? null;
+  if (input.tax_bracket !== undefined) updateData.tax_bracket = nullIfEmpty(input.tax_bracket);
+  if (input.risk_tolerance !== undefined) updateData.risk_tolerance = nullIfEmpty(input.risk_tolerance);
+  if (input.investment_goals !== undefined) updateData.investment_goals = input.investment_goals ?? null;
+  if (input.marital_status !== undefined) updateData.marital_status = nullIfEmpty(input.marital_status);
+  if (input.dependents !== undefined) updateData.dependents = input.dependents ?? null;
   if (input.departments !== undefined) updateData.departments = input.departments;
-  if (input.admin_level !== undefined) updateData.admin_level = input.admin_level;
-  if (input.timezone !== undefined) updateData.timezone = input.timezone;
-  if (input.language !== undefined) updateData.language = input.language;
-  if (input.notes !== undefined) updateData.notes = input.notes;
+  if (input.admin_level !== undefined) updateData.admin_level = nullIfEmpty(input.admin_level);
+  if (input.timezone !== undefined) updateData.timezone = nullIfEmpty(input.timezone);
+  if (input.language !== undefined) updateData.language = nullIfEmpty(input.language);
+  if (input.notes !== undefined) updateData.notes = nullIfEmpty(input.notes);
 
-  const { data, error } = await supabase
+  // Perform the update without .single() to avoid coercion errors if RLS blocks or no rows match
+  const { error: updateError } = await supabase
     .from('donum_accounts')
     .update(updateData)
-    .eq('id', id)
-    .select()
-    .single();
+    .eq('id', id);
 
-  if (error) {
+  if (updateError) {
     console.error('[Users API] Error updating user:', {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint,
+      message: updateError.message,
+      code: updateError.code,
+      details: updateError.details,
+      hint: updateError.hint,
       id,
+      updateData,
     });
-    throw new Error(`Failed to update user: ${error.message}`);
+    throw new Error(`Failed to update user: ${updateError.message}`);
   }
 
-  console.log('[Users API] User updated successfully:', { id: data.id, email: data.email });
+  // Small delay to ensure database has propagated
+  await new Promise(resolve => setTimeout(resolve, 200));
+
+  // Then fetch the updated user separately to get all fields
+  const { data, error: selectError } = await supabase
+    .from('donum_accounts')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (selectError) {
+    console.error('[Users API] Error fetching updated user:', {
+      message: selectError.message,
+      code: selectError.code,
+      details: selectError.details,
+      hint: selectError.hint,
+      id,
+    });
+    throw new Error(`Failed to fetch updated user: ${selectError.message}`);
+  }
+
+  if (!data) {
+    console.error('[Users API] User not found after update:', { id });
+    throw new Error(`User not found after update: ${id}`);
+  }
+
   return data;
 }
 
 export async function deleteUser(id: string): Promise<void> {
-  console.log('[Users API] Deleting user:', { id });
   const supabase = createSupabaseClient();
 
   // Delete from donum_accounts (this will cascade delete related records)
@@ -309,13 +338,9 @@ export async function deleteUser(id: string): Promise<void> {
   // Note: Auth user deletion should be handled via API route
   // The donum_accounts record is deleted, auth user will need manual cleanup
   // or API route implementation
-
-  console.log('[Users API] User account deleted successfully:', { id });
-  console.warn('[Users API] Note: Auth user deletion requires API route with service role key');
 }
 
 export async function updateUserPassword(id: string, newPassword: string): Promise<void> {
-  console.log('[Users API] Updating user password:', { id });
   // Note: Password updates require API route with service role key
   // TODO: Create API route /api/admin/users/[id]/password for password updates
   throw new Error('Password updates require API route with service role key. Not implemented yet.');

@@ -19,6 +19,7 @@ import { getAllPlans, type DonumPlan } from '@/lib/api/plans';
 import { 
   getActiveApplicationPlan, 
   assignPlanToApplication,
+  deleteApplicationPlan,
   type ApplicationPlan 
 } from '@/lib/api/application-plans';
 import { Select } from '@/components/ui/select';
@@ -53,7 +54,6 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
   const [loadingData, setLoadingData] = useState(true);
   const [showStaffAssignment, setShowStaffAssignment] = useState(false);
   const [prospectAssignments, setProspectAssignments] = useState<any[]>([]);
-  const [isEditingStatus, setIsEditingStatus] = useState(false);
   const [isAddingAssignment, setIsAddingAssignment] = useState(false);
   const [selectedAssignmentDepartment, setSelectedAssignmentDepartment] = useState<string>('');
   const [newAssignmentStaffId, setNewAssignmentStaffId] = useState<string>('');
@@ -74,9 +74,68 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
 
   useEffect(() => {
     loadData();
-    // Debug: Log workflow_data to see what's in it
-    console.log('[ApplicationForm] workflow_data:', application.workflow_data);
   }, []);
+
+  // Update state when application prop changes (e.g., after edit)
+  useEffect(() => {
+    setStatus(application.status);
+    setRequestedAmount(application.requested_amount?.toString() || '');
+    setPurpose(application.purpose || '');
+    setNotes(application.notes || '');
+    setInternalNotes(application.internal_notes || '');
+    setAssignedDepartments(application.assigned_departments || []);
+    setPrimaryStaffId(application.primary_staff_id || '');
+    setRejectionReason(application.rejection_reason || '');
+    
+    // Update prequalification visibility
+    const workflowData = application.workflow_data as any;
+    if (workflowData && typeof workflowData === 'object' && Object.keys(workflowData).length > 0) {
+      setShowPrequalification(true);
+    }
+    
+    // Reload plan assignment when application changes
+    getActiveApplicationPlan(application.id)
+      .then(plan => {
+        if (plan) {
+          setCurrentApplicationPlan(plan);
+          setSelectedPlanCode(plan.plan_code);
+          setCustomLoanAmount(plan.custom_loan_amount?.toString() || '');
+          setCustomMaxAmount(plan.custom_max_amount?.toString() || '');
+          setPlanNotes(plan.notes || '');
+        } else {
+          setCurrentApplicationPlan(null);
+          setSelectedPlanCode('');
+          setCustomLoanAmount('');
+          setCustomMaxAmount('');
+          setPlanNotes('');
+        }
+      })
+      .catch(() => {
+        setCurrentApplicationPlan(null);
+        setSelectedPlanCode('');
+      });
+    
+    // Reload staff assignments
+    if (application.applicant_id) {
+      getProspectStaffAssignments(application.applicant_id)
+        .then(setProspectAssignments)
+        .catch(() => setProspectAssignments([]));
+    }
+  }, [
+    application.id, 
+    application.status, 
+    application.applicant_id,
+    application.applicant?.first_name,
+    application.applicant?.last_name,
+    application.applicant?.name,
+    application.requested_amount,
+    application.purpose,
+    application.notes,
+    application.internal_notes,
+    application.assigned_departments,
+    application.primary_staff_id,
+    application.rejection_reason
+  ]);
 
   async function loadData() {
     try {
@@ -281,155 +340,27 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
 
       {/* Prospect Status */}
       <div className="pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Status:</span>
-            <StatusSelect
-              value={status}
-              onChange={async (newStatus) => {
-                setStatus(newStatus);
-                setLoading(true);
-                try {
-                  await updateApplication(application.id, { status: newStatus });
-                  await loadData();
-                } catch (err) {
-                  console.error('Error updating status:', err);
-                  setError(err instanceof Error ? err.message : 'Failed to update status');
-                  setStatus(application.status); // Revert on error
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              disabled={loading}
-            />
-          </div>
-          {application.workflow_data && typeof application.workflow_data === 'object' && Object.keys(application.workflow_data).length > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                console.log('[ApplicationForm] Toggling prequalification, current state:', showPrequalification);
-                setShowPrequalification(!showPrequalification);
-              }}
-              className="flex items-center gap-2 text-sm text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors"
-            >
-              {showPrequalification ? (
-                <>
-                  Hide Prequalification Results
-                  <ChevronUp className="w-4 h-4" />
-                </>
-              ) : (
-                <>
-                  Show Prequalification Results
-                  <ChevronDown className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          )}
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Status:</span>
+          <StatusSelect
+            value={status}
+            onChange={async (newStatus) => {
+              setStatus(newStatus);
+              setLoading(true);
+              try {
+                await updateApplication(application.id, { status: newStatus });
+                await loadData();
+              } catch (err) {
+                console.error('Error updating status:', err);
+                setError(err instanceof Error ? err.message : 'Failed to update status');
+                setStatus(application.status); // Revert on error
+              } finally {
+                setLoading(false);
+              }
+            }}
+            disabled={loading}
+          />
         </div>
-
-        {/* Prequalification Results - Collapsible */}
-        {application.workflow_data && typeof application.workflow_data === 'object' && Object.keys(application.workflow_data).length > 0 ? (
-          showPrequalification && (
-            <div className="mt-4 pt-4 border-t border-[var(--border)]">
-              {(() => {
-                const workflowData = application.workflow_data as any;
-                console.log('[ApplicationForm] Rendering prequalification with data:', workflowData);
-                const qualified = workflowData?.qualified;
-                const qualifiedPlans = workflowData?.qualified_plans || [];
-                const qualificationReasons = workflowData?.qualification_reasons || [];
-                const assetTypes = workflowData?.asset_types || [];
-                const age = workflowData?.age;
-                const charitableIntent = workflowData?.charitable_intent;
-
-                // If no prequalification data, show a message
-                if (qualified === undefined && qualifiedPlans.length === 0 && qualificationReasons.length === 0 && !age && charitableIntent === undefined && assetTypes.length === 0) {
-                  return (
-                    <div className="text-sm text-[var(--text-secondary)]">
-                      No prequalification data available
-                    </div>
-                  );
-                }
-
-              return (
-                <div className="space-y-4">
-                  {qualified !== undefined && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Qualified</label>
-                        <p className={`text-sm font-medium ${qualified ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                          {qualified ? 'Yes' : 'No'}
-                        </p>
-                      </div>
-                      {age && (
-                        <div className="space-y-1">
-                          <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Age</label>
-                          <p className="text-sm text-[var(--text-primary)]">{age}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {qualifiedPlans.length > 0 && (
-                    <div className="space-y-1">
-                      <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Qualified Plans</label>
-                      <div className="flex flex-wrap gap-2">
-                        {qualifiedPlans.map((plan: string) => (
-                          <span
-                            key={plan}
-                            className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-green-600 dark:text-green-400"
-                          >
-                            {plan}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {qualificationReasons.length > 0 && (
-                    <div className="space-y-1">
-                      <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Qualification Reasons</label>
-                      <ul className="list-disc list-inside space-y-1">
-                        {qualificationReasons.map((reason: string, index: number) => (
-                          <li key={index} className="text-sm text-[var(--text-primary)]">{reason}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {assetTypes.length > 0 && (
-                    <div className="space-y-1">
-                      <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Asset Types</label>
-                      <div className="flex flex-wrap gap-2">
-                        {assetTypes.map((asset: string) => (
-                          <span
-                            key={asset}
-                            className="inline-flex items-center px-2 py-1 rounded text-xs text-[var(--text-secondary)]"
-                          >
-                            {asset}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {charitableIntent !== undefined && (
-                    <div className="space-y-1">
-                      <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Charitable Intent</label>
-                      <p className="text-sm text-[var(--text-primary)]">{charitableIntent ? 'Yes' : 'No'}</p>
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-            </div>
-          )
-        ) : (
-          <div className="mt-4 pt-4 border-t border-[var(--border)]">
-            <p className="text-sm text-[var(--text-secondary)] italic">
-              No prequalification data available for this application.
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Actions - Only show when NOT in view mode */}
@@ -504,11 +435,11 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
         <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Application Information</h3>
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-1">
-            <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Application Number</label>
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Application Number</span>
             <p className="text-[var(--text-primary)] font-mono text-sm">{application.application_number}</p>
           </div>
           <div className="space-y-1">
-            <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Applicant</label>
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Applicant</span>
             <p className="text-[var(--text-primary)] font-medium">
               {application.applicant?.name || application.applicant?.email || 'Unknown'}
             </p>
@@ -524,11 +455,11 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
             )}
           </div>
           <div className="space-y-1">
-            <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Created</label>
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Created</span>
             <p className="text-[var(--text-primary)] text-sm">{formatDate(application.created_at)}</p>
           </div>
           <div className="space-y-1">
-            <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Last Updated</label>
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Last Updated</span>
             <p className="text-[var(--text-primary)] text-sm">{formatDate(application.updated_at)}</p>
           </div>
         </div>
@@ -539,9 +470,15 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
         <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Financial Information</h3>
         <div className="grid grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label htmlFor="requested-amount" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
-              Requested Amount
-            </label>
+            {viewMode ? (
+              <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                Requested Amount
+              </span>
+            ) : (
+              <label htmlFor="requested-amount" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                Requested Amount
+              </label>
+            )}
             {viewMode ? (
               <p className="text-[var(--text-primary)] font-medium text-lg">
                 {formatCurrency(parseFloat(requestedAmount) || 0)}
@@ -562,36 +499,186 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
             )}
           </div>
           <div className="space-y-1">
-            <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Annual Income</label>
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Annual Income</span>
             <p className="text-[var(--text-primary)] font-medium">{formatCurrency(application.annual_income)}</p>
           </div>
           <div className="space-y-1">
-            <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Net Worth</label>
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Net Worth</span>
             <p className="text-[var(--text-primary)] font-medium">{formatCurrency(application.net_worth)}</p>
           </div>
           <div className="space-y-1">
-            <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Tax Bracket</label>
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Tax Bracket</span>
             <p className="text-[var(--text-primary)] font-medium">{application.tax_bracket || '-'}</p>
           </div>
         </div>
+
+        {/* Prequalification Results */}
+        {application.workflow_data && typeof application.workflow_data === 'object' && Object.keys(application.workflow_data).length > 0 && (
+          <div className="mt-6 pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wide">Prequalified</h4>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPrequalification(!showPrequalification);
+                }}
+                className="flex items-center gap-2 text-sm text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors"
+              >
+                {showPrequalification ? (
+                  <>
+                    Hide
+                    <ChevronUp className="w-4 h-4" />
+                  </>
+                ) : (
+                  <>
+                    Show
+                    <ChevronDown className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
+
+            {showPrequalification && (
+              <div className="space-y-4">
+                {(() => {
+                  const workflowData = application.workflow_data as any;
+                  const qualified = workflowData?.qualified;
+                  const qualifiedPlans = workflowData?.qualified_plans || [];
+                  const qualificationReasons = workflowData?.qualification_reasons || [];
+                  const assetTypes = workflowData?.asset_types || [];
+                  const age = workflowData?.age;
+                  const charitableIntent = workflowData?.charitable_intent;
+
+                  // If no prequalification data, show a message
+                  if (qualified === undefined && qualifiedPlans.length === 0 && qualificationReasons.length === 0 && !age && charitableIntent === undefined && assetTypes.length === 0) {
+                    return (
+                      <div className="text-sm text-[var(--text-secondary)]">
+                        No prequalification data available
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-4">
+                      {qualified !== undefined && (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Qualified</span>
+                            <p className={`text-sm font-medium ${qualified ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                              {qualified ? 'Yes' : 'No'}
+                            </p>
+                          </div>
+                          {age && (
+                            <div className="space-y-1">
+                              <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Age</span>
+                              <p className="text-sm text-[var(--text-primary)]">{age}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {qualifiedPlans.length > 0 && (
+                        <div className="space-y-1">
+                          <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Plans</span>
+                          <div className="flex flex-wrap gap-2">
+                            {qualifiedPlans.map((plan: string) => (
+                              <span
+                                key={plan}
+                                className="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-green-600 dark:text-green-400"
+                              >
+                                {plan}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {qualificationReasons.length > 0 && (
+                        <div className="space-y-1">
+                          <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Reasons</span>
+                          <ul className="list-disc list-inside space-y-1">
+                            {qualificationReasons.map((reason: string, index: number) => (
+                              <li key={index} className="text-sm text-[var(--text-primary)]">{reason}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {assetTypes.length > 0 && (
+                        <div className="space-y-1">
+                          <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Assets</span>
+                          <div className="flex flex-wrap gap-2">
+                            {assetTypes.map((asset: string) => (
+                              <span
+                                key={asset}
+                                className="inline-flex items-center px-2 py-1 rounded text-xs text-[var(--text-secondary)]"
+                              >
+                                {asset}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {charitableIntent !== undefined && (
+                        <div className="space-y-1">
+                          <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Charitable Intent</span>
+                          <p className="text-sm text-[var(--text-primary)]">{charitableIntent ? 'Yes' : 'No'}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Donum Management Section */}
       <div className="pt-6 border-t-2 border-[var(--core-blue)]">
-        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">Donum Management</h2>
+        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">Donum Internal Management</h2>
         
-        {/* Plan Assignment */}
-        <div className="border-b border-[var(--border)] pb-6">
-          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Plan Assignment</h3>
+        {/* Donum Plan */}
+        <div className="pb-6">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Donum Plan</h3>
         <div className="space-y-6">
           <div>
             <label htmlFor="plan-code" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide mb-2">
-              Assign Plan
+              Donum Plan
             </label>
             <Select
               id="plan-code"
               value={selectedPlanCode}
-              onChange={(e) => setSelectedPlanCode(e.target.value)}
+              onChange={async (e) => {
+                const newPlanCode = e.target.value;
+                setSelectedPlanCode(newPlanCode);
+                setLoading(true);
+                try {
+                  if (newPlanCode) {
+                    // Assign or update plan
+                    await assignPlanToApplication(application.id, newPlanCode, {
+                      custom_loan_amount: customLoanAmount ? parseFloat(customLoanAmount) : undefined,
+                      custom_max_amount: customMaxAmount ? parseFloat(customMaxAmount) : undefined,
+                      notes: planNotes || undefined,
+                    });
+                  } else if (currentApplicationPlan) {
+                    // Remove plan assignment
+                    await deleteApplicationPlan(currentApplicationPlan.id);
+                    setCustomLoanAmount('');
+                    setCustomMaxAmount('');
+                    setPlanNotes('');
+                  }
+                  await loadData();
+                } catch (err) {
+                  console.error('Error assigning plan:', err);
+                  setError(err instanceof Error ? err.message : 'Failed to assign plan');
+                  setSelectedPlanCode(selectedPlanCode); // Revert on error
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              disabled={loading}
               options={[
                 { value: '', label: 'No plan assigned' },
                 ...plans.map((plan) => ({
@@ -609,7 +696,7 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
             )}
           </div>
 
-          {selectedPlanCode && (
+          {selectedPlanCode && !viewMode && (
             <div className="pt-6 border-t border-[var(--border)] space-y-6">
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -655,7 +742,7 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
               </div>
               <div className="space-y-2">
                 <label htmlFor="plan-notes" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
-                  Plan Assignment Notes
+                  Plan Notes
                 </label>
                 <textarea
                   id="plan-notes"
@@ -668,112 +755,42 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
               </div>
             </div>
           )}
-        </div>
-      </div>
-      </div>
-
-      {/* Application Management (Status) */}
-      <div className="pt-6 border-t border-[var(--core-blue)] pb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Application Management</h3>
-          {!isEditingStatus && (
-            <button
-              type="button"
-              onClick={() => setIsEditingStatus(true)}
-              className="text-sm text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors"
-            >
-              Edit
-            </button>
+          {selectedPlanCode && viewMode && currentApplicationPlan && (
+            <div className="pt-6 border-t border-[var(--border)] space-y-6">
+              {currentApplicationPlan.custom_loan_amount && (
+                <div className="space-y-1">
+                  <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Custom Loan Amount
+                  </span>
+                  <p className="text-[var(--text-primary)] font-medium">
+                    {formatCurrency(currentApplicationPlan.custom_loan_amount)}
+                  </p>
+                </div>
+              )}
+              {currentApplicationPlan.custom_max_amount && (
+                <div className="space-y-1">
+                  <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Custom Max Amount
+                  </span>
+                  <p className="text-[var(--text-primary)] font-medium">
+                    {formatCurrency(currentApplicationPlan.custom_max_amount)}
+                  </p>
+                </div>
+              )}
+              {currentApplicationPlan.notes && (
+                <div className="space-y-1">
+                  <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Plan Notes
+                  </span>
+                  <p className="text-[var(--text-primary)] text-sm">
+                    {currentApplicationPlan.notes}
+                  </p>
+                </div>
+              )}
+            </div>
           )}
         </div>
-
-        {isEditingStatus ? (
-          <div className="space-y-4 p-4 bg-[var(--surface-hover)] rounded-lg">
-            <div>
-              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">
-                Status
-              </label>
-              <Select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as UpdateApplicationInput['status'])}
-                options={APPLICATION_STATUSES.map((s) => ({
-                  value: s.value,
-                  label: s.label
-                }))}
-                className="w-full"
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsEditingStatus(false);
-                  setStatus(application.status);
-                }}
-                className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  setLoading(true);
-                  try {
-                    await updateApplication(application.id, { status });
-                    setIsEditingStatus(false);
-                    onSuccess();
-                  } catch (err) {
-                    console.error('Error updating status:', err);
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-                disabled={loading}
-                className="px-4 py-2 text-sm bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue)]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {loading ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <div>
-              <label className="block text-xs text-[var(--text-muted)] mb-1">Status</label>
-              <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
-                status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' :
-                status === 'submitted' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' :
-                status === 'under_review' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
-                status === 'document_collection' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400' :
-                status === 'funded' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400' :
-                'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
-              }`}>
-                {APPLICATION_STATUSES.find(s => s.value === status)?.label || status}
-              </span>
-            </div>
-            {getAvailableActions().length > 0 && (
-              <div className="flex flex-wrap gap-2 pt-2">
-                {getAvailableActions().map(({ action, label, variant }) => (
-                  <button
-                    key={action}
-                    type="button"
-                    onClick={() => handleStatusAction(action)}
-                    disabled={loading}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                      variant === 'primary'
-                        ? 'text-[var(--core-blue)] dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:hover:text-gray-300'
-                        : variant === 'success'
-                        ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
-                        : 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
-                    }`}
-                  >
-                    {loading ? '...' : label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+      </div>
       </div>
 
       {/* Staff */}
@@ -867,7 +884,7 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
         {isAddingAssignment && (
           <div className="mt-4 space-y-4 pt-4 border-t border-[var(--border)]">
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+              <label htmlFor="assignment-department" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
                 Step 1: Select Department
               </label>
               {loadingData ? (
@@ -875,6 +892,7 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
               ) : (
                 <div className="relative">
                   <select
+                    id="assignment-department"
                     value={selectedAssignmentDepartment}
                     onChange={(e) => {
                       setSelectedAssignmentDepartment(e.target.value);
@@ -907,7 +925,7 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
 
             {selectedAssignmentDepartment && (
               <div className="space-y-2">
-                <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                <label htmlFor="assignment-staff" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
                   Step 2: Select Staff Member
                 </label>
                 {loadingData ? (
@@ -915,6 +933,7 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
                 ) : (
                   <div className="relative">
                     <select
+                      id="assignment-staff"
                       value={newAssignmentStaffId}
                       onChange={(e) => setNewAssignmentStaffId(e.target.value)}
                       className="w-full pl-3 pr-8 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all text-sm appearance-none"
@@ -948,10 +967,11 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
             )}
 
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+              <label htmlFor="assignment-notes" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
                 Staff Assignment Notes (Optional)
               </label>
               <textarea
+                id="assignment-notes"
                 value={newAssignmentNotes}
                 onChange={(e) => setNewAssignmentNotes(e.target.value)}
                 rows={2}
@@ -1118,7 +1138,7 @@ export function ApplicationForm({ application, onSuccess, onCancel, viewMode = f
       )}
 
       {/* Documents */}
-      <div className="pt-6 border-t border-[var(--core-blue)] border-b border-[var(--border)] pb-6">
+      <div className="pt-6 border-t border-[var(--core-blue)] pb-6">
         <div className="mb-4">
           <h3 className="text-lg font-semibold text-[var(--text-primary)]">Documents</h3>
           <p className="text-xs text-[var(--text-secondary)] mt-0.5">

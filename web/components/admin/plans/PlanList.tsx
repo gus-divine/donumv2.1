@@ -51,17 +51,14 @@ export function PlanList({ onEdit }: PlanListProps) {
 
   const loadPlans = useCallback(async () => {
     if (loadingRef.current) {
-      console.log('[PlanList] Already loading, skipping duplicate call');
       return;
     }
 
     try {
-      console.log('[PlanList] Loading plans...');
       loadingRef.current = true;
       setLoading(true);
       setError(null);
       const data = await getAllPlans(true); // Include inactive plans
-      console.log('[PlanList] Plans loaded:', { count: data.length });
       setPlans(data);
       applyFilters(data, searchTerm, statusFilter);
     } catch (err) {
