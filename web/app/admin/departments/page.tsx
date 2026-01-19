@@ -6,11 +6,10 @@ import { PermissionGuard } from '@/components/admin/shared/PermissionGuard';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { DepartmentList } from '@/components/admin/departments/DepartmentList';
 import { DepartmentForm } from '@/components/admin/departments/DepartmentForm';
-import { PermissionAssignment } from '@/components/admin/departments/PermissionAssignment';
 import { DepartmentStaffAssignment } from '@/components/admin/departments/DepartmentStaffAssignment';
 import type { Department } from '@/lib/api/departments';
 
-type ViewMode = 'list' | 'create' | 'edit' | 'permissions' | 'staff';
+type ViewMode = 'list' | 'create' | 'edit' | 'staff';
 
 export default function DepartmentsPage() {
   const router = useRouter();
@@ -51,17 +50,7 @@ export default function DepartmentsPage() {
   }
 
   function handleViewPermissions(department: Department) {
-    if (hasUnsavedChanges) {
-      const confirmed = window.confirm(
-        'You have unsaved changes. Are you sure you want to leave? All changes will be lost.'
-      );
-      if (!confirmed) {
-        return;
-      }
-    }
-    setHasUnsavedChanges(false);
-    setSelectedDepartment(department);
-    setViewMode('permissions');
+    router.push(`/admin/departments/${department.id}/permissions`);
   }
 
   function handleManageStaff(department: Department) {
@@ -204,22 +193,6 @@ export default function DepartmentsPage() {
           </div>
         )}
 
-        {viewMode === 'permissions' && selectedDepartment && (
-          <div className="max-w-6xl mx-auto">
-            <button
-              onClick={handleCancel}
-              className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-6 transition-colors"
-            >
-              ← Back
-            </button>
-            <div className="bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg p-6">
-              <PermissionAssignment
-                department={selectedDepartment}
-                onClose={handleCancel}
-              />
-            </div>
-          </div>
-        )}
 
         {viewMode === 'staff' && selectedDepartment && (
           <div className="max-w-6xl mx-auto">

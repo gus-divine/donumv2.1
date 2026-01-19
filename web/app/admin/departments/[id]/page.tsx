@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { PermissionGuard } from '@/components/admin/shared/PermissionGuard';
 import { DepartmentForm } from '@/components/admin/departments/DepartmentForm';
 import { DepartmentStaffAssignment } from '@/components/admin/departments/DepartmentStaffAssignment';
-import { PermissionAssignment } from '@/components/admin/departments/PermissionAssignment';
 import { getDepartment, type Department } from '@/lib/api/departments';
 import { getUsers, type User } from '@/lib/api/users';
 import { getDepartmentPermissions } from '@/lib/api/departments';
@@ -106,7 +105,6 @@ export default function DepartmentDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showStaffModal, setShowStaffModal] = useState(false);
-  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
 
   useEffect(() => {
     if (!departmentId) {
@@ -171,7 +169,7 @@ export default function DepartmentDetailPage() {
   }
 
   function handleManagePermissions() {
-    setShowPermissionsModal(true);
+    router.push(`/admin/departments/${departmentId}/permissions`);
   }
 
   function handleEditSuccess() {
@@ -469,17 +467,6 @@ export default function DepartmentDetailPage() {
           />
         )}
 
-        {/* Permissions Modal */}
-        {showPermissionsModal && department && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-[var(--background)] rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-[var(--border)] p-6">
-              <PermissionAssignment
-                department={department}
-                onClose={() => setShowPermissionsModal(false)}
-              />
-            </div>
-          </div>
-        )}
       </main>
     </PermissionGuard>
   );

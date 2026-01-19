@@ -9,9 +9,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-  defs,
-  linearGradient,
-  stop,
 } from 'recharts';
 import { formatCurrency, type LoanDisbursementTrend } from '@/lib/api/finance';
 
