@@ -151,12 +151,12 @@ export function ProspectSidebar() {
                       ? `url(/icons/ui/${isDarkMode ? 'Subtract-dark.svg' : 'Subtract.svg'})` 
                       : undefined
                   }}
-                  onMouseEnter={(e) => {
+                  onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
                     if (!isActive) {
                       e.currentTarget.style.backgroundImage = `url(/icons/ui/${isDarkMode ? 'Subtract-dark.svg' : 'Subtract.svg'})`;
                     }
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
                     if (!isActive) {
                       e.currentTarget.style.backgroundImage = 'none';
                     }
