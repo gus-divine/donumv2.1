@@ -38,11 +38,6 @@ export default function DepartmentsPage() {
     setViewMode('staff');
   }
 
-  function handleManageMembers(department: Department) {
-    setSelectedDepartment(department);
-    setViewMode('members');
-  }
-
   function handleSuccess() {
     setViewMode('list');
     setSelectedDepartment(null);
