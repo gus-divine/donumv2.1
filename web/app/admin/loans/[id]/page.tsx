@@ -57,7 +57,7 @@ export default function LoanDetailPage() {
   if (loading) {
     return (
       <PermissionGuard>
-        <main className="min-h-screen p-8">
+        <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-[var(--text-secondary)]">Loading loan details...</div>
           </div>
@@ -69,22 +69,18 @@ export default function LoanDetailPage() {
   if (error || !loan) {
     return (
       <PermissionGuard>
-        <main className="min-h-screen p-8">
-          <button
-            onClick={handleBack}
-            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-4 transition-colors"
-          >
-            ← Back
-          </button>
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6 max-w-2xl">
-            <h1 className="text-xl font-semibold text-[var(--text-primary)] mb-4">Error</h1>
-            <p className="text-[var(--text-secondary)] mb-4">{error || 'Loan not found'}</p>
+        <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
+          <div className="max-w-6xl mx-auto">
             <button
               onClick={handleBack}
-              className="px-4 py-2 bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] transition-colors"
+              className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-6 transition-colors"
             >
-              Back
+              ← Back
             </button>
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
+              <h1 className="text-xl font-semibold text-[var(--text-primary)] mb-4">Error</h1>
+              <p className="text-[var(--text-secondary)] mb-4">{error || 'Loan not found'}</p>
+            </div>
           </div>
         </main>
       </PermissionGuard>
@@ -93,14 +89,16 @@ export default function LoanDetailPage() {
 
   return (
     <PermissionGuard>
-      <main className="min-h-screen p-8">
-        <button
-          onClick={handleBack}
-          className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-4 transition-colors"
-        >
-          ← Back
-        </button>
-        <LoanDetail loan={loan} onBack={handleBack} onLoanUpdated={handleLoanUpdated} />
+      <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
+        <div className="max-w-6xl mx-auto">
+          <button
+            onClick={handleBack}
+            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-6 transition-colors"
+          >
+            ← Back
+          </button>
+          <LoanDetail loan={loan} onBack={handleBack} onLoanUpdated={handleLoanUpdated} />
+        </div>
       </main>
     </PermissionGuard>
   );

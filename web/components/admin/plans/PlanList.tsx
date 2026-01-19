@@ -9,9 +9,10 @@ import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 interface PlanListProps {
   onEdit: (plan: DonumPlan) => void;
+  onViewDetails?: (plan: DonumPlan) => void;
 }
 
-export function PlanList({ onEdit }: PlanListProps) {
+export function PlanList({ onEdit, onViewDetails }: PlanListProps) {
   const { canEdit, canDelete } = usePermissions('/admin/plans');
   const [plans, setPlans] = useState<DonumPlan[]>([]);
   const [filteredPlans, setFilteredPlans] = useState<DonumPlan[]>([]);
@@ -212,7 +213,6 @@ export function PlanList({ onEdit }: PlanListProps) {
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b border-[var(--border)]">
-                <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Code</th>
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Name</th>
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Description</th>
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Tax Deduction</th>
@@ -224,13 +224,9 @@ export function PlanList({ onEdit }: PlanListProps) {
               {filteredPlans.map((plan) => (
                 <tr
                   key={plan.id}
-                  className="border-b border-[var(--border)] hover:bg-[var(--surface-hover)]"
+                  className="border-b border-[var(--border)] hover:bg-[var(--surface-hover)] cursor-pointer transition-colors"
+                  onClick={() => onViewDetails ? onViewDetails(plan) : undefined}
                 >
-                  <td className="p-4">
-                    <code className="text-sm font-mono text-[var(--text-primary)] bg-[var(--surface)] px-2 py-1 rounded">
-                      {plan.code}
-                    </code>
-                  </td>
                   <td className="p-4">
                     <div className="font-medium text-[var(--text-primary)]">{plan.name}</div>
                   </td>
@@ -242,19 +238,19 @@ export function PlanList({ onEdit }: PlanListProps) {
                   </td>
                   <td className="p-4">
                     {plan.is_active ? (
-                      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                      <span className="inline-flex items-center text-xs font-medium text-green-600 dark:text-green-400">
                         <CheckCircle2 className="w-3 h-3 mr-1" />
                         Active
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400">
+                      <span className="inline-flex items-center text-xs font-medium text-gray-600 dark:text-gray-400">
                         <XCircle className="w-3 h-3 mr-1" />
                         Inactive
                       </span>
                     )}
                   </td>
                   <td className="p-4">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                       {canEdit('/admin/plans') && (
                         <button
                           onClick={() => onEdit(plan)}

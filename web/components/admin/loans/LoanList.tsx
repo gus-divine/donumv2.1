@@ -121,19 +121,19 @@ export function LoanList({ filters, onFiltersChange }: LoanListProps) {
   function getStatusBadgeClass(status: LoanStatus): string {
     switch (status) {
       case 'active':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
+        return 'text-blue-600 dark:text-blue-400';
       case 'paid_off':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+        return 'text-green-600 dark:text-green-400';
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+        return 'text-yellow-600 dark:text-yellow-400';
       case 'defaulted':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+        return 'text-red-600 dark:text-red-400';
       case 'cancelled':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+        return 'text-gray-600 dark:text-gray-400';
       case 'closed':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+        return 'text-gray-600 dark:text-gray-400';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+        return 'text-gray-600 dark:text-gray-400';
     }
   }
 
@@ -267,7 +267,7 @@ export function LoanList({ filters, onFiltersChange }: LoanListProps) {
                       )}
                     </td>
                     <td className="p-4">
-                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${getStatusBadgeClass(loan.status)}`}>
+                      <span className={`inline-flex items-center text-xs font-medium ${getStatusBadgeClass(loan.status)}`}>
                         {loan.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                       </span>
                     </td>

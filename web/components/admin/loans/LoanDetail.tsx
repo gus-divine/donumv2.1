@@ -46,24 +46,24 @@ function formatPercent(rate: number): string {
 
 function getStatusBadgeColor(status: LoanStatus): string {
   const colors: Record<LoanStatus, string> = {
-    pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-    active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-    paid_off: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-    defaulted: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-    cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-    closed: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+    pending: 'text-yellow-600 dark:text-yellow-400',
+    active: 'text-green-600 dark:text-green-400',
+    paid_off: 'text-blue-600 dark:text-blue-400',
+    defaulted: 'text-red-600 dark:text-red-400',
+    cancelled: 'text-gray-600 dark:text-gray-400',
+    closed: 'text-gray-600 dark:text-gray-400',
   };
   return colors[status] || colors.pending;
 }
 
 function getPaymentStatusBadgeColor(status: string): string {
   const colors: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-    scheduled: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-    paid: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-    overdue: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-    missed: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-    cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+    pending: 'text-yellow-600 dark:text-yellow-400',
+    scheduled: 'text-blue-600 dark:text-blue-400',
+    paid: 'text-green-600 dark:text-green-400',
+    overdue: 'text-red-600 dark:text-red-400',
+    missed: 'text-red-600 dark:text-red-400',
+    cancelled: 'text-gray-600 dark:text-gray-400',
   };
   return colors[status] || colors.pending;
 }
@@ -144,157 +144,218 @@ export function LoanDetail({ loan, onBack, onLoanUpdated }: LoanDetailProps) {
     : 'Unknown';
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div>
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">
-              Loan: {loan.loan_number}
-            </h1>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">
-              {loan.plan?.name || 'No Plan'} • Created {formatDate(loan.created_at)}
-            </p>
-          </div>
-          {canEdit('/admin/loans') && (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-[var(--text-secondary)]">Status:</span>
-              <Select
-                value={loan.status}
-                onChange={(e) => handleStatusChange(e.target.value as LoanStatus)}
-                disabled={updatingStatus}
-                options={LOAN_STATUSES}
-              />
-            </div>
-          )}
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
+            Loan: {loan.loan_number}
+          </h1>
+          <p className="text-sm text-[var(--text-secondary)]">
+            {loan.plan?.name || 'No Plan'} • Created {formatDate(loan.created_at)}
+          </p>
         </div>
+        {canEdit('/admin/loans') && (
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-[var(--text-secondary)]">Status:</span>
+            <Select
+              value={loan.status}
+              onChange={(e) => handleStatusChange(e.target.value as LoanStatus)}
+              disabled={updatingStatus}
+              options={LOAN_STATUSES}
+            />
+          </div>
+        )}
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-sm text-red-800 dark:text-red-400">{error}</p>
+        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg shadow-sm">
+          <p className="text-sm font-medium text-red-800 dark:text-red-400">{error}</p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Loan Information */}
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Loan Information</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs text-[var(--text-secondary)] uppercase tracking-wide">Applicant</label>
-                <p className="mt-1 text-sm font-medium text-[var(--text-primary)]">{applicantName}</p>
-                {loan.applicant?.email && (
-                  <p className="text-xs text-[var(--text-secondary)]">{loan.applicant.email}</p>
-                )}
-              </div>
-              <div>
-                <label className="text-xs text-[var(--text-secondary)] uppercase tracking-wide">Application</label>
-                <p className="mt-1 text-sm font-medium text-[var(--text-primary)]">
-                  {loan.application?.application_number || 'N/A'}
-                </p>
-              </div>
-              <div>
-                <label className="text-xs text-[var(--text-secondary)] uppercase tracking-wide">Principal Amount</label>
-                <p className="mt-1 text-lg font-semibold text-[var(--text-primary)]">
-                  {formatCurrency(loan.principal_amount)}
-                </p>
-              </div>
-              <div>
-                <label className="text-xs text-[var(--text-secondary)] uppercase tracking-wide">Current Balance</label>
-                <p className="mt-1 text-lg font-semibold text-[var(--text-primary)]">
-                  {formatCurrency(loan.current_balance)}
-                </p>
-              </div>
-              <div>
-                <label className="text-xs text-[var(--text-secondary)] uppercase tracking-wide">Interest Rate</label>
-                <p className="mt-1 text-sm font-medium text-[var(--text-primary)]">
-                  {formatPercent(loan.interest_rate)}
-                </p>
-              </div>
-              <div>
-                <label className="text-xs text-[var(--text-secondary)] uppercase tracking-wide">Term</label>
-                <p className="mt-1 text-sm font-medium text-[var(--text-primary)]">
-                  {loan.term_months} months ({loan.payment_frequency})
-                </p>
-              </div>
-              <div>
-                <label className="text-xs text-[var(--text-secondary)] uppercase tracking-wide">Next Payment</label>
-                <p className="mt-1 text-sm font-medium text-[var(--text-primary)]">
-                  {loan.next_payment_date ? formatDate(loan.next_payment_date) : '—'}
-                </p>
-                {loan.next_payment_amount && (
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    {formatCurrency(loan.next_payment_amount)}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="text-xs text-[var(--text-secondary)] uppercase tracking-wide">Last Payment</label>
-                <p className="mt-1 text-sm font-medium text-[var(--text-primary)]">
-                  {loan.last_payment_date ? formatDate(loan.last_payment_date) : '—'}
-                </p>
-                {loan.last_payment_amount && (
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    {formatCurrency(loan.last_payment_amount)}
-                  </p>
-                )}
-              </div>
-            </div>
+      {/* Financial Summary - Prominent at top */}
+      <div className="pt-4 border-t-2 border-[var(--core-gold)] pb-6 mb-6">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Financial Summary</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Principal Amount</span>
+            <p className="text-[var(--text-primary)] text-lg font-semibold">
+              {formatCurrency(loan.principal_amount)}
+            </p>
           </div>
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Current Balance</span>
+            <p className="text-[var(--text-primary)] text-lg font-semibold">
+              {formatCurrency(loan.current_balance)}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Total Paid</span>
+            <p className="text-[var(--text-primary)] text-lg font-semibold">
+              {formatCurrency(loan.total_paid)}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Remaining Balance</span>
+            <p className="text-[var(--text-primary)] text-lg font-semibold">
+              {formatCurrency(loan.current_balance)}
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6 pt-6 border-t border-[var(--border)]">
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Principal Paid</span>
+            <p className="text-[var(--text-primary)]">
+              {formatCurrency(loan.total_principal_paid)}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Interest Paid</span>
+            <p className="text-[var(--text-primary)]">
+              {formatCurrency(loan.total_interest_paid)}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Interest Rate</span>
+            <p className="text-[var(--text-primary)]">
+              {formatPercent(loan.interest_rate)}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Term</span>
+            <p className="text-[var(--text-primary)]">
+              {loan.term_months} months ({loan.payment_frequency})
+            </p>
+          </div>
+        </div>
+      </div>
 
-          {/* Payment History */}
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Payment History</h2>
+      {/* Loan Information */}
+      <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Loan Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Applicant</span>
+            <p className="text-[var(--text-primary)]">{applicantName}</p>
+            {loan.applicant?.email && (
+              <p className="text-xs text-[var(--text-secondary)] mt-1">{loan.applicant.email}</p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Application</span>
+            <p className="text-[var(--text-primary)]">
+              {loan.application?.application_number || 'N/A'}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Plan</span>
+            <p className="text-[var(--text-primary)]">
+              {loan.plan?.name || 'No Plan'}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Disbursed</span>
+            <p className="text-[var(--text-primary)]">
+              {loan.disbursed_at ? formatDate(loan.disbursed_at) : '—'}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Maturity Date</span>
+            <p className="text-[var(--text-primary)]">
+              {loan.maturity_date ? formatDate(loan.maturity_date) : '—'}
+            </p>
+          </div>
+          {loan.paid_off_at && (
+            <div className="space-y-1">
+              <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Paid Off</span>
+              <p className="text-[var(--text-primary)]">
+                {formatDate(loan.paid_off_at)}
+              </p>
+            </div>
+          )}
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Next Payment</span>
+            <p className="text-[var(--text-primary)]">
+              {loan.next_payment_date ? formatDate(loan.next_payment_date) : '—'}
+            </p>
+            {loan.next_payment_amount && (
+              <p className="text-xs text-[var(--text-secondary)] mt-1">
+                {formatCurrency(loan.next_payment_amount)}
+              </p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Last Payment</span>
+            <p className="text-[var(--text-primary)]">
+              {loan.last_payment_date ? formatDate(loan.last_payment_date) : '—'}
+            </p>
+            {loan.last_payment_amount && (
+              <p className="text-xs text-[var(--text-secondary)] mt-1">
+                {formatCurrency(loan.last_payment_amount)}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Payment History - Full Width */}
+      <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+        {/* Payment History */}
+        <div>
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Payment History</h3>
             {loadingPayments ? (
               <div className="text-center py-8 text-[var(--text-secondary)]">Loading payments...</div>
             ) : payments.length === 0 ? (
               <div className="text-center py-8 text-[var(--text-secondary)]">No payments recorded yet</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full border-collapse">
                   <thead>
                     <tr className="border-b border-[var(--border)]">
-                      <th className="text-left p-3 text-xs font-semibold text-[var(--text-secondary)] uppercase">#</th>
-                      <th className="text-left p-3 text-xs font-semibold text-[var(--text-secondary)] uppercase">Due Date</th>
-                      <th className="text-left p-3 text-xs font-semibold text-[var(--text-secondary)] uppercase">Amount Due</th>
-                      <th className="text-left p-3 text-xs font-semibold text-[var(--text-secondary)] uppercase">Principal</th>
-                      <th className="text-left p-3 text-xs font-semibold text-[var(--text-secondary)] uppercase">Interest</th>
-                      <th className="text-left p-3 text-xs font-semibold text-[var(--text-secondary)] uppercase">Paid</th>
-                      <th className="text-left p-3 text-xs font-semibold text-[var(--text-secondary)] uppercase">Status</th>
+                      <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">#</th>
+                      <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Due Date</th>
+                      <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Amount Due</th>
+                      <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Principal</th>
+                      <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Interest</th>
+                      <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Paid</th>
+                      <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Status</th>
                       {canEdit('/admin/loans') && (
-                        <th className="text-right p-3 text-xs font-semibold text-[var(--text-secondary)] uppercase">Actions</th>
+                        <th className="text-right p-4 text-sm font-semibold text-[var(--text-primary)]">Actions</th>
                       )}
                     </tr>
                   </thead>
                   <tbody>
                     {payments.map((payment) => (
                       <tr key={payment.id} className="border-b border-[var(--border)] hover:bg-[var(--surface-hover)]">
-                        <td className="p-3 text-sm text-[var(--text-primary)]">{payment.payment_number}</td>
-                        <td className="p-3 text-sm text-[var(--text-primary)]">{formatDate(payment.due_date)}</td>
-                        <td className="p-3 text-sm text-[var(--text-primary)]">{formatCurrency(payment.amount_due)}</td>
-                        <td className="p-3 text-sm text-[var(--text-primary)]">{formatCurrency(payment.principal_amount)}</td>
-                        <td className="p-3 text-sm text-[var(--text-primary)]">{formatCurrency(payment.interest_amount)}</td>
-                        <td className="p-3 text-sm text-[var(--text-primary)]">
+                        <td className="p-4 text-sm text-[var(--text-primary)]">{payment.payment_number}</td>
+                        <td className="p-4 text-sm text-[var(--text-primary)]">{formatDate(payment.due_date)}</td>
+                        <td className="p-4 text-sm text-[var(--text-primary)]">{formatCurrency(payment.amount_due)}</td>
+                        <td className="p-4 text-sm text-[var(--text-primary)]">{formatCurrency(payment.principal_amount)}</td>
+                        <td className="p-4 text-sm text-[var(--text-primary)]">{formatCurrency(payment.interest_amount)}</td>
+                        <td className="p-4 text-sm text-[var(--text-primary)]">
                           {payment.amount_paid > 0 ? formatCurrency(payment.amount_paid) : '—'}
                         </td>
-                        <td className="p-3">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusBadgeColor(payment.status)}`}>
+                        <td className="p-4">
+                          <span className={`inline-flex items-center text-xs font-medium ${getPaymentStatusBadgeColor(payment.status)}`}>
                             {payment.status}
                           </span>
                         </td>
                         {canEdit('/admin/loans') && (
-                          <td className="p-3 text-right">
-                            {payment.status !== 'paid' && (
-                              <button
-                                onClick={() => handleRecordPayment(payment)}
-                                className="px-3 py-1 text-xs bg-[var(--core-blue)] text-white rounded hover:bg-[var(--core-blue-light)] transition-colors"
-                              >
-                                Record Payment
-                              </button>
-                            )}
+                          <td className="p-4">
+                            <div className="flex items-center justify-end gap-2">
+                              {payment.status !== 'paid' && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRecordPayment(payment);
+                                  }}
+                                  className="px-3 py-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded transition-colors"
+                                >
+                                  Record Payment
+                                </button>
+                              )}
+                            </div>
                           </td>
                         )}
                       </tr>
@@ -304,126 +365,61 @@ export function LoanDetail({ loan, onBack, onLoanUpdated }: LoanDetailProps) {
               </div>
             )}
           </div>
-
-          {/* Documents */}
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-1">Documents</h2>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Upload and manage documents related to this loan.
-              </p>
-            </div>
-            
-            {loan.applicant_id && (
-              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-                <h4 className="text-sm font-medium text-[var(--text-primary)] mb-4">Upload New Document</h4>
-                <DocumentUpload
-                  documentType="other"
-                  documentName="Loan Document"
-                  applicantId={loan.applicant_id}
-                  loanId={loan.id}
-                  onUploadSuccess={() => {
-                    // Reload could be added here if needed
-                  }}
-                />
-              </div>
-            )}
-            
-            <div>
-              <h4 className="text-sm font-medium text-[var(--text-primary)] mb-4">Uploaded Documents</h4>
-              <DocumentList
-                filters={{ loan_id: loan.id }}
-                showActions={true}
-              />
-            </div>
-          </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Status Card */}
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Loan Status</h3>
-            <div className="mb-4">
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(loan.status)}`}>
-                {LOAN_STATUSES.find(s => s.value === loan.status)?.label || loan.status}
-              </span>
-            </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-[var(--text-secondary)]">Disbursed:</span>
-                <span className="text-[var(--text-primary)]">{loan.disbursed_at ? formatDate(loan.disbursed_at) : '—'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[var(--text-secondary)]">Maturity:</span>
-                <span className="text-[var(--text-primary)]">{loan.maturity_date ? formatDate(loan.maturity_date) : '—'}</span>
-              </div>
-              {loan.paid_off_at && (
-                <div className="flex justify-between">
-                  <span className="text-[var(--text-secondary)]">Paid Off:</span>
-                  <span className="text-[var(--text-primary)]">{formatDate(loan.paid_off_at)}</span>
-                </div>
-              )}
-            </div>
+      {/* Documents */}
+      <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Documents</h3>
+        <p className="text-sm text-[var(--text-secondary)] mb-6">
+          Upload and manage documents related to this loan.
+        </p>
+        
+        {loan.applicant_id && (
+          <div className="mb-6">
+            <h4 className="text-sm font-medium text-[var(--text-primary)] mb-4">Upload New Document</h4>
+            <DocumentUpload
+              documentType="other"
+              documentName="Loan Document"
+              applicantId={loan.applicant_id}
+              loanId={loan.id}
+              onUploadSuccess={() => {
+                // Reload could be added here if needed
+              }}
+            />
           </div>
+        )}
+        
+        <div>
+          <h4 className="text-sm font-medium text-[var(--text-primary)] mb-4">Uploaded Documents</h4>
+          <DocumentList
+            filters={{ loan_id: loan.id }}
+            showActions={true}
+          />
+        </div>
+      </div>
 
-          {/* Financial Summary */}
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Financial Summary</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-[var(--text-secondary)]">Total Paid</span>
-                <span className="text-sm font-semibold text-[var(--text-primary)]">
-                  {formatCurrency(loan.total_paid)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-[var(--text-secondary)]">Principal Paid</span>
-                <span className="text-sm font-semibold text-[var(--text-primary)]">
-                  {formatCurrency(loan.total_principal_paid)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-[var(--text-secondary)]">Interest Paid</span>
-                <span className="text-sm font-semibold text-[var(--text-primary)]">
-                  {formatCurrency(loan.total_interest_paid)}
-                </span>
-              </div>
-              <div className="pt-3 border-t border-[var(--border)]">
-                <div className="flex justify-between">
-                  <span className="text-sm font-semibold text-[var(--text-primary)]">Remaining Balance</span>
-                  <span className="text-sm font-bold text-[var(--text-primary)]">
-                    {formatCurrency(loan.current_balance)}
-                  </span>
-                </div>
-              </div>
+      {/* Notes */}
+      {(loan.notes || loan.internal_notes) && (
+        <div className="pt-6 border-t border-[var(--core-gold)] pb-6">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Notes</h3>
+          {loan.notes && (
+            <div className="mb-3">
+              <label className="text-xs text-[var(--text-secondary)] uppercase tracking-wide mb-1 block">
+                Public Notes
+              </label>
+              <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">{loan.notes}</p>
             </div>
-          </div>
-
-          {/* Notes */}
-          {(loan.notes || loan.internal_notes) && (
-            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-              <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Notes</h3>
-              {loan.notes && (
-                <div className="mb-3">
-                  <label className="text-xs text-[var(--text-secondary)] uppercase tracking-wide mb-1 block">
-                    Public Notes
-                  </label>
-                  <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">{loan.notes}</p>
-                </div>
-              )}
-              {loan.internal_notes && (
-                <div>
-                  <label className="text-xs text-[var(--text-secondary)] uppercase tracking-wide mb-1 block">
-                    Internal Notes
-                  </label>
-                  <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">{loan.internal_notes}</p>
-                </div>
-              )}
+          )}
+          {loan.internal_notes && (
+            <div>
+              <label className="text-xs text-[var(--text-secondary)] uppercase tracking-wide mb-1 block">
+                Internal Notes
+              </label>
+              <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">{loan.internal_notes}</p>
             </div>
           )}
         </div>
-      </div>
+      )}
 
       {/* Payment Recording Modal */}
       {selectedPayment && (

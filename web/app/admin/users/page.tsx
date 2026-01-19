@@ -1,90 +1,55 @@
 'use client';
 
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { PermissionGuard } from '@/components/admin/shared/PermissionGuard';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { UserList } from '@/components/admin/users/UserList';
-import { UserForm } from '@/components/admin/users/UserForm';
 import type { User, UserFilters } from '@/lib/api/users';
-
-type ViewMode = 'list' | 'create' | 'edit';
+import { useState } from 'react';
 
 export default function UsersPage() {
+  const router = useRouter();
   const { canEdit } = usePermissions('/admin/users');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [filters, setFilters] = useState<UserFilters>({});
 
   function handleCreate() {
-    setSelectedUser(null);
-    setViewMode('create');
+    router.push('/admin/users/new');
   }
 
   function handleEdit(user: User) {
-    setSelectedUser(user);
-    setViewMode('edit');
+    router.push(`/admin/users/${user.id}/edit`);
   }
 
-  function handleSuccess() {
-    setViewMode('list');
-    setSelectedUser(null);
-  }
-
-  function handleCancel() {
-    setViewMode('list');
-    setSelectedUser(null);
+  function handleViewDetails(user: User) {
+    router.push(`/admin/users/${user.id}`);
   }
 
   return (
     <PermissionGuard>
-      <main className="min-h-screen p-8">
-        {(viewMode === 'create' || viewMode === 'edit') && (
-          <button
-            onClick={handleCancel}
-            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-4 transition-colors"
-          >
-            ← Back to Users
-          </button>
-        )}
-        {viewMode === 'list' && (
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Users</h1>
-              <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                Manage users, roles, and department assignments.
-              </p>
-            </div>
-            {canEdit('/admin/users') && (
-              <button
-                onClick={handleCreate}
-                className="px-4 py-2 bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] transition-colors"
-              >
-                Create User
-              </button>
-            )}
+      <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Users</h1>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">
+              Manage users, roles, and department assignments.
+            </p>
           </div>
-        )}
+          {canEdit('/admin/users') && (
+            <button
+              onClick={handleCreate}
+              className="px-3 py-1.5 text-sm font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors"
+            >
+              + Create User
+            </button>
+          )}
+        </div>
 
-        {viewMode === 'list' && (
-          <UserList
-            onEdit={handleEdit}
-            filters={filters}
-            onFiltersChange={setFilters}
-          />
-        )}
-
-        {(viewMode === 'create' || viewMode === 'edit') && (
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6 max-w-4xl">
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-6">
-              {viewMode === 'create' ? 'Create New User' : 'Edit User'}
-            </h2>
-            <UserForm
-              user={viewMode === 'edit' ? selectedUser : null}
-              onSuccess={handleSuccess}
-              onCancel={handleCancel}
-            />
-          </div>
-        )}
+        <UserList
+          onEdit={handleEdit}
+          onViewDetails={handleViewDetails}
+          filters={filters}
+          onFiltersChange={setFilters}
+        />
       </main>
     </PermissionGuard>
   );

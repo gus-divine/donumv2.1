@@ -2,17 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { createPlan, updatePlan, type DonumPlan, type CreatePlanInput, type UpdatePlanInput } from '@/lib/api/plans';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, AlertCircle } from 'lucide-react';
 
 interface PlanFormProps {
   plan?: DonumPlan | null;
   onSuccess: () => void;
   onCancel: () => void;
+  submitRef?: React.RefObject<HTMLButtonElement | null>;
+  onLoadingChange?: (loading: boolean) => void;
+  onHasChangesChange?: (hasChanges: boolean) => void;
 }
 
 const ASSET_TYPE_OPTIONS = ['IRA', 'business', 'property', 'stocks', 'bonds', 'real_estate', 'other'] as const;
 
-export function PlanForm({ plan, onSuccess, onCancel }: PlanFormProps) {
+export function PlanForm({ plan, onSuccess, onCancel, submitRef, onLoadingChange, onHasChangesChange }: PlanFormProps) {
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -28,22 +31,127 @@ export function PlanForm({ plan, onSuccess, onCancel }: PlanFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Track initial values to detect changes
+  const [initialValues, setInitialValues] = useState<{
+    code: string;
+    name: string;
+    description: string;
+    minIncome: string;
+    minAssets: string;
+    minAge: string;
+    requiredAssetTypes: string[];
+    requiresCharitableIntent: boolean;
+    taxDeductionPercent: string;
+    benefits: string[];
+    calculatorConfig: string;
+    isActive: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    if (onLoadingChange) {
+      onLoadingChange(loading);
+    }
+  }, [loading, onLoadingChange]);
+
   useEffect(() => {
     if (plan) {
-      setCode(plan.code);
-      setName(plan.name);
-      setDescription(plan.description || '');
-      setMinIncome(plan.min_income?.toString() || '');
-      setMinAssets(plan.min_assets?.toString() || '');
-      setMinAge(plan.min_age?.toString() || '');
-      setRequiredAssetTypes(plan.required_asset_types || []);
-      setRequiresCharitableIntent(plan.requires_charitable_intent ?? true);
-      setTaxDeductionPercent(plan.tax_deduction_percent.toString());
-      setBenefits(plan.benefits && plan.benefits.length > 0 ? plan.benefits : ['']);
-      setCalculatorConfig(JSON.stringify(plan.calculator_config || {}, null, 2));
-      setIsActive(plan.is_active);
+      const planCode = plan.code;
+      const planName = plan.name;
+      const planDescription = plan.description || '';
+      const planMinIncome = plan.min_income?.toString() || '';
+      const planMinAssets = plan.min_assets?.toString() || '';
+      const planMinAge = plan.min_age?.toString() || '';
+      const planRequiredAssetTypes = plan.required_asset_types || [];
+      const planRequiresCharitableIntent = plan.requires_charitable_intent ?? true;
+      const planTaxDeductionPercent = plan.tax_deduction_percent.toString();
+      const planBenefits = plan.benefits && plan.benefits.length > 0 ? plan.benefits : [''];
+      const planCalculatorConfig = JSON.stringify(plan.calculator_config || {}, null, 2);
+      const planIsActive = plan.is_active;
+
+      setCode(planCode);
+      setName(planName);
+      setDescription(planDescription);
+      setMinIncome(planMinIncome);
+      setMinAssets(planMinAssets);
+      setMinAge(planMinAge);
+      setRequiredAssetTypes(planRequiredAssetTypes);
+      setRequiresCharitableIntent(planRequiresCharitableIntent);
+      setTaxDeductionPercent(planTaxDeductionPercent);
+      setBenefits(planBenefits);
+      setCalculatorConfig(planCalculatorConfig);
+      setIsActive(planIsActive);
+
+      setInitialValues({
+        code: planCode,
+        name: planName,
+        description: planDescription,
+        minIncome: planMinIncome,
+        minAssets: planMinAssets,
+        minAge: planMinAge,
+        requiredAssetTypes: planRequiredAssetTypes,
+        requiresCharitableIntent: planRequiresCharitableIntent,
+        taxDeductionPercent: planTaxDeductionPercent,
+        benefits: planBenefits,
+        calculatorConfig: planCalculatorConfig,
+        isActive: planIsActive,
+      });
+    } else {
+      // For new plan, initial values are the defaults
+      setInitialValues({
+        code: '',
+        name: '',
+        description: '',
+        minIncome: '',
+        minAssets: '',
+        minAge: '',
+        requiredAssetTypes: [],
+        requiresCharitableIntent: true,
+        taxDeductionPercent: '',
+        benefits: [''],
+        calculatorConfig: '',
+        isActive: true,
+      });
     }
   }, [plan]);
+
+  // Check if form has unsaved changes
+  const hasChanges = initialValues ? (
+    code !== initialValues.code ||
+    name !== initialValues.name ||
+    description !== initialValues.description ||
+    minIncome !== initialValues.minIncome ||
+    minAssets !== initialValues.minAssets ||
+    minAge !== initialValues.minAge ||
+    JSON.stringify([...requiredAssetTypes].sort()) !== JSON.stringify([...initialValues.requiredAssetTypes].sort()) ||
+    requiresCharitableIntent !== initialValues.requiresCharitableIntent ||
+    taxDeductionPercent !== initialValues.taxDeductionPercent ||
+    JSON.stringify(benefits) !== JSON.stringify(initialValues.benefits) ||
+    calculatorConfig !== initialValues.calculatorConfig ||
+    isActive !== initialValues.isActive
+  ) : false;
+
+  // Notify parent about changes
+  useEffect(() => {
+    if (onHasChangesChange) {
+      onHasChangesChange(hasChanges);
+    }
+  }, [hasChanges, onHasChangesChange]);
+
+  // Browser beforeunload warning
+  useEffect(() => {
+    if (!hasChanges) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+      return e.returnValue;
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasChanges]);
 
   function addBenefit() {
     setBenefits([...benefits, '']);
@@ -127,6 +235,21 @@ export function PlanForm({ plan, onSuccess, onCancel }: PlanFormProps) {
         };
         await createPlan(input);
       }
+      // Reset initial values after successful save
+      setInitialValues({
+        code,
+        name,
+        description: description || '',
+        minIncome,
+        minAssets,
+        minAge,
+        requiredAssetTypes,
+        requiresCharitableIntent,
+        taxDeductionPercent,
+        benefits: filteredBenefits.length > 0 ? filteredBenefits : [''],
+        calculatorConfig,
+        isActive,
+      });
       onSuccess();
     } catch (err) {
       console.error('[PlanForm] Error saving plan:', err);
@@ -139,8 +262,22 @@ export function PlanForm({ plan, onSuccess, onCancel }: PlanFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg shadow-sm">
+          <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
+        </div>
+      )}
+
+      {hasChanges && (
+        <div className="p-4 border-l-4 border-yellow-500 rounded-lg shadow-sm">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-yellow-800 dark:text-yellow-300 text-sm font-medium">You have unsaved changes</p>
+              <p className="text-yellow-700 dark:text-yellow-400 text-xs mt-1">
+                Please save your changes before navigating away to avoid losing your work.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -380,23 +517,13 @@ export function PlanForm({ plan, onSuccess, onCancel }: PlanFormProps) {
         </label>
       </div>
 
-      {/* Actions */}
-      <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg border border-[var(--border)] transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-4 py-2 text-sm bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading ? 'Saving...' : plan ? 'Update Plan' : 'Create Plan'}
-        </button>
-      </div>
+      {/* Hidden submit button for external trigger */}
+      <button
+        ref={submitRef}
+        type="submit"
+        className="hidden"
+        disabled={loading}
+      />
     </form>
   );
 }

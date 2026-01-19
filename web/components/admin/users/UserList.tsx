@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { getUsers, type User, deleteUser, type UserFilters } from '@/lib/api/users';
+import { getDepartments, type Department } from '@/lib/api/departments';
 import { useAuth } from '@/lib/auth/auth-context';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { USER_ROLES, USER_STATUSES } from '@/lib/api/users';
@@ -10,14 +11,30 @@ import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 interface UserListProps {
   onEdit: (user: User) => void;
+  onViewDetails?: (user: User) => void;
   filters?: UserFilters;
   onFiltersChange?: (filters: UserFilters) => void;
 }
 
-export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
+function getRoleColor(role: string): string {
+  // Treat donum_lead as donum_prospect
+  const normalizedRole = role === 'donum_lead' ? 'donum_prospect' : role;
+  const roleColors: Record<string, string> = {
+    'donum_super_admin': 'text-red-600 dark:text-red-400',
+    'donum_admin': 'text-purple-600 dark:text-purple-400',
+    'donum_staff': 'text-blue-600 dark:text-blue-400',
+    'donum_member': 'text-green-600 dark:text-green-400',
+    'donum_partner': 'text-orange-600 dark:text-orange-400',
+    'donum_prospect': 'text-yellow-600 dark:text-yellow-400',
+  };
+  return roleColors[normalizedRole] || 'text-gray-600 dark:text-gray-400';
+}
+
+export function UserList({ onEdit, onViewDetails, filters, onFiltersChange }: UserListProps) {
   const { session, loading: authLoading } = useAuth();
   const { canEdit, canDelete } = usePermissions('/admin/users');
   const [users, setUsers] = useState<User[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -29,6 +46,15 @@ export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
   const [roleFilter, setRoleFilter] = useState<UserFilters['role']>(filters?.role);
   const [statusFilter, setStatusFilter] = useState<UserFilters['status']>(filters?.status);
   const loadingRef = useRef(false);
+
+  const loadDepartments = useCallback(async () => {
+    try {
+      const depts = await getDepartments();
+      setDepartments(depts);
+    } catch (err) {
+      console.error('[UserList] Error loading departments:', err);
+    }
+  }, []);
 
   const loadUsers = useCallback(async () => {
     if (loadingRef.current) {
@@ -61,6 +87,10 @@ export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
       loadingRef.current = false;
     }
   }, [searchTerm, roleFilter, statusFilter, filters?.department, onFiltersChange]);
+
+  useEffect(() => {
+    loadDepartments();
+  }, [loadDepartments]);
 
   useEffect(() => {
     if (!authLoading && session) {
@@ -255,7 +285,11 @@ export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user.id} className="border-b border-[var(--border)] hover:bg-[var(--surface-hover)]">
+                <tr 
+                  key={user.id} 
+                  className="border-b border-[var(--border)] hover:bg-[var(--surface-hover)] cursor-pointer transition-colors"
+                  onClick={() => onViewDetails ? onViewDetails(user) : undefined}
+                >
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       {user.avatar_url ? (
@@ -276,20 +310,20 @@ export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
                   </td>
                   <td className="p-4 text-[var(--text-secondary)] text-sm">{user.email}</td>
                   <td className="p-4">
-                    <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
-                      {USER_ROLES.find(r => r.value === user.role)?.label || user.role}
+                    <span className={`inline-flex items-center text-xs font-medium ${getRoleColor(user.role)}`}>
+                      {USER_ROLES.find(r => r.value === user.role)?.label || (String(user.role) === 'donum_lead' ? 'Prospect' : user.role)}
                     </span>
                   </td>
                   <td className="p-4">
                     <span
-                      className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                      className={`inline-flex items-center text-xs font-medium ${
                         user.status === 'active'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                          ? 'text-green-600 dark:text-green-400'
                           : user.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                          ? 'text-yellow-600 dark:text-yellow-400'
                           : user.status === 'suspended'
-                          ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                          : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
+                          ? 'text-red-600 dark:text-red-400'
+                          : 'text-gray-600 dark:text-gray-400'
                       }`}
                     >
                       {USER_STATUSES.find(s => s.value === user.status)?.label || user.status}
@@ -298,14 +332,21 @@ export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
                   <td className="p-4">
                     {user.departments && user.departments.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
-                        {user.departments.slice(0, 2).map((dept) => (
-                          <span
-                            key={dept}
-                            className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400"
-                          >
-                            {dept}
-                          </span>
-                        ))}
+                        {user.departments.slice(0, 2).map((deptName) => {
+                          const dept = departments.find(d => d.name === deptName);
+                          const deptColor = dept?.color || '#6B7280'; // Default gray if not found
+                          return (
+                            <span
+                              key={deptName}
+                              className="inline-flex items-center text-xs font-medium"
+                              style={{
+                                color: deptColor
+                              }}
+                            >
+                              {deptName}
+                            </span>
+                          );
+                        })}
                         {user.departments.length > 2 && (
                           <span className="text-xs text-[var(--text-secondary)]">
                             +{user.departments.length - 2}
@@ -320,7 +361,7 @@ export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
                     {user.company || '-'}
                   </td>
                   <td className="p-4">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                       {canEdit('/admin/users') && (
                         <button
                           onClick={() => onEdit(user)}

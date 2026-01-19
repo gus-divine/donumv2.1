@@ -166,22 +166,6 @@ export function StaffList({ filters, onFiltersChange, onEdit }: StaffListProps) 
             </div>
           </form>
 
-          {/* Department Filter */}
-          <Select
-            id="staff-department-filter"
-            name="staff-department-filter"
-            value={departmentFilter}
-            onChange={(e) => handleDepartmentFilterChange(e.target.value)}
-            options={[
-              { value: 'all', label: 'All Departments' },
-              ...departments.map(dept => ({
-                value: dept.name,
-                label: dept.name
-              }))
-            ]}
-            className="w-48"
-          />
-
           {/* Status Filter */}
           <Select
             id="staff-status-filter"
@@ -196,6 +180,22 @@ export function StaffList({ filters, onFiltersChange, onEdit }: StaffListProps) 
               { value: 'suspended', label: 'Suspended' }
             ]}
             className="w-40"
+          />
+
+          {/* Department Filter */}
+          <Select
+            id="staff-department-filter"
+            name="staff-department-filter"
+            value={departmentFilter}
+            onChange={(e) => handleDepartmentFilterChange(e.target.value)}
+            options={[
+              { value: 'all', label: 'All Departments' },
+              ...departments.map(dept => ({
+                value: dept.name,
+                label: dept.name
+              }))
+            ]}
+            className="w-48"
           />
 
           {/* Clear Filters Button */}

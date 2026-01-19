@@ -3,15 +3,20 @@
 import { useState, useEffect } from 'react';
 import { createUser, updateUser, type User, type CreateUserInput, type UpdateUserInput, USER_ROLES, USER_STATUSES } from '@/lib/api/users';
 import { Select } from '@/components/ui/select';
+import { AlertCircle } from 'lucide-react';
 
 interface UserFormProps {
   user?: User | null;
   onSuccess: () => void;
   onCancel: () => void;
   defaultRole?: CreateUserInput['role'];
+  submitRef?: React.RefObject<HTMLButtonElement | null>;
+  onLoadingChange?: (loading: boolean) => void;
+  onHasChangesChange?: (hasChanges: boolean) => void;
+  showActions?: boolean;
 }
 
-export function UserForm({ user, onSuccess, onCancel, defaultRole = 'donum_prospect' }: UserFormProps) {
+export function UserForm({ user, onSuccess, onCancel, defaultRole = 'donum_prospect', submitRef, onLoadingChange, onHasChangesChange, showActions = true }: UserFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<CreateUserInput['role']>(defaultRole);
@@ -30,27 +35,141 @@ export function UserForm({ user, onSuccess, onCancel, defaultRole = 'donum_prosp
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Track initial values to detect changes
+  const [initialValues, setInitialValues] = useState<{
+    email: string;
+    role: CreateUserInput['role'];
+    status: CreateUserInput['status'];
+    firstName: string;
+    lastName: string;
+    phone: string;
+    cellPhone: string;
+    company: string;
+    title: string;
+    jobTitle: string;
+    adminLevel: string;
+    timezone: string;
+    language: string;
+    notes: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (onLoadingChange) {
+      onLoadingChange(loading);
+    }
+  }, [loading, onLoadingChange]);
+
   useEffect(() => {
     if (user) {
-      setEmail(user.email);
-      setRole(user.role);
-      setStatus(user.status);
-      setFirstName(user.first_name || '');
-      setLastName(user.last_name || '');
-      setPhone(user.phone || '');
-      setCellPhone(user.cell_phone || '');
-      setCompany(user.company || '');
-      setTitle(user.title || '');
-      setJobTitle(user.job_title || '');
-      setAdminLevel(user.admin_level || '');
-      setTimezone(user.timezone || 'America/New_York');
-      setLanguage(user.language || 'en');
-      setNotes(user.notes || '');
+      const userEmail = user.email;
+      const userRole = user.role;
+      const userStatus = user.status;
+      const userFirstName = user.first_name || '';
+      const userLastName = user.last_name || '';
+      const userPhone = user.phone || '';
+      const userCellPhone = user.cell_phone || '';
+      const userCompany = user.company || '';
+      const userTitle = user.title || '';
+      const userJobTitle = user.job_title || '';
+      const userAdminLevel = user.admin_level || '';
+      const userTimezone = user.timezone || 'America/New_York';
+      const userLanguage = user.language || 'en';
+      const userNotes = user.notes || '';
+
+      setEmail(userEmail);
+      setRole(userRole);
+      setStatus(userStatus);
+      setFirstName(userFirstName);
+      setLastName(userLastName);
+      setPhone(userPhone);
+      setCellPhone(userCellPhone);
+      setCompany(userCompany);
+      setTitle(userTitle);
+      setJobTitle(userJobTitle);
+      setAdminLevel(userAdminLevel);
+      setTimezone(userTimezone);
+      setLanguage(userLanguage);
+      setNotes(userNotes);
+
+      setInitialValues({
+        email: userEmail,
+        role: userRole,
+        status: userStatus,
+        firstName: userFirstName,
+        lastName: userLastName,
+        phone: userPhone,
+        cellPhone: userCellPhone,
+        company: userCompany,
+        title: userTitle,
+        jobTitle: userJobTitle,
+        adminLevel: userAdminLevel,
+        timezone: userTimezone,
+        language: userLanguage,
+        notes: userNotes,
+      });
     } else {
       // Set default role for new users
       setRole(defaultRole);
+      setInitialValues({
+        email: '',
+        role: defaultRole,
+        status: 'pending',
+        firstName: '',
+        lastName: '',
+        phone: '',
+        cellPhone: '',
+        company: '',
+        title: '',
+        jobTitle: '',
+        adminLevel: '',
+        timezone: 'America/New_York',
+        language: 'en',
+        notes: '',
+      });
     }
   }, [user, defaultRole]);
+
+  // Check if form has unsaved changes
+  const hasChanges = initialValues ? (
+    email !== initialValues.email ||
+    role !== initialValues.role ||
+    status !== initialValues.status ||
+    firstName !== initialValues.firstName ||
+    lastName !== initialValues.lastName ||
+    phone !== initialValues.phone ||
+    cellPhone !== initialValues.cellPhone ||
+    company !== initialValues.company ||
+    title !== initialValues.title ||
+    jobTitle !== initialValues.jobTitle ||
+    adminLevel !== initialValues.adminLevel ||
+    timezone !== initialValues.timezone ||
+    language !== initialValues.language ||
+    notes !== initialValues.notes ||
+    (!user && password !== '')
+  ) : false;
+
+  // Notify parent about changes
+  useEffect(() => {
+    if (onHasChangesChange) {
+      onHasChangesChange(hasChanges);
+    }
+  }, [hasChanges, onHasChangesChange]);
+
+  // Browser beforeunload warning
+  useEffect(() => {
+    if (!hasChanges) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+      return e.returnValue;
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasChanges]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -76,6 +195,23 @@ export function UserForm({ user, onSuccess, onCancel, defaultRole = 'donum_prosp
           notes: notes || undefined,
         };
         await updateUser(user.id, input);
+      // Reset initial values after successful save
+      setInitialValues({
+        email,
+        role,
+        status,
+        firstName,
+        lastName,
+        phone,
+        cellPhone,
+        company,
+        title,
+        jobTitle,
+        adminLevel,
+        timezone,
+        language,
+        notes,
+      });
       } else {
         if (!password) {
           setError('Password is required for new users');
@@ -112,6 +248,20 @@ export function UserForm({ user, onSuccess, onCancel, defaultRole = 'donum_prosp
       {error && (
         <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg shadow-sm mb-6">
           <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
+        </div>
+      )}
+
+      {hasChanges && (
+        <div className="p-4 border-l-4 border-yellow-500 rounded-lg shadow-sm mb-6">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-yellow-800 dark:text-yellow-300 text-sm font-medium">You have unsaved changes</p>
+              <p className="text-yellow-700 dark:text-yellow-400 text-xs mt-1">
+                Please save your changes before navigating away to avoid losing your work.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -168,32 +318,30 @@ export function UserForm({ user, onSuccess, onCancel, defaultRole = 'donum_prosp
             />
           </div>
 
-          {!user && (
-            <div className="space-y-2">
-              <label htmlFor="role" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
-                Role
-              </label>
-              <Select
-                id="role"
-                required
-                value={role}
-                onChange={(e) => setRole(e.target.value as CreateUserInput['role'])}
-                options={USER_ROLES}
-                className="w-full disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={!!defaultRole && !user}
-              />
-              {defaultRole && !user && (
-                <p className="text-xs text-[var(--text-secondary)]">
-                  Role is set to Prospect for new prospects.
-                </p>
-              )}
-            </div>
-          )}
+          <div className="space-y-2">
+            <label htmlFor="role" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+              Role {!user && '*'}
+            </label>
+            <Select
+              id="role"
+              required={!user}
+              value={role}
+              onChange={(e) => setRole(e.target.value as CreateUserInput['role'])}
+              options={USER_ROLES}
+              className="w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!!defaultRole && !user}
+            />
+            {defaultRole && !user && (
+              <p className="text-xs text-[var(--text-secondary)]">
+                Role is set to Prospect for new prospects.
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Personal Information */}
-      <div className="pt-6 border-t border-[var(--core-blue)] pb-6 mb-6">
+      <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Personal Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
@@ -255,7 +403,7 @@ export function UserForm({ user, onSuccess, onCancel, defaultRole = 'donum_prosp
       </div>
 
       {/* Professional Information */}
-      <div className="pt-6 border-t border-[var(--core-blue)] pb-6 mb-6">
+      <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
         <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Professional Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
@@ -290,7 +438,7 @@ export function UserForm({ user, onSuccess, onCancel, defaultRole = 'donum_prosp
 
       {/* Additional Settings - Only show for editing existing users */}
       {user && (
-        <div className="pt-6 border-t border-[var(--core-blue)] pb-6 mb-6">
+        <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
           <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Additional Settings</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {(role === 'donum_admin' || role === 'donum_super_admin') && (
@@ -366,29 +514,41 @@ export function UserForm({ user, onSuccess, onCancel, defaultRole = 'donum_prosp
       )}
 
       {/* Form Actions */}
-      <div className="flex justify-end gap-3 pt-6 border-t border-[var(--core-blue)]">
+      {showActions && (
+        <div className="flex justify-end gap-3 pt-6 border-t border-[var(--core-gold)]">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-3 py-1.5 text-sm font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin rounded-full h-3 w-3 border-2 border-[var(--core-blue)] border-t-transparent"></span>
+                {user ? 'Updating...' : 'Creating...'}
+              </span>
+            ) : (
+              user ? 'Update User' : 'Create Prospect'
+            )}
+          </button>
+        </div>
+      )}
+      {/* Hidden submit button for external trigger */}
+      {submitRef && (
         <button
-          type="button"
-          onClick={onCancel}
-          className="px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-        >
-          Cancel
-        </button>
-        <button
+          ref={submitRef}
           type="submit"
-          disabled={loading}
-          className="px-3 py-1.5 text-sm font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? (
-            <span className="flex items-center gap-2">
-              <span className="animate-spin rounded-full h-3 w-3 border-2 border-[var(--core-blue)] border-t-transparent"></span>
-              {user ? 'Updating...' : 'Creating...'}
-            </span>
-          ) : (
-            user ? 'Update User' : 'Create Prospect'
-          )}
-        </button>
-      </div>
+          className="hidden"
+          aria-hidden="true"
+          tabIndex={-1}
+        />
+      )}
     </form>
   );
 }

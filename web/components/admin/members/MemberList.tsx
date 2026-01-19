@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { getProspectStaffAssignments } from '@/lib/api/prospect-staff-assignments';
 import { Select } from '@/components/ui/select';
 import { getApplications } from '@/lib/api/applications';
+import { getDepartments, type Department } from '@/lib/api/departments';
 
 interface MemberListProps {
   filters?: UserFilters;
@@ -26,6 +27,8 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
   const [staffAssignments, setStaffAssignments] = useState<Record<string, any[]>>({});
   const [staffUsers, setStaffUsers] = useState<User[]>([]);
   const [memberDepartments, setMemberDepartments] = useState<Record<string, string[]>>({});
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [departmentFilter, setDepartmentFilter] = useState<string>(filters?.department || 'all');
   const loadingRef = useRef(false);
 
   // Member roles that should be shown in this list (ONLY actual members, not prospects/leads)
@@ -44,16 +47,13 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
       const currentFilters: UserFilters = {
         search: searchTerm || undefined,
         status: statusFilter,
-        department: filters?.department,
       };
       
       const allUsers = await getUsers(currentFilters);
       
       // Filter to only member roles
-      const memberUsers = allUsers.filter(user => memberRoles.includes(user.role));
+      let memberUsers = allUsers.filter(user => memberRoles.includes(user.role));
       
-      setMembers(memberUsers);
-
       // Load all staff users once (including admins and super admins who can also be assigned)
       const allUsersForStaff = await getUsers();
       const allStaffUsers = allUsersForStaff.filter(user => 
@@ -103,8 +103,21 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
       setStaffAssignments(assignments);
       setMemberDepartments(departmentsMap);
       
+      // Apply department filter client-side (since members get departments through staff assignments)
+      if (departmentFilter && departmentFilter !== 'all') {
+        memberUsers = memberUsers.filter(member => {
+          const memberDepts = departmentsMap[member.id] || [];
+          return memberDepts.includes(departmentFilter);
+        });
+      }
+      
+      setMembers(memberUsers);
+      
       if (onFiltersChange) {
-        onFiltersChange(currentFilters);
+        onFiltersChange({
+          ...currentFilters,
+          department: departmentFilter !== 'all' ? departmentFilter : undefined,
+        });
       }
     } catch (err) {
       console.error('[MemberList] Error loading members:', err);
@@ -113,7 +126,33 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
       setLoading(false);
       loadingRef.current = false;
     }
-  }, [searchTerm, statusFilter, filters?.department, onFiltersChange]);
+  }, [searchTerm, statusFilter, departmentFilter, onFiltersChange]);
+
+  // Load departments on mount
+  useEffect(() => {
+    async function loadDepartments() {
+      try {
+        const depts = await getDepartments();
+        setDepartments(depts.filter(d => d.is_active));
+      } catch (err) {
+        console.error('[MemberList] Error loading departments:', err);
+      }
+    }
+    
+    if (!authLoading && session) {
+      loadDepartments();
+    }
+  }, [authLoading, session]);
+
+  // Sync department filter from props
+  useEffect(() => {
+    if (filters?.department) {
+      setDepartmentFilter(filters.department);
+    } else if (filters && filters.department === undefined) {
+      // Only reset if filters prop exists but department is explicitly undefined
+      setDepartmentFilter('all');
+    }
+  }, [filters?.department]);
 
   useEffect(() => {
     if (!authLoading && session) {
@@ -141,10 +180,15 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
     }
   }
 
+  function handleDepartmentFilterChange(value: string) {
+    setDepartmentFilter(value);
+  }
+
   function handleClearFilters() {
     setLocalSearchTerm('');
     setSearchTerm('');
     setStatusFilter(undefined);
+    setDepartmentFilter('all');
   }
 
   if (loading) {
@@ -203,6 +247,22 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
             className="w-40"
           />
 
+          {/* Department Filter */}
+          <Select
+            id="member-department-filter"
+            name="member-department-filter"
+            value={departmentFilter}
+            onChange={(e) => handleDepartmentFilterChange(e.target.value)}
+            options={[
+              { value: 'all', label: 'All Departments' },
+              ...departments.map(dept => ({
+                value: dept.name,
+                label: dept.name
+              }))
+            ]}
+            className="w-48"
+          />
+
           {/* Clear Filters Button */}
           <button
             onClick={handleClearFilters}
@@ -229,7 +289,7 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
       {members.length === 0 ? (
         <div className="p-8 text-center">
           <p className="text-[var(--text-secondary)]">
-            {searchTerm || statusFilter
+            {searchTerm || statusFilter || (departmentFilter && departmentFilter !== 'all')
               ? 'No members found matching your filters.'
               : 'No members found. Members will appear here once created.'}
           </p>

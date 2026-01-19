@@ -1,42 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { PermissionGuard } from '@/components/admin/shared/PermissionGuard';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { PlanList } from '@/components/admin/plans/PlanList';
-import { PlanForm } from '@/components/admin/plans/PlanForm';
 import type { DonumPlan } from '@/lib/api/plans';
 
-type ViewMode = 'list' | 'create' | 'edit';
-
 export default function PlansPage() {
+  const router = useRouter();
   const { canEdit } = usePermissions('/admin/plans');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [selectedPlan, setSelectedPlan] = useState<DonumPlan | null>(null);
 
   function handleCreate() {
-    setSelectedPlan(null);
-    setViewMode('create');
+    router.push('/admin/plans/new');
   }
 
   function handleEdit(plan: DonumPlan) {
-    setSelectedPlan(plan);
-    setViewMode('edit');
-  }
-
-  function handleSuccess() {
-    setViewMode('list');
-    setSelectedPlan(null);
-  }
-
-  function handleCancel() {
-    setViewMode('list');
-    setSelectedPlan(null);
+    router.push(`/admin/plans/${plan.id}?edit=true`);
   }
 
   return (
     <PermissionGuard>
-      <main className="min-h-screen p-8">
+      <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">Plans</h1>
@@ -44,32 +28,20 @@ export default function PlansPage() {
               Manage Donum plan templates (Defund, Diversion, Divest) and their requirements.
             </p>
           </div>
-          {viewMode === 'list' && canEdit('/admin/plans') && (
+          {canEdit('/admin/plans') && (
             <button
               onClick={handleCreate}
-              className="px-4 py-2 bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] transition-colors"
+              className="px-3 py-1.5 text-sm font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors"
             >
-              Create Plan
+              + Create Plan
             </button>
           )}
         </div>
 
-        {viewMode === 'list' && (
-          <PlanList onEdit={handleEdit} />
-        )}
-
-        {(viewMode === 'create' || viewMode === 'edit') && (
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6 max-w-4xl">
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-6">
-              {viewMode === 'create' ? 'Create New Plan' : 'Edit Plan'}
-            </h2>
-            <PlanForm
-              plan={viewMode === 'edit' ? selectedPlan : null}
-              onSuccess={handleSuccess}
-              onCancel={handleCancel}
-            />
-          </div>
-        )}
+        <PlanList 
+          onEdit={handleEdit}
+          onViewDetails={(plan) => router.push(`/admin/plans/${plan.id}`)}
+        />
       </main>
     </PermissionGuard>
   );

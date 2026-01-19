@@ -12,27 +12,71 @@ import { getDepartmentPermissions } from '@/lib/api/departments';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import {
   Users, Shield, Briefcase, Headphones, Settings, ChartBar, File, Folder,
-  Mail, Phone, Calendar, Star, Heart, Tag, Flag, Bell, type LucideIcon
+  Mail, Phone, Calendar, Star, Heart, Tag, Flag, Bell, Building2, UserCheck,
+  UserSearch, CreditCard, TrendingUp, BookOpen, LayoutDashboard, FileText,
+  Database, Globe, Target, Zap, Award, Home, MapPin, DollarSign, PieChart,
+  BarChart3, Wallet, Handshake, Lightbulb, Rocket, Gem, Banknote, Coins,
+  Receipt, Calculator, Percent, TrendingDown, LineChart, Activity, Lock,
+  Key, ClipboardCheck, CheckCircle2, AlertCircle, Info, type LucideIcon
 } from 'lucide-react';
 
 // Map icon names to Lucide icon components
 const ICON_MAP: Record<string, LucideIcon> = {
+  // Core business icons
   users: Users,
-  shield: Shield,
   briefcase: Briefcase,
-  headphones: Headphones,
-  settings: Settings,
+  building2: Building2,
+  handshake: Handshake,
+  userCheck: UserCheck,
+  userSearch: UserSearch,
+  // Financial icons
+  dollarSign: DollarSign,
+  creditCard: CreditCard,
+  wallet: Wallet,
+  banknote: Banknote,
+  coins: Coins,
+  receipt: Receipt,
+  calculator: Calculator,
+  percent: Percent,
+  trendingUp: TrendingUp,
+  trendingDown: TrendingDown,
+  pieChart: PieChart,
+  barChart3: BarChart3,
+  lineChart: LineChart,
   chart: ChartBar,
-  file: File,
-  folder: Folder,
+  // Operations & Services
+  headphones: Headphones,
   mail: Mail,
   phone: Phone,
   calendar: Calendar,
+  file: File,
+  folder: Folder,
+  fileText: FileText,
+  bookOpen: BookOpen,
+  // Security & Compliance
+  shield: Shield,
+  lock: Lock,
+  key: Key,
+  clipboardCheck: ClipboardCheck,
+  checkCircle2: CheckCircle2,
+  alertCircle: AlertCircle,
+  // Management & Analytics
+  settings: Settings,
+  layoutDashboard: LayoutDashboard,
+  database: Database,
+  activity: Activity,
+  target: Target,
+  award: Award,
+  // General
   star: Star,
-  heart: Heart,
   tag: Tag,
   flag: Flag,
   bell: Bell,
+  info: Info,
+  zap: Zap,
+  home: Home,
+  mapPin: MapPin,
+  globe: Globe,
 };
 
 // Format date helper
@@ -268,17 +312,14 @@ export default function DepartmentDetailPage() {
                 </div>
                 <div className="space-y-1">
                   <span className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Icon</span>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="p-1.5 rounded"
-                      style={{ backgroundColor: department.color + '20' }}
-                    >
-                      <IconComponent
-                        className="w-4 h-4"
-                        style={{ color: department.color }}
-                      />
-                    </div>
-                    <p className="text-[var(--text-primary)]">{department.icon}</p>
+                  <div
+                    className="p-1.5 rounded inline-flex"
+                    style={{ backgroundColor: department.color + '20' }}
+                  >
+                    <IconComponent
+                      className="w-4 h-4"
+                      style={{ color: department.color }}
+                    />
                   </div>
                 </div>
                 <div className="space-y-1">
@@ -396,15 +437,26 @@ export default function DepartmentDetailPage() {
         {/* Edit Form Modal */}
         {showEditForm && department && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-[var(--background)] rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-[var(--border)] p-6">
-              <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-6">
-                Edit Department
-              </h2>
-              <DepartmentForm
-                department={department}
-                onSuccess={handleEditSuccess}
-                onCancel={handleEditCancel}
-              />
+            <div className="bg-white dark:bg-[var(--background)] rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-[var(--border)]">
+              <div className="sticky top-0 bg-white dark:bg-[var(--background)] border-b border-[var(--border)] px-6 py-4 z-10">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+                      {department ? 'Edit Department' : 'Create Department'}
+                    </h2>
+                    <p className="text-sm text-[var(--text-secondary)] mt-1">
+                      {department ? 'Update department information and settings' : 'Create a new department'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6">
+                <DepartmentForm
+                  department={department}
+                  onSuccess={handleEditSuccess}
+                  onCancel={handleEditCancel}
+                />
+              </div>
             </div>
           </div>
         )}

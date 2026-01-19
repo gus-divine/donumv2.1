@@ -8,27 +8,71 @@ import { Select } from '@/components/ui/select';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import {
   Users, Shield, Briefcase, Headphones, Settings, ChartBar, File, Folder,
-  Mail, Phone, Calendar, Star, Heart, Tag, Flag, Bell, type LucideIcon
+  Mail, Phone, Calendar, Star, Heart, Tag, Flag, Bell, Building2, UserCheck,
+  UserSearch, CreditCard, TrendingUp, BookOpen, LayoutDashboard, FileText,
+  Database, Globe, Target, Zap, Award, Home, MapPin, DollarSign, PieChart,
+  BarChart3, Wallet, Handshake, Lightbulb, Rocket, Gem, Banknote, Coins,
+  Receipt, Calculator, Percent, TrendingDown, LineChart, Activity, Lock,
+  Key, ClipboardCheck, CheckCircle2, AlertCircle, Info, type LucideIcon
 } from 'lucide-react';
 
 // Map icon names to Lucide icon components
 const ICON_MAP: Record<string, LucideIcon> = {
+  // Core business icons
   users: Users,
-  shield: Shield,
   briefcase: Briefcase,
-  headphones: Headphones,
-  settings: Settings,
+  building2: Building2,
+  handshake: Handshake,
+  userCheck: UserCheck,
+  userSearch: UserSearch,
+  // Financial icons
+  dollarSign: DollarSign,
+  creditCard: CreditCard,
+  wallet: Wallet,
+  banknote: Banknote,
+  coins: Coins,
+  receipt: Receipt,
+  calculator: Calculator,
+  percent: Percent,
+  trendingUp: TrendingUp,
+  trendingDown: TrendingDown,
+  pieChart: PieChart,
+  barChart3: BarChart3,
+  lineChart: LineChart,
   chart: ChartBar,
-  file: File,
-  folder: Folder,
+  // Operations & Services
+  headphones: Headphones,
   mail: Mail,
   phone: Phone,
   calendar: Calendar,
+  file: File,
+  folder: Folder,
+  fileText: FileText,
+  bookOpen: BookOpen,
+  // Security & Compliance
+  shield: Shield,
+  lock: Lock,
+  key: Key,
+  clipboardCheck: ClipboardCheck,
+  checkCircle2: CheckCircle2,
+  alertCircle: AlertCircle,
+  // Management & Analytics
+  settings: Settings,
+  layoutDashboard: LayoutDashboard,
+  database: Database,
+  activity: Activity,
+  target: Target,
+  award: Award,
+  // General
   star: Star,
-  heart: Heart,
   tag: Tag,
   flag: Flag,
   bell: Bell,
+  info: Info,
+  zap: Zap,
+  home: Home,
+  mapPin: MapPin,
+  globe: Globe,
 };
 
 interface DepartmentListProps {
@@ -36,9 +80,10 @@ interface DepartmentListProps {
   onViewPermissions: (department: Department) => void;
   onManageStaff: (department: Department) => void;
   onViewDetails?: (department: Department) => void;
+  refreshTrigger?: number;
 }
 
-export function DepartmentList({ onEdit, onViewPermissions, onManageStaff, onViewDetails }: DepartmentListProps) {
+export function DepartmentList({ onEdit, onViewPermissions, onManageStaff, onViewDetails, refreshTrigger }: DepartmentListProps) {
   const { session, loading: authLoading } = useAuth();
   const { canEdit, canDelete } = usePermissions('/admin/departments');
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -106,6 +151,13 @@ export function DepartmentList({ onEdit, onViewPermissions, onManageStaff, onVie
       setLoading(false);
     }
   }, [authLoading, session, loadDepartments]);
+
+  // Refresh when refreshTrigger changes
+  useEffect(() => {
+    if (refreshTrigger !== undefined && refreshTrigger > 0 && !authLoading && session) {
+      loadDepartments();
+    }
+  }, [refreshTrigger, authLoading, session, loadDepartments]);
 
   useEffect(() => {
     applyFilters(departments, searchTerm, statusFilter);
@@ -256,10 +308,9 @@ export function DepartmentList({ onEdit, onViewPermissions, onManageStaff, onVie
             <thead>
               <tr className="border-b border-[var(--border)]">
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Name</th>
-                <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Description</th>
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Icon</th>
-                <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Color</th>
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Status</th>
+                <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Description</th>
                 <th className="text-right p-4 text-sm font-semibold text-[var(--text-primary)]">Actions</th>
               </tr>
             </thead>
@@ -279,36 +330,21 @@ export function DepartmentList({ onEdit, onViewPermissions, onManageStaff, onVie
                   <span className="font-medium text-[var(--text-primary)]">{dept.name}</span>
                 </div>
               </td>
-              <td className="p-4 text-[var(--text-secondary)] text-sm">
-                {dept.description || '-'}
-              </td>
               <td className="p-4">
                 {(() => {
                   const IconComponent = ICON_MAP[dept.icon] || Users;
                   return (
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="p-1.5 rounded"
-                        style={{ backgroundColor: dept.color + '20' }}
-                      >
-                        <IconComponent
-                          className="w-4 h-4"
-                          style={{ color: dept.color }}
-                        />
-                      </div>
-                      <span className="text-sm text-[var(--text-secondary)]">{dept.icon}</span>
+                    <div
+                      className="p-1.5 rounded inline-flex"
+                      style={{ backgroundColor: dept.color + '20' }}
+                    >
+                      <IconComponent
+                        className="w-4 h-4"
+                        style={{ color: dept.color }}
+                      />
                     </div>
                   );
                 })()}
-              </td>
-              <td className="p-4">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-6 h-6 rounded"
-                    style={{ backgroundColor: dept.color }}
-                  />
-                  <span className="text-sm text-[var(--text-secondary)]">{dept.color}</span>
-                </div>
               </td>
               <td className="p-4">
                 <span
@@ -320,6 +356,9 @@ export function DepartmentList({ onEdit, onViewPermissions, onManageStaff, onVie
                 >
                   {dept.is_active ? 'Active' : 'Inactive'}
                 </span>
+              </td>
+              <td className="p-4 text-[var(--text-secondary)] text-sm">
+                {dept.description || '-'}
               </td>
               <td className="p-4">
                 <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
