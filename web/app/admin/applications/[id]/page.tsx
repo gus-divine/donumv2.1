@@ -49,7 +49,11 @@ export default function ApplicationDetailPage() {
   }, [applicationId, searchParams]);
 
   function handleBack() {
-    router.push('/admin/applications');
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/admin/applications');
+    }
   }
 
   function handleEdit() {
@@ -91,7 +95,7 @@ export default function ApplicationDetailPage() {
             onClick={handleBack}
             className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-4 transition-colors"
           >
-            ← Back to Applications
+            ← Back
           </button>
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6 max-w-2xl">
             <h1 className="text-xl font-semibold text-[var(--text-primary)] mb-4">Error</h1>
@@ -100,7 +104,7 @@ export default function ApplicationDetailPage() {
               onClick={handleBack}
               className="px-4 py-2 text-sm text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors"
             >
-              Back to Applications
+              Back
             </button>
           </div>
         </main>
@@ -116,7 +120,7 @@ export default function ApplicationDetailPage() {
             onClick={handleBack}
             className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-6 transition-colors"
           >
-            ← Back to Applications
+            ← Back
           </button>
           <div className="mb-8">
             <div className="flex items-start justify-between">

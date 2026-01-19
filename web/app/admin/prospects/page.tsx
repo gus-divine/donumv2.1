@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { PermissionGuard } from '@/components/admin/shared/PermissionGuard';
 import { ProspectList } from '@/components/admin/prospects/ProspectList';
 import { UserForm } from '@/components/admin/users/UserForm';
@@ -10,6 +11,7 @@ import type { UserFilters } from '@/lib/api/users';
 type ViewMode = 'list' | 'create';
 
 export default function ProspectsPage() {
+  const router = useRouter();
   const { canEdit } = usePermissions('/admin/prospects');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [filters, setFilters] = useState<UserFilters>({});
@@ -24,7 +26,11 @@ export default function ProspectsPage() {
   }
 
   function handleCancel() {
-    setViewMode('list');
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      setViewMode('list');
+    }
   }
 
   return (
@@ -35,7 +41,7 @@ export default function ProspectsPage() {
             onClick={handleCancel}
             className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-6 transition-colors"
           >
-            ← Back to Prospects
+            ← Back
           </button>
         )}
         

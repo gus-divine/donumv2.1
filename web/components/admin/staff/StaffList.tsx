@@ -264,14 +264,14 @@ export function StaffList({ filters, onFiltersChange, onEdit }: StaffListProps) 
                       {USER_ROLES.find(r => r.value === staffMember.role)?.label || staffMember.role}
                     </td>
                     <td className="p-4">
-                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                      <span className={`inline-flex items-center text-xs font-medium ${
                         staffMember.status === 'active'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                          ? 'text-green-600 dark:text-green-400'
                           : staffMember.status === 'inactive'
-                          ? 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                          ? 'text-gray-600 dark:text-gray-400'
                           : staffMember.status === 'suspended'
-                          ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                          ? 'text-red-600 dark:text-red-400'
+                          : 'text-yellow-600 dark:text-yellow-400'
                       }`}>
                         {staffMember.status || 'active'}
                       </span>
@@ -279,14 +279,22 @@ export function StaffList({ filters, onFiltersChange, onEdit }: StaffListProps) 
                     <td className="p-4">
                       {staffMember.departments && staffMember.departments.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
-                          {staffMember.departments.map((deptName) => (
-                            <span
-                              key={deptName}
-                              className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-[var(--surface-hover)] text-[var(--text-secondary)]"
-                            >
-                              {deptName}
-                            </span>
-                          ))}
+                          {staffMember.departments.map((deptName) => {
+                            const dept = departments.find(d => d.name === deptName);
+                            const deptColor = dept?.color || '#6B7280'; // Default gray if not found
+                            return (
+                              <span
+                                key={deptName}
+                                className="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
+                                style={{
+                                  backgroundColor: deptColor + '20',
+                                  color: deptColor
+                                }}
+                              >
+                                {deptName}
+                              </span>
+                            );
+                          })}
                         </div>
                       ) : (
                         <span className="text-[var(--text-secondary)] text-sm">-</span>

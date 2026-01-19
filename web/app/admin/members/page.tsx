@@ -10,11 +10,11 @@ export default function MembersPage() {
 
   return (
     <PermissionGuard>
-      <main className="min-h-screen p-8">
+      <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Members</h1>
-          <p className="mt-2 text-[var(--text-secondary)]">
-            Manage members, prospects, and leads. Assign staff to help with their applications.
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">
+            View and manage members. Click on a member to view their details.
           </p>
         </div>
         <MemberList filters={filters} onFiltersChange={setFilters} />

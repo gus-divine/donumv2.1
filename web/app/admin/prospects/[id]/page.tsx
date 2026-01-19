@@ -108,7 +108,11 @@ export default function ProspectDetailPage() {
   }, [prospectId]);
 
   function handleBack() {
-    router.push('/admin/prospects');
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/admin/prospects');
+    }
   }
 
   function handleViewApplication(application: Application) {
@@ -193,7 +197,7 @@ export default function ProspectDetailPage() {
             onClick={handleBack}
             className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-4 transition-colors"
           >
-            ← Back to Prospects
+            ← Back
           </button>
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6 max-w-2xl">
             <h1 className="text-xl font-semibold text-[var(--text-primary)] mb-4">Error</h1>
@@ -202,7 +206,7 @@ export default function ProspectDetailPage() {
               onClick={handleBack}
               className="px-4 py-2 text-sm text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors"
             >
-              Back to Prospects
+              Back
             </button>
           </div>
         </main>
@@ -222,7 +226,7 @@ export default function ProspectDetailPage() {
             onClick={handleBack}
             className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-6 transition-colors"
           >
-            ← Back to Prospects
+            ← Back
           </button>
 
           <div className="mb-8 flex items-start justify-between">
@@ -491,14 +495,24 @@ export default function ProspectDetailPage() {
               <h3 className="text-lg font-semibold text-[var(--text-primary)]">
                 Applications ({applications.length})
               </h3>
-              {applications.length > 0 && (
-                <button
-                  onClick={handleViewAllApplications}
-                  className="text-sm text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors"
-                >
-                  View All →
-                </button>
-              )}
+              <div className="flex items-center gap-3">
+                {applications.length > 0 && (
+                  <button
+                    onClick={handleViewAllApplications}
+                    className="text-sm text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors"
+                  >
+                    View All →
+                  </button>
+                )}
+                {canEdit('/admin/applications') && (
+                  <button
+                    onClick={() => router.push(`/admin/applications?applicant_id=${prospectId}`)}
+                    className="text-sm text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors"
+                  >
+                    Add Application
+                  </button>
+                )}
+              </div>
             </div>
 
             {applications.length === 0 ? (

@@ -77,24 +77,8 @@ export function StaffDepartmentAssignment({ staff, onClose, onUpdate }: StaffDep
     }
   }
 
-  async function handleSave() {
-    try {
-      setSaving(true);
-      setError(null);
-      await updateUser(staff.id, { departments: assignedDepartments });
-      if (onUpdate) {
-        onUpdate();
-      }
-      onClose();
-    } catch (err) {
-      console.error('[StaffDepartmentAssignment] Error saving:', err);
-      setError(err instanceof Error ? err.message : 'Failed to save changes');
-    } finally {
-      setSaving(false);
-    }
-  }
-
   const filteredDepartments = departments.filter(dept => {
+    if (!dept.is_active) return false;
     const search = searchTerm.toLowerCase();
     return dept.name.toLowerCase().includes(search) ||
            (dept.description && dept.description.toLowerCase().includes(search));
@@ -105,21 +89,22 @@ export function StaffDepartmentAssignment({ staff, onClose, onUpdate }: StaffDep
     : staff.email;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-[var(--background)] rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-[var(--background)] rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-[var(--border)]">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
+        <div className="flex items-center justify-between p-6 border-b border-[var(--border)] bg-gradient-to-r from-[var(--surface)]/50 to-transparent">
           <div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)]">
-              Manage Departments for {staffName}
+            <h2 className="text-xl font-bold text-[var(--text-primary)]">
+              Manage Departments
             </h2>
             <p className="text-sm text-[var(--text-secondary)] mt-1">
-              Assign or remove departments for this staff member
+              {staffName}
             </p>
           </div>
           <button
             onClick={onClose}
             className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg transition-colors"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
@@ -128,77 +113,98 @@ export function StaffDepartmentAssignment({ staff, onClose, onUpdate }: StaffDep
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {error && (
-            <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg shadow-sm">
+              <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
             </div>
           )}
 
           {loading ? (
-            <div className="flex items-center justify-center p-8">
-              <p className="text-[var(--text-secondary)]">Loading departments...</p>
+            <div className="flex items-center justify-center p-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--core-blue)] border-t-transparent mx-auto mb-4"></div>
+                <p className="text-[var(--text-secondary)] text-sm">Loading departments...</p>
+              </div>
             </div>
           ) : (
             <>
               {/* Search */}
               <div className="mb-6">
-                <input
-                  type="text"
-                  placeholder="Search departments..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-4 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
-                />
+                <label htmlFor="department-search" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide mb-2">
+                  Search Departments
+                </label>
+                <div className="relative">
+                  <input
+                    id="department-search"
+                    type="text"
+                    placeholder="Search by name or description..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
+                  />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               {/* Departments List */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {filteredDepartments.length === 0 ? (
-                  <p className="text-[var(--text-secondary)] text-center py-8">
-                    {searchTerm ? 'No departments found matching your search.' : 'No departments available.'}
-                  </p>
+                  <div className="text-center py-12 border border-[var(--border)] rounded-lg">
+                    <p className="text-[var(--text-secondary)] text-sm">
+                      {searchTerm ? 'No departments found matching your search.' : 'No departments available.'}
+                    </p>
+                  </div>
                 ) : (
                   filteredDepartments.map((dept) => {
                     const isAssigned = assignedDepartments.includes(dept.name);
+                    const deptColor = dept.color || '#6B7280';
+                    
                     return (
                       <div
                         key={dept.id}
-                        className={`flex items-center justify-between p-4 border rounded-lg transition-colors ${
+                        className={`flex items-center justify-between p-4 border rounded-lg transition-all ${
                           isAssigned
                             ? 'border-[var(--core-blue)] bg-[var(--core-blue)]/5'
-                            : 'border-[var(--border)] hover:bg-[var(--surface-hover)]'
+                            : 'border-[var(--border)] hover:bg-[var(--surface-hover)] hover:border-[var(--core-blue)]/30'
                         }`}
                       >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="w-4 h-4 rounded border-2 flex items-center justify-center cursor-pointer transition-colors"
-                              style={{
-                                backgroundColor: isAssigned ? 'var(--core-blue)' : 'transparent',
-                                borderColor: 'var(--core-blue)'
-                              }}
-                              onClick={() => handleToggleDepartment(dept.name, isAssigned)}
-                            >
-                              {isAssigned && (
-                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                </svg>
-                              )}
-                            </div>
-                            <div>
-                              <h3 className="font-medium text-[var(--text-primary)]">{dept.name}</h3>
+                        <div className="flex items-center gap-3 flex-1">
+                          <label className="flex items-center cursor-pointer flex-1">
+                            <input
+                              type="checkbox"
+                              checked={isAssigned}
+                              onChange={() => handleToggleDepartment(dept.name, isAssigned)}
+                              disabled={saving}
+                              className="w-4 h-4 rounded border-2 border-[var(--core-blue)] text-[var(--core-blue)] focus:ring-[var(--core-blue)] focus:ring-offset-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            />
+                            <div className="ml-3 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className="inline-flex items-center px-2 py-1 rounded text-xs font-medium"
+                                  style={{
+                                    backgroundColor: deptColor + '20',
+                                    color: deptColor
+                                  }}
+                                >
+                                  {dept.name}
+                                </span>
+                              </div>
                               {dept.description && (
                                 <p className="text-sm text-[var(--text-secondary)] mt-1">{dept.description}</p>
                               )}
                             </div>
-                          </div>
+                          </label>
                         </div>
                         <button
                           onClick={() => handleToggleDepartment(dept.name, isAssigned)}
                           disabled={saving}
-                          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                             isAssigned
-                              ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400'
-                              : 'bg-[var(--core-blue)] text-white hover:bg-[var(--core-blue-light)]'
+                              ? 'text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20'
+                              : 'text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 hover:bg-[var(--surface-hover)]'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                           {isAssigned ? 'Remove' : 'Assign'}
@@ -213,19 +219,12 @@ export function StaffDepartmentAssignment({ staff, onClose, onUpdate }: StaffDep
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-[var(--border)]">
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-[var(--border)] bg-[var(--surface)]/30">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg border border-[var(--border)] transition-colors"
+            className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg border border-[var(--border)] transition-colors"
           >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-4 py-2 text-sm font-medium bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
+            Close
           </button>
         </div>
       </div>

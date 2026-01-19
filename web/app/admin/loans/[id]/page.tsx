@@ -43,7 +43,11 @@ export default function LoanDetailPage() {
   }, [loanId]);
 
   function handleBack() {
-    router.push('/admin/loans');
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/admin/loans');
+    }
   }
 
   function handleLoanUpdated(updatedLoan: Loan) {
@@ -70,7 +74,7 @@ export default function LoanDetailPage() {
             onClick={handleBack}
             className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-4 transition-colors"
           >
-            ← Back to Loans
+            ← Back
           </button>
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6 max-w-2xl">
             <h1 className="text-xl font-semibold text-[var(--text-primary)] mb-4">Error</h1>
@@ -79,7 +83,7 @@ export default function LoanDetailPage() {
               onClick={handleBack}
               className="px-4 py-2 bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] transition-colors"
             >
-              Back to Loans
+              Back
             </button>
           </div>
         </main>
@@ -94,7 +98,7 @@ export default function LoanDetailPage() {
           onClick={handleBack}
           className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-4 transition-colors"
         >
-          ← Back to Loans
+          ← Back
         </button>
         <LoanDetail loan={loan} onBack={handleBack} onLoanUpdated={handleLoanUpdated} />
       </main>

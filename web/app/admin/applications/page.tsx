@@ -30,10 +30,16 @@ export default function ApplicationsPage() {
       <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
         {hasApplicantFilter && (
           <button
-            onClick={() => router.push('/admin/prospects')}
+            onClick={() => {
+              if (typeof window !== 'undefined' && window.history.length > 1) {
+                router.back();
+              } else {
+                router.push('/admin/prospects');
+              }
+            }}
             className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-4 transition-colors"
           >
-            ← Back to Prospects
+            ← Back
           </button>
         )}
         <div className="mb-6">

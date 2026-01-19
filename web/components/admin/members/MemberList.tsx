@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { getUsers, type User, type UserFilters } from '@/lib/api/users';
 import { useAuth } from '@/lib/auth/auth-context';
-import { usePermissions } from '@/lib/hooks/usePermissions';
-import { USER_ROLES } from '@/lib/api/users';
-import { ProspectStaffAssignment } from '@/components/admin/shared/ProspectStaffAssignment';
 import { getProspectStaffAssignments } from '@/lib/api/prospect-staff-assignments';
 import { Select } from '@/components/ui/select';
+import { getApplications } from '@/lib/api/applications';
 
 interface MemberListProps {
   filters?: UserFilters;
@@ -15,17 +14,18 @@ interface MemberListProps {
 }
 
 export function MemberList({ filters, onFiltersChange }: MemberListProps) {
+  const router = useRouter();
   const { session, loading: authLoading } = useAuth();
-  const { canEdit } = usePermissions('/admin/members');
   const [members, setMembers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [localSearchTerm, setLocalSearchTerm] = useState(filters?.search || '');
   const [searchTerm, setSearchTerm] = useState(filters?.search || '');
-  const [roleFilter, setRoleFilter] = useState<UserFilters['role']>(filters?.role);
   const [statusFilter, setStatusFilter] = useState<UserFilters['status']>(filters?.status);
-  const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
-  const [selectedProspectName, setSelectedProspectName] = useState<string>('');
+  const [applicationCounts, setApplicationCounts] = useState<Record<string, number>>({});
+  const [staffAssignments, setStaffAssignments] = useState<Record<string, any[]>>({});
+  const [staffUsers, setStaffUsers] = useState<User[]>([]);
+  const [memberDepartments, setMemberDepartments] = useState<Record<string, string[]>>({});
   const loadingRef = useRef(false);
 
   // Member roles that should be shown in this list (ONLY actual members, not prospects/leads)
@@ -43,7 +43,6 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
       
       const currentFilters: UserFilters = {
         search: searchTerm || undefined,
-        role: roleFilter,
         status: statusFilter,
         department: filters?.department,
       };
@@ -54,6 +53,55 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
       const memberUsers = allUsers.filter(user => memberRoles.includes(user.role));
       
       setMembers(memberUsers);
+
+      // Load all staff users once (including admins and super admins who can also be assigned)
+      const allUsersForStaff = await getUsers();
+      const allStaffUsers = allUsersForStaff.filter(user => 
+        user.role === 'donum_staff' || 
+        user.role === 'donum_admin' || 
+        user.role === 'donum_super_admin'
+      );
+      setStaffUsers(allStaffUsers);
+
+      // Load application counts, staff assignments, and departments for each member
+      const counts: Record<string, number> = {};
+      const assignments: Record<string, any[]> = {};
+      const departmentsMap: Record<string, string[]> = {};
+      
+      await Promise.all(
+        memberUsers.map(async (member) => {
+          try {
+            const [applications, memberAssignments] = await Promise.all([
+              getApplications({ applicant_id: member.id }),
+              getProspectStaffAssignments(member.id).catch(() => [])
+            ]);
+            counts[member.id] = applications.length;
+            assignments[member.id] = memberAssignments.filter(a => a.is_active);
+            
+            // Get departments from assigned staff members
+            const activeAssignments = memberAssignments.filter(a => a.is_active);
+            const assignedStaffIds = activeAssignments.map(a => a.staff_id);
+            const assignedStaff = allStaffUsers.filter(s => assignedStaffIds.includes(s.id));
+            
+            // Collect all unique departments from assigned staff
+            const deptSet = new Set<string>();
+            assignedStaff.forEach(staff => {
+              if (staff.departments && Array.isArray(staff.departments)) {
+                staff.departments.forEach(dept => deptSet.add(dept));
+              }
+            });
+            departmentsMap[member.id] = Array.from(deptSet);
+          } catch (err) {
+            console.error(`[MemberList] Error loading data for member ${member.id}:`, err);
+            counts[member.id] = 0;
+            assignments[member.id] = [];
+            departmentsMap[member.id] = [];
+          }
+        })
+      );
+      setApplicationCounts(counts);
+      setStaffAssignments(assignments);
+      setMemberDepartments(departmentsMap);
       
       if (onFiltersChange) {
         onFiltersChange(currentFilters);
@@ -65,7 +113,7 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
       setLoading(false);
       loadingRef.current = false;
     }
-  }, [searchTerm, roleFilter, statusFilter, filters?.department, onFiltersChange]);
+  }, [searchTerm, statusFilter, filters?.department, onFiltersChange]);
 
   useEffect(() => {
     if (!authLoading && session) {
@@ -76,32 +124,13 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
     }
   }, [authLoading, session, loadMembers]);
 
-  function handleAssignStaff(member: User) {
-    const name = member.first_name || member.last_name
-      ? `${member.first_name || ''} ${member.last_name || ''}`.trim()
-      : member.email;
-    setSelectedProspectName(name);
-    setSelectedProspectId(member.id);
-  }
-
-  function handleCloseAssignment() {
-    setSelectedProspectId(null);
-    setSelectedProspectName('');
-    // Reload members to refresh any assignment data
-    loadMembers();
+  function handleViewMember(member: User) {
+    router.push(`/admin/members/${member.id}`);
   }
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSearchTerm(localSearchTerm);
-  }
-
-  function handleRoleFilterChange(value: string) {
-    if (value === 'all') {
-      setRoleFilter(undefined);
-    } else {
-      setRoleFilter(value as UserFilters['role']);
-    }
   }
 
   function handleStatusFilterChange(value: string) {
@@ -115,7 +144,6 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
   function handleClearFilters() {
     setLocalSearchTerm('');
     setSearchTerm('');
-    setRoleFilter(undefined);
     setStatusFilter(undefined);
   }
 
@@ -160,22 +188,6 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
             </div>
           </form>
 
-          {/* Role Filter */}
-          <Select
-            id="member-role-filter"
-            name="member-role-filter"
-            value={roleFilter || 'all'}
-            onChange={(e) => handleRoleFilterChange(e.target.value)}
-            options={[
-              { value: 'all', label: 'All Roles' },
-              ...USER_ROLES.filter(r => memberRoles.includes(r.value)).map(role => ({
-                value: role.value,
-                label: role.label
-              }))
-            ]}
-            className="w-40"
-          />
-
           {/* Status Filter */}
           <Select
             id="member-status-filter"
@@ -217,7 +229,7 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
       {members.length === 0 ? (
         <div className="p-8 text-center">
           <p className="text-[var(--text-secondary)]">
-            {searchTerm || roleFilter || statusFilter
+            {searchTerm || statusFilter
               ? 'No members found matching your filters.'
               : 'No members found. Members will appear here once created.'}
           </p>
@@ -229,12 +241,10 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
               <tr className="border-b border-[var(--border)]">
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Name</th>
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Email</th>
-                <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Role</th>
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Status</th>
+                <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Applications</th>
                 <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Departments</th>
-                {canEdit('/admin/members') && (
-                  <th className="text-right p-4 text-sm font-semibold text-[var(--text-primary)]">Actions</th>
-                )}
+                <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Staff</th>
               </tr>
             </thead>
             <tbody>
@@ -244,43 +254,78 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
                     ? `${member.first_name || ''} ${member.last_name || ''}`.trim()
                     : 'No name';
                   
+                  const appCount = applicationCounts[member.id] || 0;
+                  
                   return (
-                    <tr key={member.id} className="border-b border-[var(--border)] hover:bg-[var(--surface-hover)]">
+                    <tr 
+                      key={member.id} 
+                      className="border-b border-[var(--border)] hover:bg-[var(--surface-hover)] cursor-pointer"
+                      onClick={() => handleViewMember(member)}
+                    >
                       <td className="p-4">
                         <div className="font-medium text-[var(--text-primary)]">{name}</div>
                       </td>
                       <td className="p-4 text-[var(--text-secondary)] text-sm">{member.email}</td>
-                      <td className="p-4 text-[var(--text-secondary)] text-sm">
-                        {USER_ROLES.find(r => r.value === member.role)?.label || member.role}
-                      </td>
                       <td className="p-4">
-                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                        <span className={`inline-flex items-center text-xs font-medium ${
                           member.status === 'active'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                            ? 'text-green-600 dark:text-green-400'
                             : member.status === 'inactive'
-                            ? 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
-                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                            ? 'text-gray-600 dark:text-gray-400'
+                            : 'text-yellow-600 dark:text-yellow-400'
                         }`}>
                           {member.status || 'active'}
                         </span>
                       </td>
                       <td className="p-4 text-[var(--text-secondary)] text-sm">
-                        {member.departments && member.departments.length > 0
-                          ? member.departments.join(', ')
+                        {appCount > 0 ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/admin/applications?applicant_id=${member.id}`);
+                            }}
+                            className="font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 hover:underline transition-colors"
+                          >
+                            {appCount}
+                          </button>
+                        ) : (
+                          <span className="text-[var(--text-secondary)]">-</span>
+                        )}
+                      </td>
+                      <td className="p-4 text-[var(--text-secondary)] text-sm">
+                        {memberDepartments[member.id] && memberDepartments[member.id].length > 0
+                          ? memberDepartments[member.id].join(', ')
                           : '-'}
                       </td>
-                      {canEdit('/admin/members') && (
-                        <td className="p-4">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => handleAssignStaff(member)}
-                              className="px-3 py-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded"
-                            >
-                              Assign Staff
-                            </button>
-                          </div>
-                        </td>
-                      )}
+                      <td className="p-4 text-[var(--text-secondary)] text-sm">
+                        {(() => {
+                          const assignments = staffAssignments[member.id] || [];
+                          if (assignments.length === 0) {
+                            return <span className="text-[var(--text-secondary)]">-</span>;
+                          }
+                          const staffNames = assignments
+                            .map(assignment => {
+                              const staff = staffUsers.find(s => s.id === assignment.staff_id);
+                              return staff?.name || 
+                                     (staff?.first_name || staff?.last_name
+                                       ? `${staff.first_name || ''} ${staff.last_name || ''}`.trim()
+                                       : staff?.email || 'Unknown');
+                            })
+                            .filter(Boolean);
+                          return (
+                            <div className="space-y-1">
+                              {staffNames.map((name, idx) => (
+                                <div key={idx} className="text-sm">
+                                  {assignments[idx]?.is_primary && (
+                                    <span className="text-xs text-[var(--text-secondary)] mr-1">•</span>
+                                  )}
+                                  {name}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                      </td>
                     </tr>
                   );
                 })
@@ -290,15 +335,6 @@ export function MemberList({ filters, onFiltersChange }: MemberListProps) {
         </div>
       )}
 
-      {/* Staff Assignment Modal */}
-      {selectedProspectId && (
-        <ProspectStaffAssignment
-          prospectId={selectedProspectId}
-          prospectName={selectedProspectName}
-          onClose={handleCloseAssignment}
-          onUpdate={loadMembers}
-        />
-      )}
     </div>
   );
 }
