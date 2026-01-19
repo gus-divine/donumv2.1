@@ -27,14 +27,25 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Check for redirect parameter and email confirmation
+  // Check for redirect parameter, email confirmation, and messages
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const redirect = urlParams.get('redirect');
     const confirmed = urlParams.get('confirmed');
+    const message = urlParams.get('message');
     
     if (redirect) {
       setRedirectUrl(redirect);
+    }
+    
+    if (message) {
+      setError(message);
+      // Clear the message from URL after displaying (delay to allow error to render)
+      setTimeout(() => {
+        const params = new URLSearchParams();
+        if (redirect) params.set('redirect', redirect);
+        router.replace('/auth/signin' + (params.toString() ? `?${params.toString()}` : ''));
+      }, 100);
     }
     
     if (confirmed === 'true') {
@@ -50,16 +61,70 @@ export default function SignInPage() {
   // Redirect if already authenticated and auth data is loaded
   useEffect(() => {
     if (!authLoading && session && role) {
-      // User is already signed in and role is loaded, redirect to dashboard
+      // User is already signed in and role is loaded, redirect based on role
       const storedRedirect = localStorage.getItem('signup_redirect_url');
       if (storedRedirect) {
         localStorage.removeItem('signup_redirect_url');
         router.push(storedRedirect);
         return;
       }
+
+      // Role-based redirects
+      if (role === 'donum_member') {
+        router.push(redirectUrl || '/members/dashboard');
+        return;
+      }
+      
+      if (['donum_prospect', 'donum_lead'].includes(role)) {
+        // Check if prequalification is complete
+        checkPrequalificationStatus(redirectUrl || '/prospect/dashboard');
+        return;
+      }
+      
+      if (['donum_staff', 'donum_admin', 'donum_super_admin'].includes(role)) {
+        router.push(redirectUrl || '/admin/dashboard');
+        return;
+      }
+
+      // Default fallback
       router.push(redirectUrl || '/admin/dashboard');
     }
   }, [session, role, authLoading, router, redirectUrl]);
+
+  // Helper function to check prequalification status
+  const checkPrequalificationStatus = async (defaultRedirect: string) => {
+    try {
+      const supabase = createSupabaseClient();
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      
+      if (!authUser) {
+        router.push(defaultRedirect);
+        return;
+      }
+
+      // Fetch user data from donum_accounts
+      const { data: userData } = await supabase
+        .from('donum_accounts')
+        .select('annual_income, net_worth, risk_tolerance')
+        .eq('id', authUser.id)
+        .single();
+
+      // Check if prequalification is complete (all required fields filled)
+      const isComplete = userData?.annual_income != null && 
+                         userData?.net_worth != null && 
+                         userData?.risk_tolerance != null;
+
+      if (isComplete) {
+        router.push('/prospect/dashboard');
+      } else {
+        router.push('/prospect/prequalify');
+      }
+    } catch (error) {
+      console.error('Error checking prequalification status:', error);
+      // On error, redirect to dashboard
+      router.push(defaultRedirect);
+    }
+  };
 
   // Handle theme toggle
   useEffect(() => {
@@ -262,7 +327,7 @@ export default function SignInPage() {
             <p>
               Need an account?{' '}
               <a 
-                href="/prequalify"
+                href="/auth/signup"
                 className="signup-link"
               >
                 Sign up

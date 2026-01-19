@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { getDepartments, type Department, deleteDepartment } from '@/lib/api/departments';
 import { useAuth } from '@/lib/auth/auth-context';
 import { usePermissions } from '@/lib/hooks/usePermissions';
+import { Select } from '@/components/ui/select';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import {
   Users, Shield, Briefcase, Headphones, Settings, ChartBar, File, Folder,
   Mail, Phone, Calendar, Star, Heart, Tag, Flag, Bell, type LucideIcon
@@ -33,17 +35,45 @@ interface DepartmentListProps {
   onEdit: (department: Department) => void;
   onViewPermissions: (department: Department) => void;
   onManageStaff: (department: Department) => void;
-  onManageMembers: (department: Department) => void;
 }
 
-export function DepartmentList({ onEdit, onViewPermissions, onManageStaff, onManageMembers }: DepartmentListProps) {
+export function DepartmentList({ onEdit, onViewPermissions, onManageStaff }: DepartmentListProps) {
   const { session, loading: authLoading } = useAuth();
   const { canEdit, canDelete } = usePermissions('/admin/departments');
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [filteredDepartments, setFilteredDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const loadingRef = useRef(false);
+
+  function applyFilters(depts: Department[], search: string, status: 'all' | 'active' | 'inactive') {
+    let filtered = [...depts];
+
+    // Apply search filter
+    if (search.trim()) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter(dept =>
+        dept.name.toLowerCase().includes(searchLower) ||
+        (dept.description && dept.description.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Apply status filter
+    if (status !== 'all') {
+      filtered = filtered.filter(dept =>
+        status === 'active' ? dept.is_active : !dept.is_active
+      );
+    }
+
+    setFilteredDepartments(filtered);
+  }
 
   const loadDepartments = useCallback(async () => {
     // Prevent duplicate simultaneous calls
@@ -79,24 +109,53 @@ export function DepartmentList({ onEdit, onViewPermissions, onManageStaff, onMan
     }
   }, [authLoading, session, loadDepartments]);
 
-  async function handleDelete(id: string, name: string) {
-    if (!confirm(`Are you sure you want to delete the "${name}" department? This action cannot be undone.`)) {
-      console.log('[DepartmentList] Delete cancelled by user');
-      return;
-    }
+  useEffect(() => {
+    applyFilters(departments, searchTerm, statusFilter);
+  }, [departments, searchTerm, statusFilter]);
 
+  function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSearchTerm(localSearchTerm);
+  }
+
+  function handleStatusFilterChange(value: string) {
+    setStatusFilter(value as 'all' | 'active' | 'inactive');
+  }
+
+  function handleClearFilters() {
+    setLocalSearchTerm('');
+    setSearchTerm('');
+    setStatusFilter('all');
+  }
+
+  function handleDeleteClick(id: string, name: string) {
+    setDeleteTarget({ id, name });
+    setShowDeleteConfirm(true);
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+
+    setShowDeleteConfirm(false);
     try {
-      console.log('[DepartmentList] Deleting department:', { id, name });
-      setDeletingId(id);
-      await deleteDepartment(id);
+      console.log('[DepartmentList] Deleting department:', { id: deleteTarget.id, name: deleteTarget.name });
+      setDeletingId(deleteTarget.id);
+      await deleteDepartment(deleteTarget.id);
       console.log('[DepartmentList] Department deleted, reloading list...');
       await loadDepartments();
+      setDeleteTarget(null);
     } catch (err) {
       console.error('[DepartmentList] Error deleting department:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete department');
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to delete department');
+      setDeleteTarget(null);
     } finally {
       setDeletingId(null);
     }
+  }
+
+  function handleDeleteCancel() {
+    setShowDeleteConfirm(false);
+    setDeleteTarget(null);
   }
 
   if (authLoading || loading) {
@@ -123,29 +182,93 @@ export function DepartmentList({ onEdit, onViewPermissions, onManageStaff, onMan
     );
   }
 
-  if (departments.length === 0) {
-    return (
-      <div className="p-8 text-center">
-        <p className="text-[var(--text-secondary)]">No departments found. Create your first department to get started.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="border-b border-[var(--border)]">
-            <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Name</th>
-            <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Description</th>
-            <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Icon</th>
-            <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Color</th>
-            <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Status</th>
-            <th className="text-right p-4 text-sm font-semibold text-[var(--text-primary)]">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {departments.map((dept) => (
+    <div className="space-y-4">
+      {/* Filters */}
+      <div className="bg-[var(--surface)] rounded-lg p-4">
+        <div className="flex flex-wrap gap-4 items-center">
+          {/* Search */}
+          <form onSubmit={handleSearchSubmit} className="flex-1 min-w-[200px]">
+            <div className="relative">
+              <input
+                id="department-search"
+                name="department-search"
+                type="text"
+                placeholder="Search departments by name or description..."
+                value={localSearchTerm}
+                onChange={(e) => setLocalSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
+              />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+          </form>
+
+          {/* Status Filter */}
+          <Select
+            id="department-status-filter"
+            name="department-status-filter"
+            value={statusFilter}
+            onChange={(e) => handleStatusFilterChange(e.target.value)}
+            options={[
+              { value: 'all', label: 'All Status' },
+              { value: 'active', label: 'Active' },
+              { value: 'inactive', label: 'Inactive' }
+            ]}
+            className="w-40"
+          />
+
+          {/* Clear Filters Button */}
+          <button
+            onClick={handleClearFilters}
+            className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded border border-[var(--border)] transition-colors"
+          >
+            Clear Filters
+          </button>
+
+          {/* Refresh Button */}
+          <button
+            onClick={loadDepartments}
+            className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2"
+            title="Refresh"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {/* Departments Table */}
+      {filteredDepartments.length === 0 ? (
+        <div className="p-8 text-center">
+          <p className="text-[var(--text-secondary)]">
+            {searchTerm || statusFilter !== 'all'
+              ? 'No departments found matching your filters.'
+              : departments.length === 0
+              ? 'No departments found. Create your first department to get started.'
+              : 'No departments found matching your filters.'}
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-[var(--border)]">
+                <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Name</th>
+                <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Description</th>
+                <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Icon</th>
+                <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Color</th>
+                <th className="text-left p-4 text-sm font-semibold text-[var(--text-primary)]">Status</th>
+                <th className="text-right p-4 text-sm font-semibold text-[var(--text-primary)]">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredDepartments.map((dept) => (
             <tr key={dept.id} className="border-b border-[var(--border)] hover:bg-[var(--surface-hover)]">
               <td className="p-4">
                 <div className="flex items-center gap-2">
@@ -209,12 +332,6 @@ export function DepartmentList({ onEdit, onViewPermissions, onManageStaff, onMan
                         Manage Staff
                       </button>
                       <button
-                        onClick={() => onManageMembers(dept)}
-                        className="px-3 py-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded"
-                      >
-                        Manage Members
-                      </button>
-                      <button
                         onClick={() => onViewPermissions(dept)}
                         className="px-3 py-1 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded"
                       >
@@ -230,7 +347,7 @@ export function DepartmentList({ onEdit, onViewPermissions, onManageStaff, onMan
                   )}
                   {canDelete('/admin/departments') && (
                     <button
-                      onClick={() => handleDelete(dept.id, dept.name)}
+                      onClick={() => handleDeleteClick(dept.id, dept.name)}
                       disabled={deletingId === dept.id}
                       className="px-3 py-1 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded disabled:opacity-50"
                     >
@@ -244,8 +361,38 @@ export function DepartmentList({ onEdit, onViewPermissions, onManageStaff, onMan
               </td>
             </tr>
           ))}
-        </tbody>
-      </table>
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Confirmation Dialog */}
+      {deleteTarget && (
+        <ConfirmationDialog
+          isOpen={showDeleteConfirm}
+          title="Delete Department"
+          message={`Are you sure you want to delete the "${deleteTarget.name}" department? This action cannot be undone.`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="danger"
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+        />
+      )}
+
+      {/* Error Message Dialog */}
+      {errorMessage && (
+        <ConfirmationDialog
+          isOpen={!!errorMessage}
+          title="Error"
+          message={errorMessage}
+          confirmText="OK"
+          variant="danger"
+          showCancel={false}
+          onConfirm={() => setErrorMessage(null)}
+          onCancel={() => setErrorMessage(null)}
+        />
+      )}
     </div>
   );
 }

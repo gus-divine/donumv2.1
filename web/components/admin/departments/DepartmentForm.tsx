@@ -111,7 +111,7 @@ export function DepartmentForm({ department, onSuccess, onCancel }: DepartmentFo
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
         </div>
       )}
@@ -126,7 +126,7 @@ export function DepartmentForm({ department, onSuccess, onCancel }: DepartmentFo
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+          className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
           placeholder="e.g., Sales, Support, Operations"
         />
       </div>
@@ -140,7 +140,7 @@ export function DepartmentForm({ department, onSuccess, onCancel }: DepartmentFo
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+          className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
           placeholder="Brief description of the department's purpose"
         />
       </div>
@@ -156,7 +156,7 @@ export function DepartmentForm({ department, onSuccess, onCancel }: DepartmentFo
               type="color"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="w-16 h-10 border border-[var(--border)] rounded cursor-pointer"
+              className="w-16 h-10 border border-[var(--border)] rounded-lg cursor-pointer"
             />
             <div className="flex-1 flex flex-wrap gap-2">
               {COLOR_OPTIONS.map((c) => (
@@ -164,7 +164,7 @@ export function DepartmentForm({ department, onSuccess, onCancel }: DepartmentFo
                   key={c}
                   type="button"
                   onClick={() => setColor(c)}
-                  className={`w-8 h-8 rounded border-2 ${
+                  className={`w-8 h-8 rounded-lg border-2 ${
                     color === c ? 'border-[var(--core-blue)]' : 'border-[var(--border)]'
                   }`}
                   style={{ backgroundColor: c }}
@@ -179,7 +179,7 @@ export function DepartmentForm({ department, onSuccess, onCancel }: DepartmentFo
           <label htmlFor="icon" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
             Icon
           </label>
-          <div className="grid grid-cols-4 gap-2 p-2 border border-[var(--border)] rounded bg-[var(--background)]">
+          <div className="grid grid-cols-4 gap-2 p-2 border border-[var(--border)] rounded-lg bg-[var(--background)]">
             {ICON_OPTIONS.map((opt) => {
               const IconComponent = ICON_MAP[opt];
               const isSelected = icon === opt;
@@ -188,7 +188,7 @@ export function DepartmentForm({ department, onSuccess, onCancel }: DepartmentFo
                   key={opt}
                   type="button"
                   onClick={() => setIcon(opt)}
-                  className={`p-2 rounded border-2 transition-all ${
+                  className={`p-2 rounded-lg border-2 transition-all ${
                     isSelected
                       ? 'border-[var(--core-blue)] bg-[var(--core-blue)]/10'
                       : 'border-[var(--border)] hover:border-[var(--core-blue)]/50 hover:bg-[var(--surface-hover)]'
@@ -250,14 +250,14 @@ export function DepartmentForm({ department, onSuccess, onCancel }: DepartmentFo
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded"
+          className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg border border-[var(--border)] transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 text-sm bg-[var(--core-blue)] text-white rounded hover:bg-[var(--core-blue-light)] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 text-sm bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {loading ? 'Saving...' : department ? 'Update Department' : 'Create Department'}
         </button>

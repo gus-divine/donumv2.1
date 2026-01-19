@@ -61,11 +61,11 @@ export default function LandingPage() {
   };
 
   const handleApplyClick = () => {
-    router.push('/prequalify');
+    router.push('/auth/signup');
   };
 
   const handleCheckStatusClick = () => {
-    router.push('/leads/status');
+    router.push('/auth/signin');
   };
 
   if (!mounted) {
@@ -156,7 +156,7 @@ export default function LandingPage() {
               {/* Apply Link */}
               <div className="apply-link-container">
                 <a
-                  href="/prequalify"
+                  href="/auth/signup"
                   className="apply-link"
                 >
                   Prequalify to become a member
@@ -166,11 +166,7 @@ export default function LandingPage() {
               {/* Check Status Link */}
               <div className="apply-link-container">
                 <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleCheckStatusClick();
-                  }}
+                  href="/auth/signin"
                   className="apply-link"
                 >
                   Check your application status

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createUser, updateUser, type User, type CreateUserInput, type UpdateUserInput, USER_ROLES, USER_STATUSES } from '@/lib/api/users';
+import { Select } from '@/components/ui/select';
 
 interface UserFormProps {
   user?: User | null;
@@ -109,7 +110,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
         </div>
       )}
@@ -125,7 +126,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
             placeholder="user@example.com"
           />
         </div>
@@ -141,7 +142,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
               required={!user}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+              className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
               placeholder="••••••••"
             />
           </div>
@@ -158,7 +159,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             required
             value={role}
             onChange={(e) => setRole(e.target.value as CreateUserInput['role'])}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
           >
             {USER_ROLES.map((r) => (
               <option key={r.value} value={r.value}>
@@ -177,7 +178,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             required
             value={status}
             onChange={(e) => setStatus(e.target.value as CreateUserInput['status'])}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
           >
             {USER_STATUSES.map((s) => (
               <option key={s.value} value={s.value}>
@@ -198,7 +199,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             type="text"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
             placeholder="John"
           />
         </div>
@@ -212,7 +213,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             type="text"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
             placeholder="Doe"
           />
         </div>
@@ -228,7 +229,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
             placeholder="(555) 123-4567"
           />
         </div>
@@ -242,7 +243,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             type="tel"
             value={cellPhone}
             onChange={(e) => setCellPhone(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
             placeholder="(555) 123-4567"
           />
         </div>
@@ -258,7 +259,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             type="text"
             value={company}
             onChange={(e) => setCompany(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
             placeholder="Company Name"
           />
         </div>
@@ -272,7 +273,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
             placeholder="Job Title"
           />
         </div>
@@ -287,7 +288,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             id="adminLevel"
             value={adminLevel}
             onChange={(e) => setAdminLevel(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
           >
             <option value="">None</option>
             <option value="super">Super</option>
@@ -307,7 +308,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             id="timezone"
             value={timezone}
             onChange={(e) => setTimezone(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
           >
             <option value="America/New_York">Eastern Time</option>
             <option value="America/Chicago">Central Time</option>
@@ -325,7 +326,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             id="language"
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
           >
             <option value="en">English</option>
             <option value="es">Spanish</option>
@@ -343,7 +344,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+          className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
           placeholder="Internal notes about this user..."
         />
       </div>
@@ -352,14 +353,14 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded"
+          className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg border border-[var(--border)] transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 text-sm bg-[var(--core-blue)] text-white rounded hover:bg-[var(--core-blue-light)] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 text-sm bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {loading ? 'Saving...' : user ? 'Update User' : 'Create User'}
         </button>

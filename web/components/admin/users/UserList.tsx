@@ -5,6 +5,8 @@ import { getUsers, type User, deleteUser, type UserFilters } from '@/lib/api/use
 import { useAuth } from '@/lib/auth/auth-context';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { USER_ROLES, USER_STATUSES } from '@/lib/api/users';
+import { Select } from '@/components/ui/select';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 interface UserListProps {
   onEdit: (user: User) => void;
@@ -19,6 +21,10 @@ export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; email: string } | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [localSearchTerm, setLocalSearchTerm] = useState(filters?.search || '');
   const [searchTerm, setSearchTerm] = useState(filters?.search || '');
   const [roleFilter, setRoleFilter] = useState<UserFilters['role']>(filters?.role);
   const [statusFilter, setStatusFilter] = useState<UserFilters['status']>(filters?.status);
@@ -68,36 +74,62 @@ export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
     }
   }, [authLoading, session, loadUsers]);
 
-  async function handleDelete(id: string, email: string) {
-    if (!confirm(`Are you sure you want to delete user "${email}"? This action cannot be undone.`)) {
-      console.log('[UserList] Delete cancelled by user');
-      return;
-    }
+  function handleDeleteClick(id: string, email: string) {
+    setDeleteTarget({ id, email });
+    setShowDeleteConfirm(true);
+  }
 
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+
+    setShowDeleteConfirm(false);
     try {
-      console.log('[UserList] Deleting user:', { id, email });
-      setDeletingId(id);
-      await deleteUser(id);
+      console.log('[UserList] Deleting user:', { id: deleteTarget.id, email: deleteTarget.email });
+      setDeletingId(deleteTarget.id);
+      await deleteUser(deleteTarget.id);
       console.log('[UserList] User deleted, reloading list...');
       await loadUsers();
+      setDeleteTarget(null);
     } catch (err) {
       console.error('[UserList] Error deleting user:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete user');
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to delete user');
+      setDeleteTarget(null);
     } finally {
       setDeletingId(null);
     }
   }
 
-  function handleSearchChange(value: string) {
-    setSearchTerm(value);
+  function handleDeleteCancel() {
+    setShowDeleteConfirm(false);
+    setDeleteTarget(null);
+  }
+
+  function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSearchTerm(localSearchTerm);
   }
 
   function handleRoleFilterChange(value: string) {
-    setRoleFilter(value === '' ? undefined : value as UserFilters['role']);
+    if (value === 'all') {
+      setRoleFilter(undefined);
+    } else {
+      setRoleFilter(value as UserFilters['role']);
+    }
   }
 
   function handleStatusFilterChange(value: string) {
-    setStatusFilter(value === '' ? undefined : value as UserFilters['status']);
+    if (value === 'all') {
+      setStatusFilter(undefined);
+    } else {
+      setStatusFilter(value as UserFilters['status']);
+    }
+  }
+
+  function handleClearFilters() {
+    setLocalSearchTerm('');
+    setSearchTerm('');
+    setRoleFilter(undefined);
+    setStatusFilter(undefined);
   }
 
   if (authLoading || loading) {
@@ -127,66 +159,78 @@ export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-[var(--surface)] border border-[var(--border)] rounded-lg">
-        <div>
-          <label htmlFor="search" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Search
-          </label>
-          <input
-            id="search"
-            type="text"
-            value={searchTerm}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Email, name, company..."
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
-          />
-        </div>
-        <div>
-          <label htmlFor="role-filter" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Role
-          </label>
-          <select
-            id="role-filter"
-            value={roleFilter || ''}
+      <div className="bg-[var(--surface)] rounded-lg p-4">
+        <div className="flex flex-wrap gap-4 items-center">
+          {/* Search */}
+          <form onSubmit={handleSearchSubmit} className="flex-1 min-w-[200px]">
+            <div className="relative">
+              <input
+                id="user-search"
+                name="user-search"
+                type="text"
+                placeholder="Search by email, name, or company..."
+                value={localSearchTerm}
+                onChange={(e) => setLocalSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
+              />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-[var(--text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+          </form>
+
+          {/* Role Filter */}
+          <Select
+            id="user-role-filter"
+            name="user-role-filter"
+            value={roleFilter || 'all'}
             onChange={(e) => handleRoleFilterChange(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
-          >
-            <option value="">All Roles</option>
-            {USER_ROLES.map((role) => (
-              <option key={role.value} value={role.value}>
-                {role.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="status-filter" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-            Status
-          </label>
-          <select
-            id="status-filter"
-            value={statusFilter || ''}
+            options={[
+              { value: 'all', label: 'All Roles' },
+              ...USER_ROLES.map(role => ({
+                value: role.value,
+                label: role.label
+              }))
+            ]}
+            className="w-40"
+          />
+
+          {/* Status Filter */}
+          <Select
+            id="user-status-filter"
+            name="user-status-filter"
+            value={statusFilter || 'all'}
             onChange={(e) => handleStatusFilterChange(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
-          >
-            <option value="">All Statuses</option>
-            {USER_STATUSES.map((status) => (
-              <option key={status.value} value={status.value}>
-                {status.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex items-end">
+            options={[
+              { value: 'all', label: 'All Statuses' },
+              ...USER_STATUSES.map(status => ({
+                value: status.value,
+                label: status.label
+              }))
+            ]}
+            className="w-40"
+          />
+
+          {/* Clear Filters Button */}
           <button
-            onClick={() => {
-              setSearchTerm('');
-              setRoleFilter(undefined);
-              setStatusFilter(undefined);
-            }}
-            className="w-full px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded border border-[var(--border)]"
+            onClick={handleClearFilters}
+            className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded border border-[var(--border)] transition-colors"
           >
             Clear Filters
+          </button>
+
+          {/* Refresh Button */}
+          <button
+            onClick={loadUsers}
+            className="px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2"
+            title="Refresh"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
           </button>
         </div>
       </div>
@@ -292,7 +336,7 @@ export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
                       )}
                       {canDelete('/admin/users') && (
                         <button
-                          onClick={() => handleDelete(user.id, user.email)}
+                          onClick={() => handleDeleteClick(user.id, user.email)}
                           disabled={deletingId === user.id}
                           className="px-3 py-1 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded disabled:opacity-50"
                         >
@@ -309,6 +353,34 @@ export function UserList({ onEdit, filters, onFiltersChange }: UserListProps) {
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* Confirmation Dialog */}
+      {deleteTarget && (
+        <ConfirmationDialog
+          isOpen={showDeleteConfirm}
+          title="Delete User"
+          message={`Are you sure you want to delete user "${deleteTarget.email}"? This action cannot be undone.`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="danger"
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+        />
+      )}
+
+      {/* Error Message Dialog */}
+      {errorMessage && (
+        <ConfirmationDialog
+          isOpen={!!errorMessage}
+          title="Error"
+          message={errorMessage}
+          confirmText="OK"
+          variant="danger"
+          showCancel={false}
+          onConfirm={() => setErrorMessage(null)}
+          onCancel={() => setErrorMessage(null)}
+        />
       )}
     </div>
   );

@@ -12,6 +12,10 @@ services:
       - /app/node_modules
     env_file:
       - .env.local
+    environment:
+      # Enable polling for file watching in Docker
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
     command: npm run dev
     networks:
       - donum2.1-network

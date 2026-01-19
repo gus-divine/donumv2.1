@@ -7,10 +7,9 @@ import { DepartmentList } from '@/components/admin/departments/DepartmentList';
 import { DepartmentForm } from '@/components/admin/departments/DepartmentForm';
 import { PermissionAssignment } from '@/components/admin/departments/PermissionAssignment';
 import { DepartmentStaffAssignment } from '@/components/admin/departments/DepartmentStaffAssignment';
-import { DepartmentMemberAssignment } from '@/components/admin/departments/DepartmentMemberAssignment';
 import type { Department } from '@/lib/api/departments';
 
-type ViewMode = 'list' | 'create' | 'edit' | 'permissions' | 'staff' | 'members';
+type ViewMode = 'list' | 'create' | 'edit' | 'permissions' | 'staff';
 
 export default function DepartmentsPage() {
   const { canEdit } = usePermissions('/admin/departments');
@@ -62,32 +61,39 @@ export default function DepartmentsPage() {
   return (
     <PermissionGuard>
       <main className="min-h-screen p-8">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Department Management</h1>
-            <p className="mt-2 text-sm text-[var(--text-secondary)]">
-              Manage departments and configure their page permissions.
-            </p>
+        {(viewMode === 'create' || viewMode === 'edit' || viewMode === 'permissions' || viewMode === 'staff') && (
+          <button
+            onClick={handleCancel}
+            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-4 transition-colors"
+          >
+            ← Back to Departments
+          </button>
+        )}
+        {viewMode === 'list' && (
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Department Management</h1>
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                Manage departments and configure their page permissions.
+              </p>
+            </div>
+            {canEdit('/admin/departments') && (
+              <button
+                onClick={handleCreate}
+                className="px-4 py-2 bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] transition-colors"
+              >
+                Create Department
+              </button>
+            )}
           </div>
-          {viewMode === 'list' && canEdit('/admin/departments') && (
-            <button
-              onClick={handleCreate}
-              className="px-4 py-2 bg-[var(--core-blue)] text-white rounded hover:bg-[var(--core-blue-light)] transition-colors"
-            >
-              Create Department
-            </button>
-          )}
-        </div>
+        )}
 
       {viewMode === 'list' && (
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-          <DepartmentList
-            onEdit={handleEdit}
-            onViewPermissions={handleViewPermissions}
-            onManageStaff={handleManageStaff}
-            onManageMembers={handleManageMembers}
-          />
-        </div>
+        <DepartmentList
+          onEdit={handleEdit}
+          onViewPermissions={handleViewPermissions}
+          onManageStaff={handleManageStaff}
+        />
       )}
 
         {(viewMode === 'create' || viewMode === 'edit') && (
@@ -115,15 +121,6 @@ export default function DepartmentsPage() {
         {viewMode === 'staff' && selectedDepartment && (
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
             <DepartmentStaffAssignment
-              department={selectedDepartment}
-              onClose={handleCancel}
-            />
-          </div>
-        )}
-
-        {viewMode === 'members' && selectedDepartment && (
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-            <DepartmentMemberAssignment
               department={selectedDepartment}
               onClose={handleCancel}
             />

@@ -6,6 +6,20 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
 import { getUserAccessiblePages, type PagePermission } from '@/lib/permissions';
 import Image from 'next/image';
+import {
+  LayoutDashboard,
+  FileText,
+  UserSearch,
+  UserCheck,
+  Briefcase,
+  Building2,
+  BookOpen,
+  TrendingUp,
+  CreditCard,
+  Users,
+  Activity,
+  LogOut,
+} from 'lucide-react';
 
 interface AdminSidebarProps {}
 
@@ -14,115 +28,67 @@ const allTabs = [
     id: 'overview',
     name: 'Overview',
     path: '/admin/dashboard',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/>
-        <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-      </svg>
-    )
+    icon: <LayoutDashboard className="w-5 h-5" />
   },
   {
     id: 'applications',
     name: 'Applications',
     path: '/admin/applications',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M16 2v2"/>
-        <path d="M17.915 22a6 6 0 0 0-12 0"/>
-        <path d="M8 2v2"/>
-        <circle cx="12" cy="12" r="4"/>
-        <rect x="3" y="4" width="18" height="18" rx="2"/>
-      </svg>
-    )
+    icon: <FileText className="w-5 h-5" />
+  },
+  {
+    id: 'prospects',
+    name: 'Prospects',
+    path: '/admin/prospects',
+    icon: <UserSearch className="w-5 h-5" />
   },
   {
     id: 'members',
     name: 'Members',
     path: '/admin/members',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
-        <path d="M6.376 18.91a6 6 0 0 1 11.249.003"/>
-        <circle cx="12" cy="11" r="4"/>
-      </svg>
-    )
+    icon: <UserCheck className="w-5 h-5" />
   },
   {
     id: 'staff',
     name: 'Staff',
     path: '/admin/staff',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M13.5 8h-3"/>
-        <path d="m15 2-1 2h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3"/>
-        <path d="M16.899 22A5 5 0 0 0 7.1 22"/>
-        <path d="m9 2 3 6"/>
-        <circle cx="12" cy="15" r="3"/>
-      </svg>
-    )
+    icon: <Briefcase className="w-5 h-5" />
   },
   {
     id: 'departments',
     name: 'Departments',
     path: '/admin/departments',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M12 16h.01"/>
-        <path d="M16 16h.01"/>
-        <path d="M3 19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5a.5.5 0 0 0-.769-.422l-4.462 2.844A.5.5 0 0 1 15 10.5v-2a.5.5 0 0 0-.769-.422L9.77 10.922A.5.5 0 0 1 9 10.5V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/>
-        <path d="M8 16h.01"/>
-      </svg>
-    )
+    icon: <Building2 className="w-5 h-5" />
+  },
+  {
+    id: 'plans',
+    name: 'Plans',
+    path: '/admin/plans',
+    icon: <BookOpen className="w-5 h-5" />
   },
   {
     id: 'finance',
     name: 'Financial Overview',
     path: '/admin/finance',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M13 17V9"/>
-        <path d="M18 17V5"/>
-        <path d="M3 3v16a2 2 0 0 0 2 2h16"/>
-        <path d="M8 17v-3"/>
-      </svg>
-    )
+    icon: <TrendingUp className="w-5 h-5" />
   },
   {
     id: 'loans',
     name: 'Loans',
     path: '/admin/loans',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M10 18v-7"/>
-        <path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/>
-        <path d="M14 18v-7"/>
-        <path d="M18 18v-7"/>
-        <path d="M3 22h18"/>
-        <path d="M6 18v-7"/>
-      </svg>
-    )
+    icon: <CreditCard className="w-5 h-5" />
   },
   {
     id: 'users',
     name: 'Users',
     path: '/admin/users',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M18 21a8 8 0 0 0-16 0"/>
-        <circle cx="10" cy="8" r="5"/>
-        <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/>
-      </svg>
-    )
+    icon: <Users className="w-5 h-5" />
   },
   {
     id: 'system',
     name: 'System Health',
     path: '/admin/system',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>
-      </svg>
-    )
+    icon: <Activity className="w-5 h-5" />
   },
 ];
 
@@ -289,9 +255,7 @@ export function AdminSidebar() {
             isCollapsed ? 'px-2 justify-center' : ''
           } hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400`}
         >
-          <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
+          <LogOut className="w-5 h-5 flex-shrink-0" />
           <span className={`transition-all duration-300 ${
             isCollapsed ? 'w-0 opacity-0 m-0 p-0' : 'opacity-100'
           }`}>

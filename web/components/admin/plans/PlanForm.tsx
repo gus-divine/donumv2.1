@@ -1,0 +1,395 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { createPlan, updatePlan, type DonumPlan, type CreatePlanInput, type UpdatePlanInput } from '@/lib/api/plans';
+import { Plus, X } from 'lucide-react';
+
+interface PlanFormProps {
+  plan?: DonumPlan | null;
+  onSuccess: () => void;
+  onCancel: () => void;
+}
+
+const ASSET_TYPE_OPTIONS = ['IRA', 'business', 'property', 'stocks', 'bonds', 'real_estate', 'other'] as const;
+
+export function PlanForm({ plan, onSuccess, onCancel }: PlanFormProps) {
+  const [code, setCode] = useState('');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [minIncome, setMinIncome] = useState('');
+  const [minAssets, setMinAssets] = useState('');
+  const [minAge, setMinAge] = useState('');
+  const [requiredAssetTypes, setRequiredAssetTypes] = useState<string[]>([]);
+  const [requiresCharitableIntent, setRequiresCharitableIntent] = useState(true);
+  const [taxDeductionPercent, setTaxDeductionPercent] = useState('');
+  const [benefits, setBenefits] = useState<string[]>(['']);
+  const [calculatorConfig, setCalculatorConfig] = useState('');
+  const [isActive, setIsActive] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (plan) {
+      setCode(plan.code);
+      setName(plan.name);
+      setDescription(plan.description || '');
+      setMinIncome(plan.min_income?.toString() || '');
+      setMinAssets(plan.min_assets?.toString() || '');
+      setMinAge(plan.min_age?.toString() || '');
+      setRequiredAssetTypes(plan.required_asset_types || []);
+      setRequiresCharitableIntent(plan.requires_charitable_intent ?? true);
+      setTaxDeductionPercent(plan.tax_deduction_percent.toString());
+      setBenefits(plan.benefits && plan.benefits.length > 0 ? plan.benefits : ['']);
+      setCalculatorConfig(JSON.stringify(plan.calculator_config || {}, null, 2));
+      setIsActive(plan.is_active);
+    }
+  }, [plan]);
+
+  function addBenefit() {
+    setBenefits([...benefits, '']);
+  }
+
+  function removeBenefit(index: number) {
+    setBenefits(benefits.filter((_, i) => i !== index));
+  }
+
+  function updateBenefit(index: number, value: string) {
+    const updated = [...benefits];
+    updated[index] = value;
+    setBenefits(updated);
+  }
+
+  function toggleAssetType(type: string) {
+    if (requiredAssetTypes.includes(type)) {
+      setRequiredAssetTypes(requiredAssetTypes.filter(t => t !== type));
+    } else {
+      setRequiredAssetTypes([...requiredAssetTypes, type]);
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Parse calculator config
+      let parsedCalculatorConfig: Record<string, any> = {};
+      if (calculatorConfig.trim()) {
+        try {
+          parsedCalculatorConfig = JSON.parse(calculatorConfig);
+        } catch (err) {
+          setError('Invalid JSON in calculator config');
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Filter out empty benefits
+      const filteredBenefits = benefits.filter(b => b.trim() !== '');
+
+      if (plan) {
+        // Update existing plan
+        const input: UpdatePlanInput = {
+          name,
+          description: description || undefined,
+          min_income: minIncome ? parseFloat(minIncome) : undefined,
+          min_assets: minAssets ? parseFloat(minAssets) : undefined,
+          min_age: minAge ? parseFloat(minAge) : undefined,
+          required_asset_types: requiredAssetTypes.length > 0 ? requiredAssetTypes : undefined,
+          requires_charitable_intent: requiresCharitableIntent,
+          tax_deduction_percent: parseFloat(taxDeductionPercent),
+          benefits: filteredBenefits.length > 0 ? filteredBenefits : undefined,
+          calculator_config: Object.keys(parsedCalculatorConfig).length > 0 ? parsedCalculatorConfig : undefined,
+          is_active: isActive,
+        };
+        await updatePlan(plan.id, input);
+      } else {
+        // Create new plan
+        if (!code.trim()) {
+          setError('Plan code is required');
+          setLoading(false);
+          return;
+        }
+        const input: CreatePlanInput = {
+          code: code.trim(),
+          name,
+          description: description || undefined,
+          min_income: minIncome ? parseFloat(minIncome) : undefined,
+          min_assets: minAssets ? parseFloat(minAssets) : undefined,
+          min_age: minAge ? parseFloat(minAge) : undefined,
+          required_asset_types: requiredAssetTypes.length > 0 ? requiredAssetTypes : undefined,
+          requires_charitable_intent: requiresCharitableIntent,
+          tax_deduction_percent: parseFloat(taxDeductionPercent),
+          benefits: filteredBenefits.length > 0 ? filteredBenefits : undefined,
+          calculator_config: Object.keys(parsedCalculatorConfig).length > 0 ? parsedCalculatorConfig : undefined,
+          is_active: isActive,
+        };
+        await createPlan(input);
+      }
+      onSuccess();
+    } catch (err) {
+      console.error('[PlanForm] Error saving plan:', err);
+      setError(err instanceof Error ? err.message : 'Failed to save plan');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+        </div>
+      )}
+
+      {/* Basic Information */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Basic Information</h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="code" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Plan Code *
+            </label>
+            <input
+              id="code"
+              type="text"
+              required={!plan}
+              disabled={!!plan}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              placeholder="e.g., defund, diversion, divest"
+            />
+            {plan && (
+              <p className="mt-1 text-xs text-[var(--text-secondary)]">Code cannot be changed after creation</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Plan Name *
+            </label>
+            <input
+              id="name"
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
+              placeholder="e.g., Donum Defund"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+            Description
+          </label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={2}
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
+            placeholder="Brief description of the plan"
+          />
+        </div>
+      </div>
+
+      {/* Requirements */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Requirements</h3>
+        
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label htmlFor="minIncome" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Minimum Income
+            </label>
+            <input
+              id="minIncome"
+              type="number"
+              step="0.01"
+              value={minIncome}
+              onChange={(e) => setMinIncome(e.target.value)}
+              className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
+              placeholder="e.g., 200000"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="minAssets" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Minimum Assets
+            </label>
+            <input
+              id="minAssets"
+              type="number"
+              step="0.01"
+              value={minAssets}
+              onChange={(e) => setMinAssets(e.target.value)}
+              className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
+              placeholder="e.g., 500000"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="minAge" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              Minimum Age
+            </label>
+            <input
+              id="minAge"
+              type="number"
+              step="0.1"
+              value={minAge}
+              onChange={(e) => setMinAge(e.target.value)}
+              className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
+              placeholder="e.g., 59.5"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+            Required Asset Types
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {ASSET_TYPE_OPTIONS.map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => toggleAssetType(type)}
+                className={`px-3 py-1 rounded-lg text-sm border transition-colors ${
+                  requiredAssetTypes.includes(type)
+                    ? 'bg-[var(--core-blue)] text-white border-[var(--core-blue)]'
+                    : 'bg-[var(--background)] text-[var(--text-primary)] border-[var(--border)] hover:bg-[var(--surface-hover)]'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+          {requiredAssetTypes.length > 0 && (
+            <p className="mt-2 text-xs text-[var(--text-secondary)]">
+              Selected: {requiredAssetTypes.join(', ')}
+            </p>
+          )}
+        </div>
+
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={requiresCharitableIntent}
+            onChange={(e) => setRequiresCharitableIntent(e.target.checked)}
+            className="w-4 h-4 text-[var(--core-blue)] border-[var(--border)] focus:ring-[var(--core-blue)]"
+          />
+          <span className="text-sm text-[var(--text-primary)]">Requires charitable intent</span>
+        </label>
+      </div>
+
+      {/* Tax Information */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Tax Information</h3>
+        
+        <div>
+          <label htmlFor="taxDeductionPercent" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+            Tax Deduction Percent *
+          </label>
+          <input
+            id="taxDeductionPercent"
+            type="number"
+            step="0.01"
+            required
+            value={taxDeductionPercent}
+            onChange={(e) => setTaxDeductionPercent(e.target.value)}
+            className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
+            placeholder="e.g., 60.00 or 100.00"
+          />
+        </div>
+      </div>
+
+      {/* Benefits */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Benefits</h3>
+          <button
+            type="button"
+            onClick={addBenefit}
+            className="flex items-center gap-1 px-3 py-1 text-sm bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] text-[var(--text-primary)]"
+          >
+            <Plus className="w-4 h-4" />
+            Add Benefit
+          </button>
+        </div>
+        
+        {benefits.map((benefit, index) => (
+          <div key={index} className="flex gap-2">
+            <input
+              type="text"
+              value={benefit}
+              onChange={(e) => updateBenefit(index, e.target.value)}
+              className="flex-1 px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
+              placeholder="Enter a benefit description"
+            />
+            {benefits.length > 1 && (
+              <button
+                type="button"
+                onClick={() => removeBenefit(index)}
+                className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Calculator Config */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-[var(--text-primary)]">Calculator Configuration (JSON)</h3>
+        <textarea
+          value={calculatorConfig}
+          onChange={(e) => setCalculatorConfig(e.target.value)}
+          rows={8}
+          className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
+          placeholder='{"formula": "...", "variables": {...}}'
+        />
+        <p className="text-xs text-[var(--text-secondary)]">
+          Enter valid JSON for calculator configuration. Leave empty if not needed.
+        </p>
+      </div>
+
+      {/* Status */}
+      <div>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={isActive}
+            onChange={(e) => setIsActive(e.target.checked)}
+            className="w-4 h-4 text-[var(--core-blue)] border-[var(--border)] focus:ring-[var(--core-blue)]"
+          />
+          <span className="text-sm text-[var(--text-primary)]">Plan is active</span>
+        </label>
+      </div>
+
+      {/* Actions */}
+      <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg border border-[var(--border)] transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-4 py-2 text-sm bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {loading ? 'Saving...' : plan ? 'Update Plan' : 'Create Plan'}
+        </button>
+      </div>
+    </form>
+  );
+}

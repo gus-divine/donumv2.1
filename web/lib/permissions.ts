@@ -38,6 +38,7 @@ export async function getUserAccessiblePages(
       '/admin/users',
       '/admin/staff',
       '/admin/members',
+      '/admin/prospects',
       '/admin/applications',
       '/admin/loans',
       '/admin/departments',

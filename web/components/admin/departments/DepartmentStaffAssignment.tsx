@@ -139,14 +139,14 @@ export function DepartmentStaffAssignment({ department, onClose }: DepartmentSta
         </div>
         <button
           onClick={onClose}
-          className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded"
+          className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg border border-[var(--border)] transition-colors"
         >
           Close
         </button>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
         </div>
       )}
@@ -162,7 +162,7 @@ export function DepartmentStaffAssignment({ department, onClose }: DepartmentSta
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search by name or email..."
-          className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+          className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent"
         />
       </div>
 
@@ -181,7 +181,7 @@ export function DepartmentStaffAssignment({ department, onClose }: DepartmentSta
               {filteredAssigned.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between p-3 bg-[var(--surface)] border border-[var(--border)] rounded hover:bg-[var(--surface-hover)]"
+                  className="flex items-center justify-between p-3 bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)]"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[var(--text-primary)] truncate">
@@ -197,7 +197,7 @@ export function DepartmentStaffAssignment({ department, onClose }: DepartmentSta
                   <button
                     onClick={() => handleToggleAssignment(user, true)}
                     disabled={saving}
-                    className="ml-3 px-3 py-1 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded disabled:opacity-50"
+                    className="ml-3 px-3 py-1 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg disabled:opacity-50 transition-colors"
                   >
                     Remove
                   </button>
@@ -221,7 +221,7 @@ export function DepartmentStaffAssignment({ department, onClose }: DepartmentSta
               {filteredUnassigned.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between p-3 bg-[var(--surface)] border border-[var(--border)] rounded hover:bg-[var(--surface-hover)]"
+                  className="flex items-center justify-between p-3 bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)]"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[var(--text-primary)] truncate">
@@ -237,7 +237,7 @@ export function DepartmentStaffAssignment({ department, onClose }: DepartmentSta
                   <button
                     onClick={() => handleToggleAssignment(user, false)}
                     disabled={saving}
-                    className="ml-3 px-3 py-1 text-xs bg-[var(--core-blue)] text-white rounded hover:bg-[var(--core-blue-light)] disabled:opacity-50"
+                    className="ml-3 px-3 py-1 text-xs bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] disabled:opacity-50 transition-colors"
                   >
                     Add
                   </button>

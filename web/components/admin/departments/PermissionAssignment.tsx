@@ -112,7 +112,7 @@ export function PermissionAssignment({ department, onClose }: PermissionAssignme
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
         </div>
       )}
@@ -144,7 +144,7 @@ export function PermissionAssignment({ department, onClose }: PermissionAssignme
                       type="checkbox"
                       checked={perm.can_view}
                       onChange={(e) => updatePermission(page.path, 'can_view', e.target.checked)}
-                      className="w-4 h-4 text-[var(--core-blue)] border-[var(--border)] rounded focus:ring-[var(--core-blue)]"
+                      className="w-4 h-4 text-[var(--core-blue)] border-[var(--border)] focus:ring-[var(--core-blue)]"
                     />
                   </td>
                   <td className="p-3 text-center">
@@ -176,7 +176,7 @@ export function PermissionAssignment({ department, onClose }: PermissionAssignme
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded"
+          className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg border border-[var(--border)] transition-colors"
         >
           Cancel
         </button>
@@ -184,7 +184,7 @@ export function PermissionAssignment({ department, onClose }: PermissionAssignme
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="px-4 py-2 text-sm bg-[var(--core-blue)] text-white rounded hover:bg-[var(--core-blue-light)] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 text-sm bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {saving ? 'Saving...' : 'Save Permissions'}
         </button>

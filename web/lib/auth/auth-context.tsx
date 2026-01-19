@@ -121,6 +121,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) {
+        // Check if record doesn't exist (PGRST116) - create default record
+        if (error.code === 'PGRST116') {
+          console.log('[Auth] User record not found in donum_accounts, creating default record...');
+          
+          // Try to create a default record for the user
+          const { error: insertError } = await supabase
+            .from('donum_accounts')
+            .insert({
+              id: user.id,
+              email: user.email || '',
+              role: 'donum_prospect',
+              status: 'pending',
+            });
+
+          if (insertError) {
+            console.error('[Auth] Failed to create default user record:', insertError);
+            // Set default values and continue
+            setRole('donum_prospect' as UserRole);
+            setDepartments([]);
+            setLoading(false);
+            return;
+          }
+
+          // Retry fetching after creating the record
+          const { data: retryData, error: retryError } = await supabase
+            .from('donum_accounts')
+            .select('role, departments')
+            .eq('id', user.id)
+            .single();
+
+          if (retryError) {
+            console.error('[Auth] Failed to fetch user data after creating record:', retryError);
+            setRole('donum_prospect' as UserRole);
+            setDepartments([]);
+            setLoading(false);
+            return;
+          }
+
+          setRole(retryData?.role as UserRole || 'donum_prospect');
+          setDepartments(retryData?.departments || []);
+          setLoading(false);
+          return;
+        }
+
         // Check if it's an RLS/policy error that might be fixed by refreshing session
         const isRLSError = error.code === '42501' || 
                           error.code === '42P17' || 
@@ -181,6 +225,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
         console.error('[Auth] Final error after retries:', errorInfo);
+        
+        // Set default values on error to prevent app from breaking
+        setRole('donum_prospect' as UserRole);
+        setDepartments([]);
         setLoading(false);
         return;
       }

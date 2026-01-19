@@ -42,14 +42,50 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Script
-          id="fix-preload-links"
+          id="fix-logo-preload"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                function fixPreloadLinks() {
-                  const preloadLinks = document.querySelectorAll('link[rel="preload"][href="/DonumLogo.svg"]');
-                  preloadLinks.forEach(function(link) {
+                function ensureProperPreload() {
+                  if (!document.head) {
+                    if (document.readyState === 'loading') {
+                      document.addEventListener('DOMContentLoaded', ensureProperPreload);
+                      return;
+                    }
+                    setTimeout(ensureProperPreload, 0);
+                    return;
+                  }
+
+                  // Check if a proper preload link already exists
+                  const existingProperPreload = document.querySelector(
+                    'link[rel="preload"][href="/DonumLogo.svg"][as="image"]'
+                  );
+
+                  if (!existingProperPreload) {
+                    // Remove any preload links without proper 'as' attribute
+                    const badPreloads = document.querySelectorAll(
+                      'link[rel="preload"][href="/DonumLogo.svg"]:not([as="image"])'
+                    );
+                    badPreloads.forEach(function(link) {
+                      link.remove();
+                    });
+
+                    // Add a proper preload link with correct attributes
+                    const link = document.createElement('link');
+                    link.rel = 'preload';
+                    link.href = '/DonumLogo.svg';
+                    link.setAttribute('as', 'image');
+                    link.type = 'image/svg+xml';
+                    document.head.appendChild(link);
+                  }
+
+                  // Also fix any existing preload links to ensure they have proper attributes
+                  const allPreloadLinks = document.querySelectorAll(
+                    'link[rel="preload"][href="/DonumLogo.svg"]'
+                  );
+
+                  allPreloadLinks.forEach(function(link) {
                     if (!link.getAttribute('as') || link.getAttribute('as') !== 'image') {
                       link.setAttribute('as', 'image');
                     }
@@ -58,20 +94,17 @@ export default function RootLayout({
                     }
                   });
                 }
-                // Run immediately and also watch for new links
+
+                // Run immediately
+                ensureProperPreload();
+
+                // Also watch for changes
                 if (document.head) {
-                  fixPreloadLinks();
-                  const observer = new MutationObserver(fixPreloadLinks);
-                  observer.observe(document.head, { childList: true, subtree: true });
-                } else {
-                  // If head doesn't exist yet, wait for DOMContentLoaded
-                  if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', function() {
-                      fixPreloadLinks();
-                      const observer = new MutationObserver(fixPreloadLinks);
-                      observer.observe(document.head, { childList: true, subtree: true });
-                    });
-                  }
+                  const observer = new MutationObserver(ensureProperPreload);
+                  observer.observe(document.head, {
+                    childList: true,
+                    subtree: true
+                  });
                 }
               })();
             `,

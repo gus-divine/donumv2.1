@@ -34,3 +34,7 @@
 {"location":"auth-context.tsx:117","message":"Before donum_accounts query","data":{"userId":"09b64b6a-6d6b-481b-9750-feb8a9cea609","retryCount":0},"timestamp":1768691099474,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
 {"location":"auth-context.tsx:95","message":"Session check result","data":{"hasSession":true,"retryCount":0},"timestamp":1768691099474,"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}
 {"location":"auth-context.tsx:122","message":"After donum_accounts query","data":{"hasData":true,"retryCount":0},"timestamp":1768691099880,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"auth-context.tsx:87","message":"fetchUserData called","data":{"userId":"09b64b6a-6d6b-481b-9750-feb8a9cea609","retryCount":0},"timestamp":1768691334121,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"auth-context.tsx:95","message":"Session check result","data":{"hasSession":true,"retryCount":0},"timestamp":1768691334122,"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}
+{"location":"auth-context.tsx:117","message":"Before donum_accounts query","data":{"userId":"09b64b6a-6d6b-481b-9750-feb8a9cea609","retryCount":0},"timestamp":1768691334122,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"auth-context.tsx:122","message":"After donum_accounts query","data":{"hasData":true,"retryCount":0},"timestamp":1768691334455,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
