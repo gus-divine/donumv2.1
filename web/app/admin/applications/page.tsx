@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { PermissionGuard } from '@/components/admin/shared/PermissionGuard';
 import { ApplicationList } from '@/components/admin/applications/ApplicationList';
+import { usePermissions } from '@/lib/hooks/usePermissions';
 import type { Application, ApplicationFilters } from '@/lib/api/applications';
 
 export default function ApplicationsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<ApplicationFilters>({});
+  const { canEdit } = usePermissions('/admin/applications');
   
   const hasApplicantFilter = !!searchParams?.get('applicant_id');
 
@@ -23,6 +25,10 @@ export default function ApplicationsPage() {
 
   function handleView(application: Application) {
     router.push(`/admin/applications/${application.id}`);
+  }
+
+  function handleAddApplication() {
+    router.push('/admin/applications/new');
   }
 
   return (
@@ -42,11 +48,21 @@ export default function ApplicationsPage() {
             ← Back
           </button>
         )}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Applications</h1>
-          <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            Process and manage loan applications.
-          </p>
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Applications</h1>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">
+              Process and manage loan applications.
+            </p>
+          </div>
+          {canEdit('/admin/applications') && (
+            <button
+              onClick={handleAddApplication}
+              className="px-3 py-1.5 text-sm font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors"
+            >
+              + Add Application
+            </button>
+          )}
         </div>
 
         <ApplicationList

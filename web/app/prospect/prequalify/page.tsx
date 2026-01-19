@@ -229,6 +229,7 @@ export default function PrequalifyPage() {
           annual_income: income,
           net_worth: assets,
           status: qualified ? 'submitted' : 'submitted', // Both create application, but qualification status stored in notes
+          application_type: 'prequalification',
           purpose: 'Prequalification application',
           notes: `Qualified: ${qualified ? 'Yes' : 'No'}. Products: ${qualifiedProducts.join(', ') || 'none'}. Reasons: ${qualificationReasons.join('; ')}`,
           workflow_data: {
