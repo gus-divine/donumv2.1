@@ -794,7 +794,7 @@ export function ApplicationList({ onEdit, filters, onFiltersChange }: Applicatio
                   <td className="p-4">
                     <div className="flex items-center justify-end gap-2">
                       {/* Quick Actions for Pending Applications */}
-                      {canEdit('/admin/applications') && application.status === 'pending' && (
+                      {canEdit('/admin/applications') && application.status === 'submitted' && (
                         <>
                           <button
                             onClick={() => handleQuickApprove(application.id)}
