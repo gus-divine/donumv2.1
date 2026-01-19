@@ -232,7 +232,7 @@ export function ProspectList({ filters, onFiltersChange }: ProspectListProps) {
       {prospects.length === 0 ? (
         <div className="p-8 text-center">
           <p className="text-[var(--text-secondary)]">
-            {searchTerm || roleFilter || statusFilter
+            {searchTerm || statusFilter
               ? 'No prospects found matching your filters.'
               : 'No prospects found. Prospects will appear here once created.'}
           </p>
