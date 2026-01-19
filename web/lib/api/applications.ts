@@ -74,6 +74,7 @@ export interface CreateApplicationInput {
   purpose?: string;
   notes?: string;
   status?: ApplicationStatus;
+  workflow_data?: Record<string, any>;
 }
 
 export interface UpdateApplicationInput {
@@ -296,7 +297,7 @@ export async function createApplication(input: CreateApplicationInput): Promise<
     application_type: input.application_type || 'loan',
     purpose: input.purpose || null,
     notes: input.notes || null,
-    workflow_data: (input as any).workflow_data || {},
+    workflow_data: input.workflow_data || {},
     created_by: user.id,
     updated_by: user.id,
   };
