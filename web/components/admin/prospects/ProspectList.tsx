@@ -131,21 +131,6 @@ export function ProspectList({ filters, onFiltersChange }: ProspectListProps) {
     router.push(`/admin/prospects/${prospect.id}`);
   }
 
-  function handleAssignStaff(prospect: User) {
-    const name = prospect.first_name || prospect.last_name
-      ? `${prospect.first_name || ''} ${prospect.last_name || ''}`.trim()
-      : prospect.email;
-    setSelectedProspectName(name);
-    setSelectedProspectId(prospect.id);
-  }
-
-  function handleCloseAssignment() {
-    setSelectedProspectId(null);
-    setSelectedProspectName('');
-    // Reload prospects to refresh any assignment data
-    loadProspects();
-  }
-
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSearchTerm(localSearchTerm);
