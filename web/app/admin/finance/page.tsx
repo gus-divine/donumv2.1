@@ -6,6 +6,7 @@ import { PermissionGuard } from '@/components/admin/shared/PermissionGuard';
 import { FinancialMetricCard } from '@/components/admin/finance/FinancialMetricCard';
 import { RevenueChart } from '@/components/admin/finance/RevenueChart';
 import { StatusDistributionChart } from '@/components/admin/finance/StatusDistributionChart';
+import { LoanDisbursementChart } from '@/components/admin/finance/LoanDisbursementChart';
 import { UpcomingPaymentsTable } from '@/components/admin/finance/UpcomingPaymentsTable';
 import { RecentPaymentsTable } from '@/components/admin/finance/RecentPaymentsTable';
 import {
@@ -13,6 +14,7 @@ import {
   getPaymentTrends,
   getLoanStatusDistribution,
   getPaymentStatusDistribution,
+  getLoanDisbursementTrends,
   getUpcomingPayments,
   getRecentPayments,
   formatCurrency,
@@ -21,17 +23,15 @@ import {
   type PaymentTrend,
   type LoanStatusDistribution,
   type PaymentStatusDistribution,
+  type LoanDisbursementTrend,
   type UpcomingPayment,
   type RecentPayment,
 } from '@/lib/api/finance';
 import {
-  DollarSign,
-  TrendingUp,
-  CreditCard,
-  Percent,
   AlertTriangle,
   ArrowRight,
 } from 'lucide-react';
+import { Select } from '@/components/ui/select';
 
 export default function FinancePage() {
   const router = useRouter();
@@ -41,6 +41,7 @@ export default function FinancePage() {
   const [paymentTrends, setPaymentTrends] = useState<PaymentTrend[]>([]);
   const [loanStatusDist, setLoanStatusDist] = useState<LoanStatusDistribution[]>([]);
   const [paymentStatusDist, setPaymentStatusDist] = useState<PaymentStatusDistribution[]>([]);
+  const [loanDisbursementTrends, setLoanDisbursementTrends] = useState<LoanDisbursementTrend[]>([]);
   const [upcomingPayments, setUpcomingPayments] = useState<UpcomingPayment[]>([]);
   const [recentPayments, setRecentPayments] = useState<RecentPayment[]>([]);
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
@@ -79,6 +80,7 @@ export default function FinancePage() {
         trendsData,
         loanDistData,
         paymentDistData,
+        disbursementTrendsData,
         upcomingData,
         recentData,
       ] = await Promise.all([
@@ -86,6 +88,7 @@ export default function FinancePage() {
         getPaymentTrends(startDate, endDate, dateRange === '7d' ? 'day' : dateRange === '30d' ? 'day' : 'week'),
         getLoanStatusDistribution(),
         getPaymentStatusDistribution(),
+        getLoanDisbursementTrends(startDate, endDate, dateRange === '7d' ? 'day' : dateRange === '30d' ? 'day' : 'week'),
         getUpcomingPayments(),
         getRecentPayments(),
       ]);
@@ -94,6 +97,7 @@ export default function FinancePage() {
       setPaymentTrends(trendsData);
       setLoanStatusDist(loanDistData);
       setPaymentStatusDist(paymentDistData);
+      setLoanDisbursementTrends(disbursementTrendsData);
       setUpcomingPayments(upcomingData);
       setRecentPayments(recentData);
     } catch (err) {
@@ -144,16 +148,18 @@ export default function FinancePage() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <select
+              <Select
+                id="date-range"
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value as '7d' | '30d' | '90d' | '1y')}
-                className="px-3 py-1.5 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
-              >
-                <option value="7d">Last 7 days</option>
-                <option value="30d">Last 30 days</option>
-                <option value="90d">Last 90 days</option>
-                <option value="1y">Last year</option>
-              </select>
+                options={[
+                  { value: '7d', label: 'Last 7 days' },
+                  { value: '30d', label: 'Last 30 days' },
+                  { value: '90d', label: 'Last 90 days' },
+                  { value: '1y', label: 'Last year' },
+                ]}
+                className="w-40"
+              />
               <button
                 onClick={() => router.push('/admin/loans')}
                 className="px-3 py-1.5 text-sm font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors flex items-center gap-2"
@@ -166,7 +172,7 @@ export default function FinancePage() {
 
           {/* Overdue Payments Alert */}
           {metrics && metrics.overduePaymentsCount > 0 && (
-            <div className="mb-6 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg p-4">
+            <div className="mb-8 border-l-4 border-red-500 pl-4 py-2">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
@@ -191,82 +197,86 @@ export default function FinancePage() {
 
           {/* Key Metrics */}
           {metrics && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <>
+              <div className="pt-4 border-t-2 border-[var(--core-gold)] pb-6 mb-6">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Key Metrics</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <FinancialMetricCard
                 title="Total Loans Outstanding"
                 value={metrics.totalLoansOutstanding}
-                icon={DollarSign}
                 subtitle={`${metrics.activeLoansCount} active loans`}
               />
               <FinancialMetricCard
                 title="Total Principal Disbursed"
                 value={metrics.totalPrincipalDisbursed}
-                icon={CreditCard}
               />
               <FinancialMetricCard
                 title="Total Payments Received"
                 value={metrics.totalPaymentsReceived}
-                icon={TrendingUp}
                 subtitle={`Collection rate: ${formatPercentage(metrics.collectionRate)}`}
               />
               <FinancialMetricCard
                 title="Total Interest Collected"
                 value={metrics.totalInterestCollected}
-                icon={Percent}
                 subtitle={`Avg loan size: ${formatCurrency(metrics.averageLoanSize)}`}
               />
-            </div>
-          )}
+                </div>
+              </div>
 
-          {/* Secondary Metrics */}
-          {metrics && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <FinancialMetricCard
-                title="Active Loans"
-                value={metrics.activeLoansCount}
-                className="bg-[var(--surface)]"
-              />
-              <FinancialMetricCard
-                title="Overdue Payments"
-                value={metrics.overduePaymentsCount}
-                className="bg-[var(--surface)]"
-                subtitle={formatCurrency(metrics.overduePaymentsAmount)}
-              />
-              <FinancialMetricCard
-                title="Collection Rate"
-                value={formatPercentage(metrics.collectionRate)}
-                className="bg-[var(--surface)]"
-              />
-              <FinancialMetricCard
-                title="Default Rate"
-                value={formatPercentage(metrics.defaultRate)}
-                className="bg-[var(--surface)]"
-              />
-            </div>
+              {/* Secondary Metrics */}
+              <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Performance Metrics</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <FinancialMetricCard
+                    title="Active Loans"
+                    value={metrics.activeLoansCount}
+                  />
+                  <FinancialMetricCard
+                    title="Overdue Payments"
+                    value={metrics.overduePaymentsCount}
+                    subtitle={formatCurrency(metrics.overduePaymentsAmount)}
+                  />
+                  <FinancialMetricCard
+                    title="Collection Rate"
+                    value={formatPercentage(metrics.collectionRate)}
+                  />
+                  <FinancialMetricCard
+                    title="Default Rate"
+                    value={formatPercentage(metrics.defaultRate)}
+                  />
+                </div>
+              </div>
+            </>
           )}
 
           {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <RevenueChart data={paymentTrends} period={dateRange === '7d' ? 'day' : 'week'} />
-            <StatusDistributionChart
-              title="Loan Status Distribution"
-              loanData={loanStatusDist}
-              type="loan"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <StatusDistributionChart
-              title="Payment Status Distribution"
-              paymentData={paymentStatusDist}
-              type="payment"
-            />
+          <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Charts & Analytics</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <RevenueChart data={paymentTrends} period={dateRange === '7d' ? 'day' : 'week'} />
+              <LoanDisbursementChart data={loanDisbursementTrends} period={dateRange === '7d' ? 'day' : 'week'} />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <StatusDistributionChart
+                title="Loan Status Distribution"
+                loanData={loanStatusDist}
+                type="loan"
+              />
+              <StatusDistributionChart
+                title="Payment Status Distribution"
+                paymentData={paymentStatusDist}
+                type="payment"
+              />
+            </div>
           </div>
 
           {/* Tables */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <UpcomingPaymentsTable payments={upcomingPayments} />
-            <RecentPaymentsTable payments={recentPayments} />
+          <div className="pt-6 border-t border-[var(--core-gold)] pb-6">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Payment Activity</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <UpcomingPaymentsTable payments={upcomingPayments} />
+              <RecentPaymentsTable payments={recentPayments} />
+            </div>
           </div>
         </div>
       </main>

@@ -1,9 +1,8 @@
 'use client';
 
 import {
-  LineChart,
-  Line,
-  Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -14,14 +13,14 @@ import {
   linearGradient,
   stop,
 } from 'recharts';
-import { formatCurrency, type PaymentTrend } from '@/lib/api/finance';
+import { formatCurrency, type LoanDisbursementTrend } from '@/lib/api/finance';
 
-interface RevenueChartProps {
-  data: PaymentTrend[];
+interface LoanDisbursementChartProps {
+  data: LoanDisbursementTrend[];
   period: 'day' | 'week' | 'month';
 }
 
-export function RevenueChart({ data, period }: RevenueChartProps) {
+export function LoanDisbursementChart({ data, period }: LoanDisbursementChartProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     if (period === 'day') {
@@ -42,14 +41,14 @@ export function RevenueChart({ data, period }: RevenueChartProps) {
   return (
     <div className="relative">
       <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-6">
-        Payment Revenue Over Time
+        Loan Disbursements Over Time
       </h3>
       <ResponsiveContainer width="100%" height={380}>
-        <LineChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 60 }}>
+        <BarChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 60 }}>
           <defs>
-            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="var(--core-blue)" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="var(--core-blue)" stopOpacity={0} />
+            <linearGradient id="colorDisbursement" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--core-gold)" stopOpacity={1} />
+              <stop offset="100%" stopColor="var(--core-gold)" stopOpacity={0.6} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.2} />
@@ -81,33 +80,23 @@ export function RevenueChart({ data, period }: RevenueChartProps) {
             }}
             formatter={(value: number | undefined) => [
               value !== undefined ? formatCurrency(value) : '',
-              'Revenue',
+              'Disbursed Amount',
             ]}
             labelStyle={{ color: 'var(--text-primary)', fontWeight: 600, marginBottom: '8px' }}
             separator=": "
-            cursor={{ stroke: 'var(--core-blue)', strokeWidth: 2, strokeDasharray: '5 5' }}
+            cursor={{ fill: 'var(--core-gold)', fillOpacity: 0.1 }}
           />
           <Legend 
             wrapperStyle={{ paddingTop: '24px' }}
-            iconType="line"
             iconSize={16}
           />
-          <Area
-            type="monotone"
+          <Bar
             dataKey="amount"
-            stroke="none"
-            fill="url(#colorRevenue)"
+            fill="url(#colorDisbursement)"
+            radius={[12, 12, 0, 0]}
+            name="Disbursed Amount"
           />
-          <Line
-            type="monotone"
-            dataKey="amount"
-            stroke="var(--core-blue)"
-            strokeWidth={3}
-            dot={{ fill: 'var(--core-blue)', r: 4, strokeWidth: 2, stroke: 'var(--background)' }}
-            activeDot={{ r: 8, stroke: 'var(--core-blue)', strokeWidth: 2, fill: 'var(--background)' }}
-            name="Revenue"
-          />
-        </LineChart>
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );

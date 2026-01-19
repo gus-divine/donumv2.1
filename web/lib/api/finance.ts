@@ -53,6 +53,12 @@ export interface RecentPayment {
   payment_method: string | null;
 }
 
+export interface LoanDisbursementTrend {
+  date: string;
+  amount: number;
+  count: number;
+}
+
 /**
  * Get comprehensive financial metrics
  */
@@ -385,6 +391,62 @@ export function formatCurrency(amount: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+/**
+ * Get loan disbursement trends over time
+ */
+export async function getLoanDisbursementTrends(
+  startDate: Date,
+  endDate: Date,
+  groupBy: 'day' | 'week' | 'month' = 'day'
+): Promise<LoanDisbursementTrend[]> {
+  const { data, error } = await supabase
+    .from('loans')
+    .select('disbursed_at, principal_amount')
+    .not('disbursed_at', 'is', null)
+    .gte('disbursed_at', startDate.toISOString().split('T')[0])
+    .lte('disbursed_at', endDate.toISOString().split('T')[0])
+    .order('disbursed_at', { ascending: true });
+
+  if (error) {
+    console.error('[getLoanDisbursementTrends] Error:', error);
+    throw new Error(`Failed to fetch loan disbursement trends: ${error.message}`);
+  }
+
+  // Group by date
+  const grouped = new Map<string, { amount: number; count: number }>();
+
+  (data || []).forEach((loan: any) => {
+    if (!loan.disbursed_at) return;
+
+    let key: string;
+    const date = new Date(loan.disbursed_at);
+
+    if (groupBy === 'day') {
+      key = date.toISOString().split('T')[0];
+    } else if (groupBy === 'week') {
+      const weekStart = new Date(date);
+      weekStart.setDate(date.getDate() - date.getDay());
+      key = weekStart.toISOString().split('T')[0];
+    } else {
+      key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    const existing = grouped.get(key) || { amount: 0, count: 0 };
+    grouped.set(key, {
+      amount: existing.amount + (loan.principal_amount || 0),
+      count: existing.count + 1,
+    });
+  });
+
+  return Array.from(grouped.entries())
+    .map(([date, data]) => ({
+      date,
+      amount: data.amount,
+      count: data.count,
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 }
 
 /**

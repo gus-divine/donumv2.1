@@ -49,9 +49,9 @@ export function StatusDistributionChart({
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">{title}</h3>
-        <div className="flex items-center justify-center h-[300px] text-[var(--text-secondary)]">
+      <div>
+        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-6">{title}</h3>
+        <div className="flex items-center justify-center h-[380px] text-[var(--text-secondary)]">
           No data available
         </div>
       </div>
@@ -65,36 +65,61 @@ export function StatusDistributionChart({
   }));
 
   return (
-    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">{title}</h3>
-      <ResponsiveContainer width="100%" height={300}>
+    <div className="relative">
+      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-6">{title}</h3>
+      <ResponsiveContainer width="100%" height={380}>
         <PieChart>
           <Pie
             data={chartData}
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={({ name, percent }: { name: string; percent: number }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-            outerRadius={100}
+            label={({ name, percent }: { name: string; percent: number }) => {
+              if (percent < 0.05) return ''; // Hide labels for very small slices
+              return `${(percent * 100).toFixed(0)}%`;
+            }}
+            outerRadius={120}
+            innerRadius={50}
             fill="#8884d8"
             dataKey="value"
+            paddingAngle={3}
+            stroke="var(--background)"
+            strokeWidth={3}
           >
             {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell 
+                key={`cell-${index}`} 
+                fill={COLORS[index % COLORS.length]}
+                stroke="var(--background)"
+                strokeWidth={3}
+              />
             ))}
           </Pie>
           <Tooltip
             contentStyle={{
               backgroundColor: 'var(--surface)',
               border: '1px solid var(--border)',
-              borderRadius: '6px',
+              borderRadius: '12px',
+              boxShadow: '0 8px 16px -4px rgba(0, 0, 0, 0.15)',
+              padding: '12px 16px',
             }}
             formatter={(value: number | undefined, name: string | undefined, props: { payload?: { amount?: number } }) => [
               `${value ?? 0} (${formatCurrency(props.payload?.amount ?? 0)})`,
               name ?? '',
             ]}
+            labelStyle={{ color: 'var(--text-primary)', fontWeight: 600, marginBottom: '8px' }}
+            separator=": "
           />
-          <Legend />
+          <Legend 
+            wrapperStyle={{ paddingTop: '24px' }}
+            iconType="circle"
+            iconSize={12}
+            formatter={(value: string) => (
+              <span style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 500 }}>
+                {value}
+              </span>
+            )}
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>

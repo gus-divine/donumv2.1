@@ -30,7 +30,7 @@ export function ProspectList({ filters, onFiltersChange }: ProspectListProps) {
   const loadingRef = useRef(false);
 
   // Prospect roles that should be shown in this list
-  const prospectRoles: string[] = ['donum_prospect', 'donum_member'];
+  const prospectRoles: string[] = ['donum_prospect'];
 
   const loadProspects = useCallback(async () => {
     if (loadingRef.current) {
