@@ -289,7 +289,7 @@ export function AdminApplicationEditForm({
         notes: notes !== '' ? notes : undefined,
         internal_notes: internalNotes !== '' ? internalNotes : undefined,
         // Keep status as draft if it's draft, otherwise don't change it
-        status: application.status === 'draft' ? 'draft' : undefined,
+        ...(application.status === 'draft' ? { status: 'draft' as const } : {}),
       };
 
       await updateApplication(application.id, appUpdate);
