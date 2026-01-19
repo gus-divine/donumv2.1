@@ -43,8 +43,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error('[Auth] Error getting session:', {
             message: error.message,
             code: error.code,
-            details: error.details,
-            hint: error.hint,
           });
           setLoading(false);
           return;
@@ -173,8 +171,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // Check if it's a 403/500 that might be fixed by refreshing
         const isServerError = error.code === '500' || 
-                             (typeof error.status === 'number' && error.status >= 500) ||
-                             (typeof error.statusCode === 'number' && error.statusCode >= 500);
+                             ('status' in error && typeof error.status === 'number' && error.status >= 500) ||
+                             ('statusCode' in error && typeof error.statusCode === 'number' && error.statusCode >= 500);
         
         // Log comprehensive error information
         const errorInfo: Record<string, unknown> = {

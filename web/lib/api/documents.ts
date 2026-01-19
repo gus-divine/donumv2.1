@@ -372,7 +372,7 @@ export async function reviewDocument(
 ): Promise<Document> {
   const updateData: UpdateDocumentInput = {
     status,
-    rejection_reason: status === 'rejected' ? rejectionReason : null,
+    rejection_reason: status === 'rejected' ? rejectionReason : undefined,
   };
 
   return updateDocument(documentId, updateData);

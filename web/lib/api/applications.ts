@@ -432,21 +432,18 @@ export async function deleteApplication(id: string): Promise<void> {
 export async function submitApplication(id: string): Promise<Application> {
   return updateApplication(id, {
     status: 'submitted',
-    submitted_at: new Date().toISOString(),
   });
 }
 
 export async function approveApplication(id: string): Promise<Application> {
   return updateApplication(id, {
     status: 'approved',
-    approved_at: new Date().toISOString(),
   });
 }
 
 export async function rejectApplication(id: string, reason: string): Promise<Application> {
   return updateApplication(id, {
     status: 'rejected',
-    rejected_at: new Date().toISOString(),
     rejection_reason: reason,
   });
 }
@@ -454,6 +451,5 @@ export async function rejectApplication(id: string, reason: string): Promise<App
 export async function fundApplication(id: string): Promise<Application> {
   return updateApplication(id, {
     status: 'funded',
-    funded_at: new Date().toISOString(),
   });
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getUsers, type User, type UserFilters } from '@/lib/api/users';
-import { getDepartments } from '@/lib/api/departments';
+import { getDepartments, type Department } from '@/lib/api/departments';
 import { useAuth } from '@/lib/auth/auth-context';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { USER_ROLES } from '@/lib/api/users';

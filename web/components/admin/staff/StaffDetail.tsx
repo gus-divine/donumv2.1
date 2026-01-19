@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { updateUser, getUser, type User, type UpdateUserInput, USER_ROLES, USER_STATUSES } from '@/lib/api/users';
+import { updateUser, getUser, type User, type UpdateUserInput, type UserStatus, USER_ROLES, USER_STATUSES } from '@/lib/api/users';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { Select } from '@/components/ui/select';
 import { StaffDepartmentAssignment } from './StaffDepartmentAssignment';
@@ -177,7 +177,7 @@ export function StaffDetail({ staff, onBack, onStaffUpdated }: StaffDetailProps)
                 <Select
                   id="status"
                   value={status}
-                  onChange={(e) => setStatus(e.target.value as UpdateUserInput['status'])}
+                  onChange={(e) => setStatus(e.target.value as UserStatus)}
                   options={USER_STATUSES.map(s => ({ value: s.value, label: s.label }))}
                   className="w-full"
                 />

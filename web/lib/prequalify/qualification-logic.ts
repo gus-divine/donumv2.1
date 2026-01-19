@@ -47,7 +47,7 @@ const DEFAULT_CRITERIA: QualificationCriteria = {
 /**
  * Plan-specific criteria
  */
-const PLAN_CRITERIA: Record<DonumPlan, Partial<QualificationCriteria>> = {
+const PLAN_CRITERIA: Record<DonumPlanCode, Partial<QualificationCriteria>> = {
   defund: {
     minIncome: 200000, // High income earners
     requiresCharitableIntent: true
