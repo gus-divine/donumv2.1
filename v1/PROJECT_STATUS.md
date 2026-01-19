@@ -204,7 +204,7 @@ Department Management feature fully implemented:
   - Updates user's `departments` array field
 - [x] **Member assignment to departments** ✅ COMPLETE
   - `DepartmentMemberAssignment` component created and integrated
-  - Assign/unassign members (donum_member, donum_prospect, donum_lead) to departments
+  - Assign/unassign members (donum_member, donum_prospect) to departments
   - Respects `member_assignment_enabled` and `prospect_assignment_enabled` flags
   - Uses `department_members` table for tracking
   - Full API layer implemented (`lib/api/department-members.ts`)

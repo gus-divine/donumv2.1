@@ -46,7 +46,7 @@ export function PermissionGuard({
       }
 
       // External users don't have admin access
-      if (['donum_member', 'donum_lead', 'donum_prospect', 'donum_partner'].includes(role)) {
+      if (['donum_member', 'donum_prospect', 'donum_partner'].includes(role)) {
         setHasAccess(false);
         setChecking(false);
         return;

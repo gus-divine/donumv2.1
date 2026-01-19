@@ -42,7 +42,7 @@ export default function ProspectLayout({ children }: ProspectLayoutProps) {
         return;
       }
       // If not prospect/lead, redirect to signin
-      if (!['donum_prospect', 'donum_lead'].includes(role)) {
+      if (role !== 'donum_prospect') {
         router.push('/auth/signin');
         return;
       }

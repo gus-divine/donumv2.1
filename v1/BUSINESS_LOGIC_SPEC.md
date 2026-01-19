@@ -21,7 +21,7 @@ This document captures the core business logic and workflows from Donum 2.0 that
 - **donum_staff**: Financial advisors managing donor relationships
 - **donum_member**: High-net-worth clients using financing products
 - **donum_partner**: Charities/third-parties receiving donations
-- **donum_lead**: Prospects learning about Donum solutions
+- **donum_prospect**: Prospects learning about Donum solutions
 
 ### **2. Staff-Member Relationships**
 - **Assignment Logic**: Staff assigned to members based on territories/specializations

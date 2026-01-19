@@ -6,8 +6,7 @@ export type UserRole =
   | 'donum_staff'
   | 'donum_member'
   | 'donum_partner'
-  | 'donum_prospect'
-  | 'donum_lead';
+  | 'donum_prospect';
 
 export type UserStatus = 
   | 'pending'
@@ -354,7 +353,6 @@ export const USER_ROLES: Array<{ value: UserRole; label: string }> = [
   { value: 'donum_member', label: 'Member' },
   { value: 'donum_partner', label: 'Partner' },
   { value: 'donum_prospect', label: 'Prospect' },
-  { value: 'donum_lead', label: 'Lead' },
 ];
 
 export const USER_STATUSES: Array<{ value: UserStatus; label: string }> = [

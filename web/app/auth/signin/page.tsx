@@ -75,7 +75,7 @@ export default function SignInPage() {
         return;
       }
       
-      if (['donum_prospect', 'donum_lead'].includes(role)) {
+      if (role === 'donum_prospect') {
         // Check if prequalification is complete
         checkPrequalificationStatus(redirectUrl || '/prospect/dashboard');
         return;

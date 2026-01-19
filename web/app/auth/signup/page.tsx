@@ -30,7 +30,7 @@ export default function SignUpPage() {
   useEffect(() => {
     if (!authLoading && session && role) {
       // If prospect/lead, check prequalification status
-      if (['donum_prospect', 'donum_lead'].includes(role)) {
+      if (role === 'donum_prospect') {
         checkPrequalificationStatus();
         return;
       }
@@ -161,7 +161,7 @@ export default function SignUpPage() {
           .upsert({
             id: authData.user.id,
             email: email.trim(),
-            role: 'donum_lead',
+            role: 'donum_prospect',
             status: 'pending',
           }, {
             onConflict: 'id',

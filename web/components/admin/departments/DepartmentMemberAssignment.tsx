@@ -23,7 +23,7 @@ export function DepartmentMemberAssignment({ department, onClose }: DepartmentMe
   const loadingRef = useRef(false);
 
   // Member roles that can be assigned to departments
-  const memberRoles: string[] = ['donum_member', 'donum_prospect', 'donum_lead'];
+  const memberRoles: string[] = ['donum_member', 'donum_prospect'];
 
   const loadData = useCallback(async () => {
     if (loadingRef.current) {
@@ -78,7 +78,7 @@ export function DepartmentMemberAssignment({ department, onClose }: DepartmentMe
       } else {
         // Assign to department
         // Check if department allows this type of assignment
-        const isProspect = ['donum_prospect', 'donum_lead'].includes(user.role);
+        const isProspect = user.role === 'donum_prospect';
         const isMember = user.role === 'donum_member';
 
         if (isProspect && !department.prospect_assignment_enabled) {
@@ -123,7 +123,7 @@ export function DepartmentMemberAssignment({ department, onClose }: DepartmentMe
     if (assignedMemberIds.has(user.id)) return false;
     
     // Filter by assignment flags
-    const isProspect = ['donum_prospect', 'donum_lead'].includes(user.role);
+    const isProspect = user.role === 'donum_prospect';
     const isMember = user.role === 'donum_member';
     
     if (isProspect && !department.prospect_assignment_enabled) return false;

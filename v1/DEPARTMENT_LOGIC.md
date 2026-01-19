@@ -58,7 +58,7 @@ CREATE TABLE public.departments (
   color TEXT DEFAULT '#6366F1',           -- UI color
   icon TEXT DEFAULT 'users',              -- UI icon
   is_active BOOLEAN DEFAULT true,         -- Can be disabled
-  prospect_assignment_enabled BOOLEAN DEFAULT true,  -- Controls whether department can receive new prospect/lead assignments (donum_lead, donum_prospect)
+  prospect_assignment_enabled BOOLEAN DEFAULT true,  -- Controls whether department can receive new prospect assignments (donum_prospect)
   member_assignment_enabled BOOLEAN DEFAULT true,     -- Controls whether department can receive new member assignments (donum_member)
   created_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ,
@@ -141,7 +141,7 @@ departments TEXT[] DEFAULT '{}'  -- Array of department names user belongs to
 
 ### **4. Client Assignment Control (Separate for Prospects & Members)**
 - **Purpose:** Two separate fields control whether a department can receive new client assignments:
-  - `prospect_assignment_enabled` - Controls prospect/lead assignments (donum_lead, donum_prospect roles)
+  - `prospect_assignment_enabled` - Controls prospect assignments (donum_prospect role)
   - `member_assignment_enabled` - Controls member assignments (donum_member role)
 - **Why separate?** Different departments may handle prospects vs members differently:
   - Sales departments might receive prospects but not handle existing members
@@ -200,7 +200,7 @@ function canAccessPage(userRole, userDepartments, pagePath) {
   }
   
   // External users (members, leads, partners) have no admin access
-  if (['donum_member', 'donum_lead', 'donum_prospect', 'donum_partner'].includes(userRole)) {
+  if (['donum_member', 'donum_prospect', 'donum_partner'].includes(userRole)) {
     return false;
   }
   

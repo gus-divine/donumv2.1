@@ -23,7 +23,7 @@ BEGIN
       onboarding_complete = true,
       updated_at = NOW()
     WHERE id = NEW.applicant_id
-      AND role IN ('donum_lead', 'donum_prospect');
+      AND role = 'donum_prospect';
     
     RAISE NOTICE 'Converted prospect % to member (application %)', NEW.applicant_id, NEW.id;
   END IF;

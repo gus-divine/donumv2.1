@@ -65,7 +65,7 @@ BEGIN
     AND table_name = 'departments' 
     AND column_name = 'prospect_assignment_enabled'
   ) THEN
-    COMMENT ON COLUMN public.departments.prospect_assignment_enabled IS 'Controls whether department can receive new prospect/lead assignments (donum_lead, donum_prospect roles)';
+    COMMENT ON COLUMN public.departments.prospect_assignment_enabled IS 'Controls whether department can receive new prospect assignments (donum_prospect role)';
   END IF;
   
   IF EXISTS (

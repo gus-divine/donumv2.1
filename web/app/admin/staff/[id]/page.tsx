@@ -92,7 +92,7 @@ export default function StaffDetailPage() {
               const allUsers = await getUsers();
               const assignedUsers = allUsers.filter(u => prospectIds.includes(u.id));
               
-              setAssignedProspects(assignedUsers.filter(u => u.role === 'donum_prospect' || u.role === 'donum_lead'));
+              setAssignedProspects(assignedUsers.filter(u => u.role === 'donum_prospect'));
               setAssignedMembers(assignedUsers.filter(u => u.role === 'donum_member'));
             }
           }

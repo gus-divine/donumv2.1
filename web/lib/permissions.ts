@@ -14,7 +14,6 @@ export interface PagePermission {
 
 export type UserRole = 
   | 'donum_prospect'
-  | 'donum_lead'
   | 'donum_member'
   | 'donum_staff'
   | 'donum_admin'
@@ -55,7 +54,7 @@ export async function getUserAccessiblePages(
   }
 
   // External users don't have admin page access
-  if (['donum_member', 'donum_lead', 'donum_prospect', 'donum_partner'].includes(userRole)) {
+  if (['donum_member', 'donum_prospect', 'donum_partner'].includes(userRole)) {
     return [];
   }
 
@@ -121,7 +120,7 @@ export async function canUserAccessPage(
   }
 
   // External users don't have admin page access
-  if (['donum_member', 'donum_lead', 'donum_prospect', 'donum_partner'].includes(userRole)) {
+  if (['donum_member', 'donum_prospect', 'donum_partner'].includes(userRole)) {
     return false;
   }
 
@@ -176,7 +175,7 @@ export async function getPagePermissions(
   }
 
   // External users don't have admin page access
-  if (['donum_member', 'donum_lead', 'donum_prospect', 'donum_partner'].includes(userRole)) {
+  if (['donum_member', 'donum_prospect', 'donum_partner'].includes(userRole)) {
     return null;
   }
 
