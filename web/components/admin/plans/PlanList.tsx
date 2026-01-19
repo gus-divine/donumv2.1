@@ -6,6 +6,7 @@ import { usePermissions } from '@/lib/hooks/usePermissions';
 import { Edit, Trash2, CheckCircle2, XCircle } from 'lucide-react';
 import { Select } from '@/components/ui/select';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface PlanListProps {
   onEdit: (plan: DonumPlan) => void;
@@ -124,8 +125,65 @@ export function PlanList({ onEdit, onViewDetails }: PlanListProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <p className="text-[var(--text-secondary)]">Loading plans...</p>
+      <div className="space-y-4">
+        {/* Filters Skeleton */}
+        <div className="bg-[var(--surface)] rounded-lg p-4">
+          <div className="flex flex-wrap gap-4 items-center">
+            <Skeleton height="2.5rem" width="100%" className="max-w-md" />
+            <Skeleton height="2.5rem" width="10rem" />
+            <Skeleton height="2.5rem" width="8rem" />
+            <Skeleton height="2.5rem" width="8rem" />
+          </div>
+        </div>
+
+        {/* Table Skeleton */}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-[var(--border)]">
+                <th className="text-left p-4">
+                  <Skeleton height="1rem" width="6rem" />
+                </th>
+                <th className="text-left p-4">
+                  <Skeleton height="1rem" width="10rem" />
+                </th>
+                <th className="text-left p-4">
+                  <Skeleton height="1rem" width="12rem" />
+                </th>
+                <th className="text-left p-4">
+                  <Skeleton height="1rem" width="6rem" />
+                </th>
+                <th className="text-right p-4">
+                  <Skeleton height="1rem" width="6rem" />
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i} className="border-b border-[var(--border)]">
+                  <td className="p-4">
+                    <Skeleton height="1rem" width="12rem" />
+                  </td>
+                  <td className="p-4">
+                    <Skeleton height="1rem" width="20rem" />
+                  </td>
+                  <td className="p-4">
+                    <Skeleton height="1rem" width="6rem" />
+                  </td>
+                  <td className="p-4">
+                    <Skeleton height="1.25rem" width="6rem" />
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center justify-end gap-2">
+                      <Skeleton height="1.5rem" width="1.5rem" variant="circular" />
+                      <Skeleton height="1.5rem" width="1.5rem" variant="circular" />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }

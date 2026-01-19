@@ -7,6 +7,7 @@ import { PlanForm } from '@/components/admin/plans/PlanForm';
 import { getPlanById, type DonumPlan } from '@/lib/api/plans';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { useRef } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PlanDetailPage() {
   const params = useParams();
@@ -115,8 +116,59 @@ export default function PlanDetailPage() {
     return (
       <PermissionGuard>
         <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-[var(--text-secondary)]">Loading plan details...</div>
+          <div className="max-w-6xl mx-auto">
+            {/* Back Button Skeleton */}
+            <div className="mb-6">
+              <Skeleton height="1.5rem" width="5rem" />
+            </div>
+
+            {/* Header Skeleton */}
+            <div className="mb-8 flex items-start justify-between">
+              <div className="space-y-2">
+                <Skeleton height="2rem" width="16rem" />
+                <Skeleton height="1rem" width="30rem" />
+              </div>
+              <Skeleton height="2rem" width="7rem" />
+            </div>
+
+            {/* Plan Information Skeleton */}
+            <div className="pt-4 border-t-2 border-[var(--core-gold)] pb-6 mb-6">
+              <Skeleton height="1.5rem" width="16rem" className="mb-4" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="space-y-1">
+                    <Skeleton height="0.875rem" width="8rem" />
+                    <Skeleton height="1.25rem" width="12rem" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Plan Benefits Skeleton */}
+            <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+              <Skeleton height="1.5rem" width="12rem" className="mb-4" />
+              <div className="space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <Skeleton height="1.25rem" width="1.25rem" variant="circular" />
+                    <Skeleton height="1rem" width="20rem" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Eligibility Criteria Skeleton */}
+            <div className="pt-6 border-t border-[var(--core-gold)] pb-6">
+              <Skeleton height="1.5rem" width="16rem" className="mb-4" />
+              <div className="space-y-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="space-y-1">
+                    <Skeleton height="0.875rem" width="10rem" />
+                    <Skeleton height="1rem" width="25rem" />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </main>
       </PermissionGuard>

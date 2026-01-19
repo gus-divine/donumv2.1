@@ -9,6 +9,7 @@ import { getStaffProspectAssignments, type ProspectStaffAssignment } from '@/lib
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { USER_ROLES } from '@/lib/api/users';
 import { Select } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Format date helper
 function formatDate(dateString: string | null): string {
@@ -163,8 +164,163 @@ export default function StaffDetailPage() {
     return (
       <PermissionGuard>
         <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-[var(--text-secondary)]">Loading staff details...</div>
+          <div className="max-w-6xl mx-auto">
+            {/* Back Button Skeleton */}
+            <div className="mb-6">
+              <Skeleton height="1.5rem" width="5rem" />
+            </div>
+
+            {/* Header Skeleton */}
+            <div className="mb-8 flex items-start justify-between">
+              <div className="space-y-2">
+                <Skeleton height="2rem" width="16rem" />
+                <Skeleton height="1rem" width="30rem" />
+              </div>
+            </div>
+
+            {/* Contact Information Skeleton */}
+            <div className="pt-4 border-t-2 border-[var(--core-gold)] pb-6 mb-6">
+              <Skeleton height="1.5rem" width="18rem" className="mb-4" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="space-y-1">
+                    <Skeleton height="0.875rem" width="8rem" />
+                    <Skeleton height="1.25rem" width="12rem" />
+                  </div>
+                ))}
+              </div>
+              {/* Address Subsection Skeleton */}
+              <div className="mt-6 pt-6 border-t border-[var(--border)]">
+                <Skeleton height="1rem" width="8rem" className="mb-3" />
+                <div className="space-y-2">
+                  <Skeleton height="1rem" width="20rem" />
+                  <Skeleton height="1rem" width="15rem" />
+                </div>
+              </div>
+            </div>
+
+            {/* Departments Section Skeleton */}
+            <div className="pt-6 border-t border-[var(--core-blue)] pb-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <Skeleton height="1.5rem" width="12rem" />
+                <Skeleton height="1.5rem" width="8rem" />
+              </div>
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center justify-between py-3 border-b border-[var(--border)]">
+                    <Skeleton height="1.5rem" width="10rem" />
+                    <Skeleton height="1rem" width="5rem" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Assigned Prospects Section Skeleton */}
+            <div className="pt-6 border-t border-[var(--core-blue)] pb-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <Skeleton height="1.5rem" width="16rem" />
+                <Skeleton height="1rem" width="8rem" />
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b border-[var(--border)]">
+                      <th className="text-left p-4">
+                        <Skeleton height="1rem" width="6rem" />
+                      </th>
+                      <th className="text-left p-4">
+                        <Skeleton height="1rem" width="6rem" />
+                      </th>
+                      <th className="text-left p-4">
+                        <Skeleton height="1rem" width="6rem" />
+                      </th>
+                      <th className="text-left p-4">
+                        <Skeleton height="1rem" width="6rem" />
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <tr key={i} className="border-b border-[var(--border)]">
+                        <td className="p-4">
+                          <Skeleton height="1rem" width="12rem" />
+                        </td>
+                        <td className="p-4">
+                          <Skeleton height="1rem" width="16rem" />
+                        </td>
+                        <td className="p-4">
+                          <Skeleton height="1rem" width="6rem" />
+                        </td>
+                        <td className="p-4">
+                          <Skeleton height="1rem" width="8rem" />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Assigned Members Section Skeleton */}
+            <div className="pt-6 border-t border-[var(--core-blue)] pb-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <Skeleton height="1.5rem" width="16rem" />
+                <Skeleton height="1rem" width="8rem" />
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b border-[var(--border)]">
+                      <th className="text-left p-4">
+                        <Skeleton height="1rem" width="6rem" />
+                      </th>
+                      <th className="text-left p-4">
+                        <Skeleton height="1rem" width="6rem" />
+                      </th>
+                      <th className="text-left p-4">
+                        <Skeleton height="1rem" width="6rem" />
+                      </th>
+                      <th className="text-left p-4">
+                        <Skeleton height="1rem" width="6rem" />
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <tr key={i} className="border-b border-[var(--border)]">
+                        <td className="p-4">
+                          <Skeleton height="1rem" width="12rem" />
+                        </td>
+                        <td className="p-4">
+                          <Skeleton height="1rem" width="16rem" />
+                        </td>
+                        <td className="p-4">
+                          <Skeleton height="1rem" width="6rem" />
+                        </td>
+                        <td className="p-4">
+                          <Skeleton height="1rem" width="8rem" />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Additional Information Section Skeleton */}
+            <div className="pt-6 border-t border-[var(--core-blue)] pb-6">
+              <Skeleton height="1.5rem" width="20rem" className="mb-4" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <Skeleton height="0.875rem" width="8rem" />
+                  <Skeleton height="1.25rem" width="12rem" />
+                </div>
+                <div className="space-y-1">
+                  <Skeleton height="0.875rem" width="8rem" />
+                  <Skeleton height="1.25rem" width="12rem" />
+                </div>
+              </div>
+            </div>
           </div>
         </main>
       </PermissionGuard>

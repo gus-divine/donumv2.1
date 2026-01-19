@@ -7,6 +7,7 @@ import { UserForm } from '@/components/admin/users/UserForm';
 import { getUser, type User } from '@/lib/api/users';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { useRef } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function EditUserPage() {
   const params = useParams();
@@ -82,8 +83,40 @@ export default function EditUserPage() {
     return (
       <PermissionGuard>
         <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-[var(--text-secondary)]">Loading user...</div>
+          <div className="max-w-6xl mx-auto">
+            {/* Back Button Skeleton */}
+            <div className="mb-6">
+              <Skeleton height="1.5rem" width="5rem" />
+            </div>
+
+            {/* Header Skeleton */}
+            <div className="mb-8 flex items-start justify-between">
+              <div className="space-y-2">
+                <Skeleton height="2rem" width="14rem" />
+                <Skeleton height="1rem" width="25rem" />
+              </div>
+              <div className="flex items-center gap-3">
+                <Skeleton height="2rem" width="5rem" />
+                <Skeleton height="2rem" width="8rem" />
+              </div>
+            </div>
+
+            {/* Form Sections Skeleton */}
+            <div className="space-y-6">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="pt-4 border-t-2 border-[var(--core-gold)] pb-6 mb-6">
+                  <Skeleton height="1.5rem" width="12rem" className="mb-4" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="space-y-2">
+                        <Skeleton height="0.875rem" width="8rem" />
+                        <Skeleton height="2.5rem" width="100%" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </main>
       </PermissionGuard>

@@ -18,6 +18,7 @@ import type { Department } from '@/lib/api/departments';
 import { getUsers, type User } from '@/lib/api/users';
 import { approveApplication, rejectApplication } from '@/lib/api/applications';
 import { CheckCircle, XCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ApplicationListProps {
   onEdit: (application: Application) => void;
@@ -443,10 +444,47 @@ export function ApplicationList({ onEdit, filters, onFiltersChange }: Applicatio
 
   if (authLoading || loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <p className="text-[var(--text-secondary)]">
-          {authLoading ? 'Authenticating...' : 'Loading applications...'}
-        </p>
+      <div className="space-y-4">
+        {/* Filters Skeleton */}
+        <div className="flex flex-wrap items-center gap-4 mb-6">
+          <Skeleton height="2.5rem" width="12rem" />
+          <Skeleton height="2.5rem" width="12rem" />
+          <Skeleton height="2.5rem" width="12rem" />
+          <Skeleton height="2.5rem" width="8rem" />
+        </div>
+
+        {/* Application Cards Skeleton */}
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="p-6 border border-[var(--border)] rounded-lg">
+              <div className="flex items-start justify-between mb-4">
+                <div className="space-y-2">
+                  <Skeleton height="1.5rem" width="16rem" />
+                  <Skeleton height="1rem" width="12rem" />
+                </div>
+                <Skeleton height="1.5rem" width="8rem" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="space-y-1">
+                  <Skeleton height="0.875rem" width="8rem" />
+                  <Skeleton height="1.25rem" width="10rem" />
+                </div>
+                <div className="space-y-1">
+                  <Skeleton height="0.875rem" width="8rem" />
+                  <Skeleton height="1.25rem" width="10rem" />
+                </div>
+                <div className="space-y-1">
+                  <Skeleton height="0.875rem" width="8rem" />
+                  <Skeleton height="1.25rem" width="10rem" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Skeleton height="2rem" width="6rem" />
+                <Skeleton height="2rem" width="6rem" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

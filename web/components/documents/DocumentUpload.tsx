@@ -13,6 +13,7 @@ interface DocumentUploadProps {
   loanId?: string | null;
   onUploadSuccess?: (document: Document) => void;
   onUploadError?: (error: string) => void;
+  onFileSelected?: (hasFile: boolean) => void;
   maxSizeMB?: number;
   acceptedFormats?: string[];
 }
@@ -26,6 +27,7 @@ export default function DocumentUpload({
   loanId,
   onUploadSuccess,
   onUploadError,
+  onFileSelected,
   maxSizeMB = 10,
   acceptedFormats = ['.pdf', '.jpg', '.jpeg', '.png'],
 }: DocumentUploadProps) {
@@ -60,6 +62,7 @@ export default function DocumentUpload({
 
     setSelectedFile(file);
     setError(null);
+    onFileSelected?.(true);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,6 +129,7 @@ export default function DocumentUpload({
   const handleRemove = () => {
     setSelectedFile(null);
     setError(null);
+    onFileSelected?.(false);
   };
 
   // Convert accepted formats to MIME types for the accept attribute
@@ -187,7 +191,7 @@ export default function DocumentUpload({
           </div>
         </label>
       ) : (
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4">
+        <div className="p-4 border border-[var(--border)] rounded-lg hover:bg-[var(--surface-hover)] transition-colors">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0 p-2 bg-[var(--core-blue)]/10 rounded-lg">
               <FileText className="w-5 h-5 text-[var(--core-blue)]" />
@@ -212,11 +216,11 @@ export default function DocumentUpload({
                   handleUpload();
                 }}
                 disabled={uploading}
-                className="px-4 py-2 text-sm font-medium bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                className="px-3 py-1.5 text-sm font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {uploading ? (
                   <span className="flex items-center gap-2">
-                    <span className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></span>
+                    <span className="animate-spin rounded-full h-3 w-3 border-2 border-[var(--core-blue)] border-t-transparent"></span>
                     Uploading...
                   </span>
                 ) : (
@@ -241,9 +245,11 @@ export default function DocumentUpload({
       )}
 
       {error && (
-        <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <div className="border-l-4 border-red-500 pl-4 py-2">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          </div>
         </div>
       )}
     </div>

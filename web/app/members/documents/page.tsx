@@ -17,7 +17,7 @@ const REQUIRED_DOCUMENTS: Array<{ id: DocumentType; name: string; required: bool
   { id: 'other', name: 'Other Documents', required: false },
 ];
 
-export default function ProspectDocumentsPage() {
+export default function MemberDocumentsPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -114,11 +114,6 @@ export default function ProspectDocumentsPage() {
     return (
       <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
         <div className="max-w-4xl mx-auto">
-          {/* Back Button Skeleton */}
-          <div className="mb-6">
-            <Skeleton height="1.5rem" width="10rem" />
-          </div>
-
           {/* Header Skeleton */}
           <div className="mb-8">
             <Skeleton height="2rem" width="12rem" className="mb-2" />
@@ -162,25 +157,10 @@ export default function ProspectDocumentsPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
       <div className="max-w-4xl mx-auto">
-        <button
-          onClick={() => {
-            if (unsavedFiles.size > 0) {
-              const confirmed = window.confirm(
-                `You have ${unsavedFiles.size} document${unsavedFiles.size > 1 ? 's' : ''} ready to upload. Are you sure you want to leave? Your progress will be lost.`
-              );
-              if (!confirmed) return;
-            }
-            router.push('/prospect/dashboard');
-          }}
-          className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-6 transition-colors"
-        >
-          ← Back to Dashboard
-        </button>
-        
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Documents</h1>
           <p className="text-sm text-[var(--text-secondary)]">
-            Upload the required documents to complete your application. You can upload documents as you obtain them.
+            Upload and manage your documents. Keep your documents up to date.
           </p>
         </div>
 
@@ -206,35 +186,6 @@ export default function ProspectDocumentsPage() {
             </div>
           </div>
         )}
-
-        {/* Warning for missing required documents */}
-        {(() => {
-          const requiredDocs = REQUIRED_DOCUMENTS.filter(d => d.required);
-          const uploadedRequiredDocs = requiredDocs.filter(doc => {
-            const docData = getDocumentForType(doc.id);
-            return docData && docData.status === 'approved';
-          });
-          const missingRequired = requiredDocs.length - uploadedRequiredDocs.length;
-          
-          if (missingRequired > 0) {
-            return (
-              <div className="mb-6 border-l-4 border-yellow-500 pl-4 py-2">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h3 className="text-sm font-semibold text-yellow-800 dark:text-yellow-300 mb-1">
-                      Missing Required Documents
-                    </h3>
-                    <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                      You have {missingRequired} required document{missingRequired !== 1 ? 's' : ''} that {missingRequired !== 1 ? 'need' : 'needs'} to be uploaded and approved to complete your application.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          }
-          return null;
-        })()}
 
         <div className="pt-4 border-t-2 border-[var(--core-gold)] pb-6">
           <div className="space-y-4">

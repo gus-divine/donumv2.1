@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { PermissionGuard } from '@/components/admin/shared/PermissionGuard';
 import { LoanDetail } from '@/components/admin/loans/LoanDetail';
 import { getLoanById, type Loan } from '@/lib/api/loans';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function LoanDetailPage() {
   const params = useParams();
@@ -58,8 +59,59 @@ export default function LoanDetailPage() {
     return (
       <PermissionGuard>
         <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-[var(--text-secondary)]">Loading loan details...</div>
+          <div className="max-w-6xl mx-auto">
+            {/* Back Button Skeleton */}
+            <div className="mb-6">
+              <Skeleton height="1.5rem" width="5rem" />
+            </div>
+
+            {/* Header Skeleton */}
+            <div className="mb-8">
+              <Skeleton height="2rem" width="16rem" className="mb-2" />
+              <Skeleton height="1rem" width="20rem" />
+            </div>
+
+            {/* Loan Information Skeleton */}
+            <div className="pt-4 border-t-2 border-[var(--core-gold)] pb-6 mb-6">
+              <Skeleton height="1.5rem" width="16rem" className="mb-4" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="space-y-1">
+                    <Skeleton height="0.875rem" width="8rem" />
+                    <Skeleton height="1.25rem" width="12rem" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Payment Schedule Skeleton */}
+            <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+              <Skeleton height="1.5rem" width="14rem" className="mb-4" />
+              <div className="space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="p-4 border border-[var(--border)] rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <Skeleton height="1.25rem" width="12rem" />
+                      <Skeleton height="1.25rem" width="8rem" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <Skeleton height="1rem" width="10rem" />
+                      <Skeleton height="1rem" width="10rem" />
+                      <Skeleton height="1rem" width="8rem" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions Skeleton */}
+            <div className="pt-6 border-t border-[var(--core-gold)] pb-6">
+              <div className="flex items-center gap-3">
+                <Skeleton height="2.5rem" width="8rem" />
+                <Skeleton height="2.5rem" width="8rem" />
+                <Skeleton height="2.5rem" width="8rem" />
+              </div>
+            </div>
           </div>
         </main>
       </PermissionGuard>

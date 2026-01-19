@@ -14,6 +14,8 @@ import {
   formatCurrency
 } from '@/lib/prequalify/qualification-logic';
 import type { DonumPlan } from '@/lib/api/plans';
+import { Skeleton } from '@/components/ui/skeleton';
+import { CheckCircle2 } from 'lucide-react';
 
 export default function PrequalifyPage() {
   const router = useRouter();
@@ -265,42 +267,102 @@ export default function PrequalifyPage() {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen p-8 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--core-blue)] mx-auto mb-4"></div>
-          <p className="text-[var(--text-secondary)]">Loading...</p>
+      <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Back Button Skeleton */}
+          <div className="mb-6">
+            <Skeleton height="1.5rem" width="10rem" />
+          </div>
+
+          {/* Header Skeleton */}
+          <div className="mb-8 flex items-start justify-between gap-4">
+            <div className="flex-1 space-y-2">
+              <Skeleton height="2rem" width="18rem" />
+              <Skeleton height="1rem" width="30rem" />
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <Skeleton height="2rem" width="5rem" />
+              <Skeleton height="2rem" width="10rem" />
+            </div>
+          </div>
+
+          {/* Form Sections Skeleton */}
+          <form id="prequalify-form" className="space-y-6">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="pt-4 border-t-2 border-[var(--core-gold)] pb-6 mb-6">
+                <Skeleton height="1.5rem" width="12rem" className="mb-6" />
+                <div className="space-y-4">
+                  {Array.from({ length: 2 }).map((_, i) => (
+                    <div key={i} className="space-y-2">
+                      <Skeleton height="0.875rem" width="8rem" />
+                      <Skeleton height="2.5rem" width="100%" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </form>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen p-8">
-      <button
-        onClick={() => router.push('/prospect/dashboard')}
-        className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-4 transition-colors"
-      >
-        ← Back to Dashboard
-      </button>
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6 mb-6">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Prequalification Form</h1>
-          <p className="text-[var(--text-secondary)]">
-            Donum serves high-net-worth individuals seeking sophisticated charitable financing solutions.
-            Complete this brief form to determine your eligibility.
-          </p>
+    <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
+      <div className="max-w-4xl mx-auto">
+        <button
+          onClick={() => router.push('/prospect/dashboard')}
+          className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-6 transition-colors"
+        >
+          ← Back to Dashboard
+        </button>
+        
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Prequalification Form</h1>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Donum serves high-net-worth individuals seeking sophisticated charitable financing solutions.
+              Complete this brief form to determine your eligibility.
+            </p>
+          </div>
+          {!showResults && (
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => router.push('/prospect/dashboard')}
+                className="px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="prequalify-form"
+                disabled={isSubmitting}
+                className="px-3 py-1.5 text-sm font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <span className="animate-spin rounded-full h-3 w-3 border-2 border-[var(--core-blue)] border-t-transparent"></span>
+                    Submitting...
+                  </span>
+                ) : (
+                  'Submit Prequalification'
+                )}
+              </button>
+            </div>
+          )}
         </div>
 
         {showResults && qualificationResult ? (
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-8">
-            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
+          <div>
+            <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6">
               {qualificationResult.qualified ? '✓ You May Qualify!' : 'You May Not Qualify'}
             </h2>
             
             {qualificationResult.qualified ? (
               <div className="mb-6">
                 {/* Important Notice: These are suggestions */}
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                <div className="border-l-4 border-blue-500 pl-4 py-2 mb-6">
                   <div className="flex items-start gap-3">
                     <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -321,7 +383,7 @@ export default function PrequalifyPage() {
                 <p className="text-[var(--text-secondary)] mb-4">
                   Based on your information, you may qualify for the following Donum plans:
                 </p>
-                <div className="space-y-4 mb-6">
+                <div className="space-y-6 mb-6">
                   {qualificationResult.qualifiedPlans.map((plan) => {
                     const incomeNum = annualIncome ? parseFloat(annualIncome) : undefined;
                     const assetsNum = totalAssets ? parseFloat(totalAssets) : undefined;
@@ -329,27 +391,25 @@ export default function PrequalifyPage() {
                     const benefits = getPlanBenefits(plan);
 
                     return (
-                      <div key={plan.id} className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6">
+                      <div key={plan.id} className="pt-4 pb-6 border-t border-[var(--core-gold)]">
                         <div className="mb-4">
-                          <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
+                          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
                             {getPlanDisplayName(plan)}
                           </h3>
-                          <p className="text-sm text-green-700 dark:text-green-300 mb-4">
+                          <p className="text-sm text-[var(--text-secondary)] mb-4">
                             {getPlanDescription(plan)}
                           </p>
                         </div>
 
                         {/* Plan Benefits */}
                         <div className="mb-4">
-                          <h4 className="text-sm font-semibold text-green-800 dark:text-green-200 mb-2">
+                          <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-3">
                             Key Benefits:
                           </h4>
-                          <ul className="space-y-1.5">
+                          <ul className="space-y-2">
                             {benefits.map((benefit, idx) => (
-                              <li key={idx} className="text-sm text-green-700 dark:text-green-300 flex items-start gap-2">
-                                <svg className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
+                              <li key={idx} className="text-sm text-[var(--text-secondary)] flex items-start gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-[var(--core-blue)] mt-0.5 flex-shrink-0" />
                                 <span>{benefit}</span>
                               </li>
                             ))}
@@ -357,24 +417,24 @@ export default function PrequalifyPage() {
                         </div>
 
                         {/* Suggested Loan Amount */}
-                        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-green-200 dark:border-green-700">
-                          <h4 className="text-sm font-semibold text-green-800 dark:text-green-200 mb-2">
+                        <div className="pt-4 border-t border-[var(--border)]">
+                          <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-3">
                             Estimated Loan Amount Range:
                           </h4>
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="text-sm text-[var(--text-secondary)]">Range:</span>
-                              <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                              <span className="text-sm font-medium text-[var(--text-primary)]">
                                 {formatCurrency(loanAmounts.min)} - {formatCurrency(loanAmounts.max)}
                               </span>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-sm text-[var(--text-secondary)]">Suggested:</span>
-                              <span className="text-base font-semibold text-green-800 dark:text-green-200">
+                              <span className="text-base font-semibold text-[var(--text-primary)]">
                                 {formatCurrency(loanAmounts.suggested)}
                               </span>
                             </div>
-                            <p className="text-xs text-[var(--text-secondary)] mt-2 pt-2 border-t border-green-200 dark:border-green-700">
+                            <p className="text-xs text-[var(--text-secondary)] mt-3 pt-3 border-t border-[var(--border)]">
                               * Final loan amounts are determined during application review based on your specific financial situation and charitable goals.
                             </p>
                           </div>
@@ -383,7 +443,7 @@ export default function PrequalifyPage() {
                     );
                   })}
                 </div>
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                <div className="border-l-4 border-blue-500 pl-4 py-2 mb-6">
                   <p className="text-sm text-blue-800 dark:text-blue-200">
                     <strong>Next Steps:</strong> Complete your full application to proceed with the qualification process.
                     Our team will review your information and contact you shortly to discuss your specific loan amount and terms.
@@ -392,7 +452,7 @@ export default function PrequalifyPage() {
               </div>
             ) : (
               <div className="mb-6">
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+                <div className="border-l-4 border-yellow-500 pl-4 py-2 mb-4">
                   <p className="text-yellow-800 dark:text-yellow-200 mb-2">
                     Based on the information provided, you may not meet our current qualification criteria.
                   </p>
@@ -415,11 +475,11 @@ export default function PrequalifyPage() {
               </div>
             )}
 
-            <div className="flex gap-4">
+            <div className="pt-6 border-t border-[var(--border)] flex gap-3">
               <button
                 type="button"
                 onClick={() => router.push('/prospect/dashboard')}
-                className="px-6 py-2 border border-[var(--border)] rounded text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors"
+                className="px-3 py-1.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
               >
                 Go to Dashboard
               </button>
@@ -427,7 +487,7 @@ export default function PrequalifyPage() {
                 <button
                   type="button"
                   onClick={() => router.push('/prospect/application')}
-                  className="px-6 py-2 bg-[var(--core-blue)] text-white rounded hover:bg-[var(--core-blue-light)] transition-colors"
+                  className="px-3 py-1.5 text-sm font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors"
                 >
                   Complete Full Application
                 </button>
@@ -435,15 +495,15 @@ export default function PrequalifyPage() {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form id="prequalify-form" onSubmit={handleSubmit} className="space-y-0">
             {/* Contact Information Section */}
-            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">Contact Information</h2>
+            <div className="pt-4 border-t-2 border-[var(--core-gold)] pb-6 mb-6">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Contact Information</h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                    First Name <span className="text-red-500">*</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                <div className="space-y-2">
+                  <label htmlFor="firstName" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    First Name *
                   </label>
                   <input
                     id="firstName"
@@ -454,13 +514,13 @@ export default function PrequalifyPage() {
                       setError(null);
                     }}
                     required
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                   />
                 </div>
 
-                <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                    Last Name <span className="text-red-500">*</span>
+                <div className="space-y-2">
+                  <label htmlFor="lastName" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Last Name *
                   </label>
                   <input
                     id="lastName"
@@ -471,15 +531,15 @@ export default function PrequalifyPage() {
                       setError(null);
                     }}
                     required
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                    Email Address <span className="text-red-500">*</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                <div className="space-y-2">
+                  <label htmlFor="email" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Email Address *
                   </label>
                   <input
                     id="email"
@@ -490,12 +550,12 @@ export default function PrequalifyPage() {
                       setError(null);
                     }}
                     required
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                   />
                 </div>
 
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+                <div className="space-y-2">
+                  <label htmlFor="phone" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
                     Phone Number
                   </label>
                   <input
@@ -503,13 +563,13 @@ export default function PrequalifyPage() {
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                   />
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="company" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
+              <div className="space-y-2">
+                <label htmlFor="company" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
                   Company (Optional)
                 </label>
                 <input
@@ -517,19 +577,19 @@ export default function PrequalifyPage() {
                   type="text"
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
-                  className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+                  className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                 />
               </div>
             </div>
 
             {/* Qualification Information Section */}
-            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">Qualification Information</h2>
+            <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Qualification Information</h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <label htmlFor="annualIncome" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                    Annual Income ($) <span className="text-red-500">*</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="space-y-2">
+                  <label htmlFor="annualIncome" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Annual Income ($) *
                   </label>
                   <input
                     id="annualIncome"
@@ -541,13 +601,13 @@ export default function PrequalifyPage() {
                     }}
                     placeholder="e.g., 250000"
                     required
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                   />
                 </div>
 
-                <div>
-                  <label htmlFor="totalAssets" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                    Total Assets ($) <span className="text-red-500">*</span>
+                <div className="space-y-2">
+                  <label htmlFor="totalAssets" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Total Assets ($) *
                   </label>
                   <input
                     id="totalAssets"
@@ -559,13 +619,13 @@ export default function PrequalifyPage() {
                     }}
                     placeholder="e.g., 1000000"
                     required
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                   />
                 </div>
 
-                <div>
-                  <label htmlFor="age" className="block text-sm font-medium text-[var(--text-primary)] mb-1">
-                    Age <span className="text-red-500">*</span>
+                <div className="space-y-2">
+                  <label htmlFor="age" className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+                    Age *
                   </label>
                   <input
                     id="age"
@@ -578,17 +638,17 @@ export default function PrequalifyPage() {
                     min="18"
                     max="120"
                     required
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)]"
+                    className="w-full px-3 py-2.5 border border-[var(--border)] rounded-lg bg-[var(--background)] text-sm font-medium text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--core-blue)] focus:border-transparent transition-all"
                   />
                 </div>
               </div>
 
-              <div className="mb-4">
-                <span className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-                  Do you have charitable giving intentions? <span className="text-red-500">*</span>
-                </span>
-                <div className="flex gap-4">
-                  <label htmlFor="charitableIntent-yes" className="flex items-center">
+              <div className="mb-6">
+                <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide mb-3">
+                  Do you have charitable giving intentions? *
+                </label>
+                <div className="flex gap-6">
+                  <label htmlFor="charitableIntent-yes" className="flex items-center cursor-pointer">
                     <input
                       id="charitableIntent-yes"
                       type="radio"
@@ -598,11 +658,11 @@ export default function PrequalifyPage() {
                         setCharitableIntent(true);
                         setError(null);
                       }}
-                      className="mr-2"
+                      className="mr-2 w-4 h-4 text-[var(--core-blue)] focus:ring-[var(--core-blue)]"
                     />
-                    <span className="text-[var(--text-primary)]">Yes</span>
+                    <span className="text-sm text-[var(--text-primary)]">Yes</span>
                   </label>
-                  <label htmlFor="charitableIntent-no" className="flex items-center">
+                  <label htmlFor="charitableIntent-no" className="flex items-center cursor-pointer">
                     <input
                       id="charitableIntent-no"
                       type="radio"
@@ -612,28 +672,28 @@ export default function PrequalifyPage() {
                         setCharitableIntent(false);
                         setError(null);
                       }}
-                      className="mr-2"
+                      className="mr-2 w-4 h-4 text-[var(--core-blue)] focus:ring-[var(--core-blue)]"
                     />
-                    <span className="text-[var(--text-primary)]">No</span>
+                    <span className="text-sm text-[var(--text-primary)]">No</span>
                   </label>
                 </div>
               </div>
 
               <div>
-                <span className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide mb-3">
                   Asset Types (Select all that apply)
-                </span>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {assetTypeOptions.map((option) => (
-                    <label key={option.value} htmlFor={`assetType-${option.value}`} className="flex items-center">
+                    <label key={option.value} htmlFor={`assetType-${option.value}`} className="flex items-center cursor-pointer">
                       <input
                         id={`assetType-${option.value}`}
                         type="checkbox"
                         checked={assetTypes.includes(option.value)}
                         onChange={() => handleAssetTypeToggle(option.value)}
-                        className="mr-2"
+                        className="mr-2 w-4 h-4 text-[var(--core-blue)] focus:ring-[var(--core-blue)] rounded"
                       />
-                      <span className="text-[var(--text-primary)] text-sm">{option.label}</span>
+                      <span className="text-sm text-[var(--text-primary)]">{option.label}</span>
                     </label>
                   ))}
                 </div>
@@ -641,37 +701,10 @@ export default function PrequalifyPage() {
             </div>
 
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                <p className="text-red-600 dark:text-red-400">{error}</p>
+              <div className="mb-6 border-l-4 border-red-500 pl-4 py-2">
+                <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
               </div>
             )}
-
-            <div className="flex justify-end gap-4">
-              <button
-                type="button"
-                onClick={() => router.push('/prospect/dashboard')}
-                className="px-6 py-2 border border-[var(--border)] rounded text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-6 py-2 bg-[var(--core-blue)] text-white rounded hover:bg-[var(--core-blue-light)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Submitting...
-                  </>
-                ) : (
-                  'Submit Prequalification'
-                )}
-              </button>
-            </div>
           </form>
         )}
       </div>

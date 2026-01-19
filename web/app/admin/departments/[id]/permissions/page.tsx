@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { PermissionGuard } from '@/components/admin/shared/PermissionGuard';
 import { PermissionAssignment } from '@/components/admin/departments/PermissionAssignment';
 import { getDepartment, type Department } from '@/lib/api/departments';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DepartmentPermissionsPage() {
   const params = useParams();
@@ -50,8 +51,65 @@ export default function DepartmentPermissionsPage() {
     return (
       <PermissionGuard>
         <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-[var(--text-secondary)]">Loading permissions...</div>
+          <div className="max-w-6xl mx-auto">
+            {/* Back Button Skeleton */}
+            <div className="mb-6">
+              <Skeleton height="1.5rem" width="5rem" />
+            </div>
+
+            {/* Header Skeleton */}
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <Skeleton height="1.5rem" width="20rem" />
+                <Skeleton height="1rem" width="30rem" />
+              </div>
+              <div className="flex gap-3 shrink-0">
+                <Skeleton height="2rem" width="5rem" />
+                <Skeleton height="2rem" width="10rem" />
+              </div>
+            </div>
+
+            {/* Permissions Table Skeleton */}
+            <div className="pt-4 pb-6">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-[var(--core-gold)]">
+                      <th className="text-left p-4">
+                        <Skeleton height="1rem" width="6rem" />
+                      </th>
+                      <th className="text-center p-4">
+                        <Skeleton height="1rem" width="5rem" />
+                      </th>
+                      <th className="text-center p-4">
+                        <Skeleton height="1rem" width="5rem" />
+                      </th>
+                      <th className="text-center p-4">
+                        <Skeleton height="1rem" width="6rem" />
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.from({ length: 10 }).map((_, i) => (
+                      <tr key={i} className="border-b border-[var(--border)]">
+                        <td className="p-4">
+                          <Skeleton height="1rem" width="16rem" />
+                        </td>
+                        <td className="p-4 text-center">
+                          <Skeleton height="1.5rem" width="3rem" className="mx-auto" variant="rectangular" />
+                        </td>
+                        <td className="p-4 text-center">
+                          <Skeleton height="1.5rem" width="3rem" className="mx-auto" variant="rectangular" />
+                        </td>
+                        <td className="p-4 text-center">
+                          <Skeleton height="1.5rem" width="3rem" className="mx-auto" variant="rectangular" />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </main>
       </PermissionGuard>

@@ -11,6 +11,7 @@ import { getMemberDepartments } from '@/lib/api/department-members';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { USER_ROLES } from '@/lib/api/users';
 import { APPLICATION_STATUSES, APPLICATION_STATUS_COLORS } from '@/lib/api/applications';
+import { Skeleton } from '@/components/ui/skeleton';
 // Format date helper
 function formatDate(dateString: string | null): string {
   if (!dateString) return '-';
@@ -181,8 +182,64 @@ export default function ProspectDetailPage() {
     return (
       <PermissionGuard>
         <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-[var(--text-secondary)]">Loading prospect details...</div>
+          <div className="max-w-6xl mx-auto">
+            {/* Back Button Skeleton */}
+            <div className="mb-6">
+              <Skeleton height="1.5rem" width="5rem" />
+            </div>
+
+            {/* Header Skeleton */}
+            <div className="mb-8 flex items-start justify-between">
+              <div className="space-y-2">
+                <Skeleton height="2rem" width="16rem" />
+                <Skeleton height="1rem" width="20rem" />
+              </div>
+            </div>
+
+            {/* Contact Information Skeleton */}
+            <div className="pt-4 border-t-2 border-[var(--core-gold)] pb-6 mb-6">
+              <Skeleton height="1.5rem" width="16rem" className="mb-4" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton height="0.875rem" width="6rem" />
+                    <Skeleton height="1.25rem" width="12rem" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Applications Skeleton */}
+            <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+              <Skeleton height="1.5rem" width="12rem" className="mb-4" />
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="p-4 border border-[var(--border)] rounded-lg">
+                    <div className="flex items-start justify-between mb-3">
+                      <Skeleton height="1.25rem" width="12rem" />
+                      <Skeleton height="1.25rem" width="6rem" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Skeleton height="1rem" width="10rem" />
+                      <Skeleton height="1rem" width="10rem" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Staff Assignments Skeleton */}
+            <div className="pt-6 border-t border-[var(--core-gold)] pb-6">
+              <Skeleton height="1.5rem" width="14rem" className="mb-4" />
+              <div className="space-y-3">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <div key={i} className="p-4 border border-[var(--border)] rounded-lg">
+                    <Skeleton height="1.25rem" width="15rem" />
+                    <Skeleton height="1rem" width="12rem" className="mt-2" />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </main>
       </PermissionGuard>

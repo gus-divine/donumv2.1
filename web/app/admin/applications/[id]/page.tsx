@@ -6,6 +6,7 @@ import { PermissionGuard } from '@/components/admin/shared/PermissionGuard';
 import { ApplicationForm } from '@/components/admin/applications/ApplicationForm';
 import { getApplication, type Application } from '@/lib/api/applications';
 import { usePermissions } from '@/lib/hooks/usePermissions';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ApplicationDetailPage() {
   const params = useParams();
@@ -79,10 +80,128 @@ export default function ApplicationDetailPage() {
     return (
       <PermissionGuard>
         <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-[var(--text-secondary)]">Loading application details...</div>
+        <div className="max-w-6xl mx-auto">
+          {/* Back Button Skeleton */}
+          <div className="mb-6">
+            <Skeleton height="1.5rem" width="5rem" />
           </div>
-        </main>
+
+          {/* Header Skeleton */}
+          <div className="mb-8">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <Skeleton height="2rem" width="20rem" />
+                <Skeleton height="1rem" width="30rem" />
+              </div>
+              <Skeleton height="1.5rem" width="10rem" />
+            </div>
+          </div>
+
+          {/* Application Form Sections Skeleton */}
+          {/* Status Section */}
+          <div className="pt-4 border-t-2 border-[var(--core-gold)] pb-6 mb-6">
+            <Skeleton height="1.5rem" width="8rem" className="mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-1">
+                <Skeleton height="0.875rem" width="6rem" />
+                <Skeleton height="2.5rem" width="100%" />
+              </div>
+              <div className="space-y-1">
+                <Skeleton height="0.875rem" width="8rem" />
+                <Skeleton height="2.5rem" width="100%" />
+              </div>
+            </div>
+          </div>
+
+          {/* Request Details Section */}
+          <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+            <Skeleton height="1.5rem" width="12rem" className="mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="space-y-1">
+                  <Skeleton height="0.875rem" width="8rem" />
+                  <Skeleton height="2.5rem" width="100%" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Notes Section */}
+          <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+            <Skeleton height="1.5rem" width="8rem" className="mb-4" />
+            <Skeleton height="6rem" width="100%" />
+          </div>
+
+          {/* Staff Assignment Section */}
+          <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <Skeleton height="1.5rem" width="14rem" />
+              <Skeleton height="1.5rem" width="8rem" />
+            </div>
+            <div className="space-y-3">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="p-4 border border-[var(--border)] rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2 flex-1">
+                      <Skeleton height="1rem" width="12rem" />
+                      <Skeleton height="0.875rem" width="10rem" />
+                    </div>
+                    <Skeleton height="1rem" width="5rem" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Plan Assignment Section */}
+          <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+            <Skeleton height="1.5rem" width="14rem" className="mb-4" />
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <Skeleton height="0.875rem" width="8rem" />
+                <Skeleton height="2.5rem" width="100%" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <Skeleton height="0.875rem" width="10rem" />
+                  <Skeleton height="2.5rem" width="100%" />
+                </div>
+                <div className="space-y-1">
+                  <Skeleton height="0.875rem" width="10rem" />
+                  <Skeleton height="2.5rem" width="100%" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Documents Section */}
+          <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+            <Skeleton height="1.5rem" width="10rem" className="mb-4" />
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="p-4 border border-[var(--border)] rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2 flex-1">
+                      <Skeleton height="1rem" width="16rem" />
+                      <Skeleton height="0.875rem" width="12rem" />
+                    </div>
+                    <Skeleton height="1.5rem" width="6rem" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Action Buttons Skeleton */}
+          <div className="pt-6 border-t border-[var(--core-gold)] pb-6">
+            <div className="flex items-center gap-3">
+              <Skeleton height="2rem" width="8rem" />
+              <Skeleton height="2rem" width="8rem" />
+              <Skeleton height="2rem" width="10rem" />
+            </div>
+          </div>
+        </div>
+      </main>
       </PermissionGuard>
     );
   }

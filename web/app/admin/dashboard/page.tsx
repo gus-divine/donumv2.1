@@ -32,6 +32,7 @@ import {
   CheckCircle2,
   TrendingUp,
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -101,8 +102,91 @@ export default function AdminDashboardPage() {
     return (
       <PermissionGuard>
         <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-[var(--text-secondary)]">Loading dashboard...</div>
+          <div className="max-w-7xl mx-auto">
+            {/* Header Skeleton */}
+            <div className="mb-8">
+              <Skeleton height="2rem" width="16rem" className="mb-2" />
+              <Skeleton height="1rem" width="40rem" />
+            </div>
+
+            {/* Quick Access Skeleton */}
+            <div className="mb-8 pt-4 border-t-2 border-[var(--core-gold)] pb-6">
+              <Skeleton height="1.5rem" width="10rem" className="mb-6" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 p-4">
+                    <Skeleton height="1.5rem" width="1.5rem" variant="circular" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton height="1rem" width="80%" />
+                      <Skeleton height="0.875rem" width="60%" />
+                    </div>
+                    <Skeleton height="1rem" width="1rem" variant="circular" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Key Metrics Skeleton */}
+            <div className="mb-8 pt-4 border-t-2 border-[var(--core-gold)] pb-6">
+              <Skeleton height="1.5rem" width="10rem" className="mb-6" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton height="1rem" width="10rem" />
+                    <Skeleton height="2rem" width="8rem" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Overdue Payments Alert Skeleton */}
+            <div className="mb-8 border-l-4 border-red-500 pl-4 py-2">
+              <div className="flex items-start gap-3">
+                <Skeleton height="1.25rem" width="1.25rem" variant="circular" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton height="1rem" width="16rem" />
+                  <Skeleton height="0.875rem" width="20rem" />
+                </div>
+              </div>
+            </div>
+
+            {/* Distribution Charts Skeleton */}
+            <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+              <Skeleton height="1.5rem" width="16rem" className="mb-6" />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Skeleton height="20rem" width="100%" variant="rectangular" />
+                <Skeleton height="20rem" width="100%" variant="rectangular" />
+              </div>
+            </div>
+
+            {/* Detailed Statistics Skeleton */}
+            <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+              <Skeleton height="1.5rem" width="16rem" className="mb-6" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton height="1rem" width="10rem" />
+                    <Skeleton height="1.5rem" width="6rem" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Activity Skeleton */}
+            <div className="pt-6 border-t border-[var(--core-gold)] pb-6">
+              <Skeleton height="1.5rem" width="12rem" className="mb-6" />
+              <div className="space-y-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 pb-4 border-b border-[var(--border)]">
+                    <Skeleton height="2.5rem" width="2.5rem" variant="circular" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton height="1rem" width="20rem" />
+                      <Skeleton height="0.875rem" width="12rem" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </main>
       </PermissionGuard>

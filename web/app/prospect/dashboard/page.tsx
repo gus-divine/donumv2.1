@@ -13,12 +13,13 @@ import {
   AlertCircle, 
   Upload, 
   ArrowRight, 
-  TrendingUp,
   User,
   Calendar,
   FileCheck,
-  Sparkles
+  Sparkles,
+  Eye
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface DashboardStats {
   totalApplications: number;
@@ -36,6 +37,7 @@ interface NextStep {
   actionPath: string;
   priority: 'high' | 'medium' | 'low';
   icon: React.ReactNode;
+  color: string;
 }
 
 export default function ProspectDashboardPage() {
@@ -84,21 +86,28 @@ export default function ProspectDashboardPage() {
         .single();
       
       // Load assigned staff
-      const { data: staffAssignments } = await supabase
+      const { data: assignment } = await supabase
         .from('prospect_staff_assignments')
-        .select('staff:donum_accounts!prospect_staff_assignments_staff_id_fkey(first_name, last_name, email)')
+        .select('staff_id')
         .eq('prospect_id', user.id)
         .eq('is_active', true)
         .eq('is_primary', true)
         .limit(1)
-        .single();
+        .maybeSingle();
       
-      if (staffAssignments?.staff) {
-        const staff = staffAssignments.staff as any;
-        setAssignedStaff({
-          name: `${staff.first_name || ''} ${staff.last_name || ''}`.trim() || staff.email,
-          email: staff.email,
-        });
+      if (assignment?.staff_id) {
+        const { data: staffData } = await supabase
+          .from('donum_accounts')
+          .select('first_name, last_name, email')
+          .eq('id', assignment.staff_id)
+          .single();
+        
+        if (staffData) {
+          setAssignedStaff({
+            name: `${staffData.first_name || ''} ${staffData.last_name || ''}`.trim() || staffData.email,
+            email: staffData.email,
+          });
+        }
       }
       
       // Calculate completion percentage
@@ -141,6 +150,7 @@ export default function ProspectDashboardPage() {
         actionPath: '/prospect/prequalify',
         priority: 'high',
         icon: <Sparkles className="w-5 h-5" />,
+        color: 'var(--core-blue)',
       });
     }
     
@@ -154,6 +164,7 @@ export default function ProspectDashboardPage() {
         actionPath: '/prospect/application',
         priority: 'high',
         icon: <FileText className="w-5 h-5" />,
+        color: 'var(--core-gold)',
       });
     }
     
@@ -163,11 +174,12 @@ export default function ProspectDashboardPage() {
       steps.push({
         id: 'upload-documents',
         title: 'Upload Required Documents',
-        description: `${4 - approvedDocs} more document${4 - approvedDocs > 1 ? 's' : ''} needed to complete your application`,
+        description: `${4 - approvedDocs} more document${4 - approvedDocs > 1 ? 's' : ''} needed`,
         action: 'Upload Documents',
         actionPath: '/prospect/documents',
         priority: 'high',
         icon: <Upload className="w-5 h-5" />,
+        color: '#22c55e',
       });
     }
     
@@ -176,11 +188,12 @@ export default function ProspectDashboardPage() {
       steps.push({
         id: 'check-status',
         title: 'Track Your Application',
-        description: 'Your application is being reviewed. Check status for updates',
+        description: 'Your application is being reviewed',
         action: 'View Status',
         actionPath: '/prospect/status',
         priority: 'medium',
         icon: <Clock className="w-5 h-5" />,
+        color: '#a855f7',
       });
     }
     
@@ -189,11 +202,12 @@ export default function ProspectDashboardPage() {
       steps.push({
         id: 'approved-next-steps',
         title: 'Application Approved!',
-        description: 'Congratulations! Your application has been approved. Check your status for next steps.',
+        description: 'Congratulations! Check your status for next steps',
         action: 'View Details',
         actionPath: '/prospect/status',
         priority: 'high',
         icon: <CheckCircle2 className="w-5 h-5" />,
+        color: '#22c55e',
       });
     }
     
@@ -207,10 +221,11 @@ export default function ProspectDashboardPage() {
         actionPath: '/prospect/profile',
         priority: 'low',
         icon: <User className="w-5 h-5" />,
+        color: '#6b7280',
       });
     }
     
-    return steps.slice(0, 3); // Show max 3 next steps
+    return steps.slice(0, 4);
   };
 
   const getStatusColor = (status: string) => {
@@ -250,10 +265,75 @@ export default function ProspectDashboardPage() {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--core-blue)] mx-auto mb-4"></div>
-          <p className="text-[var(--text-secondary)]">Loading your dashboard...</p>
+      <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header Skeleton */}
+          <div className="mb-8">
+            <Skeleton height="2rem" width="20rem" className="mb-2" />
+            <Skeleton height="1rem" width="30rem" />
+          </div>
+
+          {/* Quick Access Skeleton */}
+          <div className="mb-8 pt-4 border-t-2 border-[var(--core-gold)] pb-6">
+            <Skeleton height="1.5rem" width="10rem" className="mb-6" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 p-4">
+                  <Skeleton height="1.5rem" width="1.5rem" variant="circular" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton height="1rem" width="80%" />
+                    <Skeleton height="0.875rem" width="60%" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Application Progress Skeleton */}
+          <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+            <div className="flex items-center justify-between mb-6">
+              <Skeleton height="1.5rem" width="12rem" />
+              <Skeleton height="2rem" width="4rem" />
+            </div>
+            <div className="mb-8">
+              <Skeleton height="0.5rem" width="100%" className="rounded-full" />
+            </div>
+            <div className="flex justify-between">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex flex-col items-center flex-1">
+                  <Skeleton height="2.5rem" width="2.5rem" variant="circular" className="mb-2" />
+                  <Skeleton height="0.875rem" width="5rem" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Key Metrics Skeleton */}
+          <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+            <Skeleton height="1.5rem" width="10rem" className="mb-6" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="p-4 space-y-2">
+                  <Skeleton height="0.875rem" width="8rem" />
+                  <Skeleton height="2rem" width="12rem" />
+                  <Skeleton height="0.875rem" width="6rem" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Application Details Skeleton */}
+          <div className="pt-6 border-t border-[var(--core-gold)] pb-6">
+            <Skeleton height="1.5rem" width="12rem" className="mb-6" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton height="0.875rem" width="8rem" />
+                  <Skeleton height="1.5rem" width="10rem" />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </main>
     );
@@ -266,30 +346,17 @@ export default function ProspectDashboardPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Welcome Section */}
-        <div className="bg-gradient-to-br from-[var(--core-blue)]/10 via-[var(--core-blue)]/5 to-transparent border border-[var(--core-blue)]/20 rounded-2xl p-8 shadow-lg backdrop-blur-sm">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">
-                Welcome back, {userName}! 👋
-              </h1>
-              <p className="text-[var(--text-secondary)] text-lg">
-                Here's your application progress and what's next
-              </p>
-            </div>
-            {assignedStaff && (
-              <div className="text-right">
-                <p className="text-sm text-[var(--text-secondary)] mb-1">Your Advisor</p>
-                <p className="font-semibold text-[var(--text-primary)]">{assignedStaff.name}</p>
-                <p className="text-xs text-[var(--text-secondary)]">{assignedStaff.email}</p>
-              </div>
-            )}
-          </div>
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Welcome back, {userName}!</h1>
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">
+            Track your application progress and see what's next in your journey
+          </p>
         </div>
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+          <div className="mb-6 border-l-4 border-red-500 pl-4 py-2">
             <div className="flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
               <p className="text-red-600 dark:text-red-400">{error}</p>
@@ -297,36 +364,60 @@ export default function ProspectDashboardPage() {
           </div>
         )}
 
-        {/* Progress Overview */}
-        <div className="bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-sm backdrop-blur-sm">
+        {/* Quick Actions */}
+        <div className="mb-8 pt-4 border-t-2 border-[var(--core-gold)] pb-6">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Quick Access</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {nextSteps.map((step) => (
+              <button
+                key={step.id}
+                onClick={() => router.push(step.actionPath)}
+                className="flex items-center gap-3 p-4 hover:bg-[var(--surface-hover)] transition-colors text-left group"
+                style={{ borderLeft: `4px solid ${step.color}` }}
+              >
+                <div style={{ color: step.color }} className="group-hover:scale-110 transition-transform">
+                  {step.icon}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-[var(--text-primary)]">{step.title}</p>
+                  <p className="text-sm text-[var(--text-secondary)]">{step.description}</p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-[var(--text-secondary)] group-hover:text-[var(--core-blue)] transition-colors" />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Application Progress */}
+        <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-[var(--text-primary)]">Application Progress</h2>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">Application Progress</h2>
             <span className="text-2xl font-bold text-[var(--core-blue)]">{stats.completionPercentage}%</span>
           </div>
           
           {/* Progress Bar */}
-          <div className="mb-6">
-            <div className="h-3 bg-[var(--surface-hover)] rounded-full overflow-hidden">
+          <div className="mb-8">
+            <div className="h-2 bg-[var(--surface-hover)] rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-[var(--core-blue)] to-[var(--core-blue-light)] rounded-full transition-all duration-500 ease-out"
+                className="h-full bg-[var(--core-blue)] rounded-full transition-all duration-500"
                 style={{ width: `${stats.completionPercentage}%` }}
               />
             </div>
           </div>
 
           {/* Progress Steps */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="flex justify-between">
             {progressSteps.map((step, index) => (
-              <div key={index} className="flex flex-col items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-all ${
+              <div key={index} className="flex flex-col items-center flex-1">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
                   step.completed 
-                    ? 'bg-green-500 text-white shadow-lg scale-110' 
+                    ? 'bg-green-500 text-white' 
                     : 'bg-[var(--surface-hover)] text-[var(--text-secondary)]'
                 }`}>
                   {step.completed ? (
                     <CheckCircle2 className="w-5 h-5" />
                   ) : (
-                    <div className="w-3 h-3 rounded-full bg-current" />
+                    <span className="text-sm font-medium">{index + 1}</span>
                   )}
                 </div>
                 <p className={`text-xs text-center font-medium ${
@@ -339,133 +430,52 @@ export default function ProspectDashboardPage() {
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Application Status Card */}
-          <div className="bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              </div>
+        {/* Key Metrics */}
+        <div className="pt-6 border-t border-[var(--core-gold)] pb-6 mb-6">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Key Metrics</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Application Status */}
+            <div className="p-4">
+              <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">Application Status</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)] mb-2">
+                {stats.activeApplication?.application_number || 'No Application'}
+              </p>
               {stats.activeApplication && (
-                <span className={`px-3 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(stats.activeApplication.status)}`}>
+                <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(stats.activeApplication.status)}`}>
                   {getStatusLabel(stats.activeApplication.status)}
                 </span>
               )}
             </div>
-            <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-1">Application Status</h3>
-            <p className="text-2xl font-bold text-[var(--text-primary)] mb-2">
-              {stats.activeApplication?.application_number || 'No Application'}
-            </p>
-            <button
-              onClick={() => router.push('/prospect/status')}
-              className="text-sm text-[var(--core-blue)] hover:underline flex items-center gap-1"
-            >
-              View Details <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
 
-          {/* Documents Card */}
-          <div className="bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <FileCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
-              </div>
-              <span className="text-sm font-medium text-[var(--text-secondary)]">
-                {stats.documentsUploaded}/{stats.documentsRequired}
-              </span>
+            {/* Documents */}
+            <div className="p-4">
+              <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">Documents Uploaded</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)] mb-2">
+                {stats.documentsUploaded} <span className="text-lg font-normal text-[var(--text-secondary)]">/ {stats.documentsRequired}</span>
+              </p>
+              <p className="text-sm text-[var(--text-secondary)]">{stats.documentsUploaded} approved</p>
             </div>
-            <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-1">Documents Uploaded</h3>
-            <p className="text-2xl font-bold text-[var(--text-primary)] mb-2">
-              {stats.documentsUploaded} Approved
-            </p>
-            <button
-              onClick={() => router.push('/prospect/documents')}
-              className="text-sm text-[var(--core-blue)] hover:underline flex items-center gap-1"
-            >
-              Manage Documents <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
 
-          {/* Quick Actions Card */}
-          <div className="bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              </div>
-            </div>
-            <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-1">Quick Actions</h3>
-            <div className="space-y-2 mt-4">
-              <button
-                onClick={() => router.push('/prospect/application')}
-                className="w-full text-left px-3 py-2 text-sm bg-[var(--surface-hover)] hover:bg-[var(--core-blue)]/10 rounded-lg transition-colors"
-              >
-                View Application
-              </button>
-              <button
-                onClick={() => router.push('/prospect/documents')}
-                className="w-full text-left px-3 py-2 text-sm bg-[var(--surface-hover)] hover:bg-[var(--core-blue)]/10 rounded-lg transition-colors"
-              >
-                Upload Documents
-              </button>
+            {/* Advisor */}
+            <div className="p-4">
+              <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">Your Advisor</p>
+              {assignedStaff ? (
+                <>
+                  <p className="text-lg font-semibold text-[var(--text-primary)] mb-1">{assignedStaff.name}</p>
+                  <p className="text-sm text-[var(--text-secondary)]">{assignedStaff.email}</p>
+                </>
+              ) : (
+                <p className="text-lg text-[var(--text-secondary)]">Not assigned yet</p>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Next Steps */}
-        {nextSteps.length > 0 && (
-          <div className="bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-sm backdrop-blur-sm">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="h-1 w-8 bg-[var(--core-blue)] rounded-full"></div>
-              <h2 className="text-xl font-semibold text-[var(--text-primary)]">Next Steps</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {nextSteps.map((step, index) => (
-                <div
-                  key={step.id}
-                  className={`p-5 rounded-xl border-2 transition-all hover:shadow-md ${
-                    step.priority === 'high'
-                      ? 'border-[var(--core-blue)]/50 bg-gradient-to-br from-[var(--core-blue)]/5 to-transparent'
-                      : 'border-[var(--border)] bg-[var(--surface)]'
-                  }`}
-                >
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className={`p-2 rounded-lg ${
-                      step.priority === 'high'
-                        ? 'bg-[var(--core-blue)]/10 text-[var(--core-blue)]'
-                        : 'bg-[var(--surface-hover)] text-[var(--text-secondary)]'
-                    }`}>
-                      {step.icon}
-                    </div>
-                    {step.priority === 'high' && (
-                      <span className="ml-auto px-2 py-1 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded">
-                        Priority
-                      </span>
-                    )}
-                  </div>
-                  <h3 className="font-semibold text-[var(--text-primary)] mb-1">{step.title}</h3>
-                  <p className="text-sm text-[var(--text-secondary)] mb-4">{step.description}</p>
-                  <button
-                    onClick={() => router.push(step.actionPath)}
-                    className="w-full px-4 py-2 text-sm font-medium bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] transition-colors shadow-sm hover:shadow-md flex items-center justify-center gap-2"
-                  >
-                    {step.action}
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Application Details */}
         {stats.activeApplication && (
-          <div className="bg-white dark:bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-sm backdrop-blur-sm">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="h-1 w-8 bg-[var(--core-blue)] rounded-full"></div>
-              <h2 className="text-xl font-semibold text-[var(--text-primary)]">Application Details</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="pt-6 border-t border-[var(--core-gold)] pb-6">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Application Details</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div>
                 <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">Application Number</p>
                 <p className="text-lg font-mono font-semibold text-[var(--text-primary)]">
@@ -491,7 +501,7 @@ export default function ProspectDashboardPage() {
               )}
               <div>
                 <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">Status</p>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-white ${getStatusColor(stats.activeApplication.status)}`}>
+                <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-medium text-white ${getStatusColor(stats.activeApplication.status)}`}>
                   {getStatusLabel(stats.activeApplication.status)}
                 </span>
               </div>
@@ -499,7 +509,7 @@ export default function ProspectDashboardPage() {
             <div className="mt-6 pt-6 border-t border-[var(--border)]">
               <button
                 onClick={() => router.push('/prospect/status')}
-                className="px-5 py-2.5 text-sm font-medium bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] transition-colors shadow-sm hover:shadow-md flex items-center gap-2"
+                className="text-sm font-medium text-[var(--core-blue)] hover:text-[var(--core-blue-light)] transition-colors flex items-center gap-2"
               >
                 View Full Status <ArrowRight className="w-4 h-4" />
               </button>

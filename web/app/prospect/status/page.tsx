@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
 import { createSupabaseClient } from '@/lib/supabase/client';
 import { getApplications, type Application } from '@/lib/api/applications';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ArrowLeft } from 'lucide-react';
 
 interface AssignedStaff {
   id: string;
@@ -186,31 +188,72 @@ export default function ProspectStatusPage() {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen p-8 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--core-blue)] mx-auto mb-4"></div>
-          <p className="text-[var(--text-secondary)]">Loading status...</p>
+      <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Back Button Skeleton */}
+          <div className="mb-6">
+            <Skeleton height="1.5rem" width="10rem" />
+          </div>
+
+          {/* Header Skeleton */}
+          <div className="mb-8">
+            <Skeleton height="2rem" width="16rem" className="mb-2" />
+            <Skeleton height="1rem" width="30rem" />
+            <div className="mt-4 border-l-4 border-blue-500 pl-4 py-2">
+              <Skeleton height="1rem" width="20rem" />
+            </div>
+          </div>
+
+          {/* Your Team Skeleton */}
+          <div className="mb-8 pt-4 border-t-2 border-[var(--core-gold)] pb-6">
+            <Skeleton height="1.5rem" width="8rem" className="mb-4" />
+            <div className="space-y-2">
+              <Skeleton height="1rem" width="15rem" />
+              <Skeleton height="1rem" width="18rem" />
+              <Skeleton height="1rem" width="12rem" />
+            </div>
+          </div>
+
+          {/* Status Steps Skeleton */}
+          <div className="pt-6 border-t border-[var(--core-gold)] pb-6">
+            <Skeleton height="1.5rem" width="12rem" className="mb-6" />
+            <div className="space-y-6">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div key={index} className={`flex items-start gap-4 ${index < 7 ? 'pb-6 border-b border-[var(--border)]' : ''}`}>
+                  <Skeleton height="1.5rem" width="1.5rem" variant="circular" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton height="1.5rem" width="12rem" />
+                    <Skeleton height="1rem" width="20rem" />
+                    <Skeleton height="0.875rem" width="10rem" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen p-8">
-      <button
-        onClick={() => router.push('/prospect/dashboard')}
-        className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-4 transition-colors"
-      >
-        ← Back to Dashboard
-      </button>
+    <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6 mb-6">
+        <button
+          onClick={() => router.push('/prospect/dashboard')}
+          className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-6 transition-colors flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dashboard
+        </button>
+
+        {/* Header */}
+        <div className="mb-8">
           <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Application Status</h1>
-          <p className="text-[var(--text-secondary)]">
+          <p className="text-sm text-[var(--text-secondary)]">
             Track your application progress and see what happens next.
           </p>
           {application && (
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+            <div className="mt-4 border-l-4 border-blue-500 pl-4 py-2">
               <p className="text-sm text-[var(--text-primary)]">
                 <strong>Application Number:</strong> <span className="font-mono">{application.application_number}</span>
               </p>
@@ -219,32 +262,32 @@ export default function ProspectStatusPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+          <div className="mb-6 border-l-4 border-red-500 pl-4 py-2">
             <p className="text-red-600 dark:text-red-400">{error}</p>
           </div>
         )}
 
         {/* Assigned Staff/Department Info */}
         {(assignedDepartment || assignedStaff) && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
+          <div className="mb-8 pt-4 border-t-2 border-[var(--core-gold)] pb-6">
             <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Your Team</h2>
             {assignedDepartment && (
-              <p className="text-[var(--text-secondary)] mb-2">
+              <p className="text-sm text-[var(--text-secondary)] mb-2">
                 <strong>Department:</strong> {assignedDepartment}
               </p>
             )}
             {assignedStaff && (
               <div>
-                <p className="text-[var(--text-secondary)] mb-1">
+                <p className="text-sm text-[var(--text-secondary)] mb-1">
                   <strong>Assigned Advisor:</strong> {assignedStaff.name}
                 </p>
                 {assignedStaff.email && (
-                  <p className="text-[var(--text-secondary)] mb-1">
+                  <p className="text-sm text-[var(--text-secondary)] mb-1">
                     <strong>Email:</strong> {assignedStaff.email}
                   </p>
                 )}
                 {assignedStaff.phone && (
-                  <p className="text-[var(--text-secondary)]">
+                  <p className="text-sm text-[var(--text-secondary)]">
                     <strong>Phone:</strong> {assignedStaff.phone}
                   </p>
                 )}
@@ -254,11 +297,11 @@ export default function ProspectStatusPage() {
         )}
 
         {/* Status Steps */}
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-6">
+        <div className="pt-6 border-t border-[var(--core-gold)] pb-6">
           <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Application Steps</h2>
           <div className="space-y-6">
             {statusSteps.map((step, index) => (
-              <div key={step.step} className="flex items-start gap-4">
+              <div key={step.step} className={`flex items-start gap-4 ${index < statusSteps.length - 1 ? 'pb-6 border-b border-[var(--border)]' : ''}`}>
                 <div className="flex-shrink-0">
                   {getStatusIcon(step.status)}
                 </div>
@@ -270,7 +313,7 @@ export default function ProspectStatusPage() {
                   }`}>
                     {step.step}
                   </h3>
-                  <p className="text-[var(--text-secondary)]">{step.description}</p>
+                  <p className="text-sm text-[var(--text-secondary)]">{step.description}</p>
                   {step.completedAt && (
                     <p className="text-xs text-[var(--text-secondary)] mt-1">
                       Completed: {new Date(step.completedAt).toLocaleDateString()}

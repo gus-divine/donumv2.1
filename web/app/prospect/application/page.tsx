@@ -10,6 +10,7 @@ import { InvestmentProfileSection } from '@/components/prospect/prequalify/Inves
 import { TermsSection } from '@/components/prospect/prequalify/TermsSection';
 import { createApplication, getApplications } from '@/lib/api/applications';
 import { calculateSuggestedLoanAmount } from '@/lib/prequalify/qualification-logic';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ApplicationPage() {
   const router = useRouter();
@@ -269,10 +270,41 @@ export default function ApplicationPage() {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen p-8 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--core-blue)] mx-auto mb-4"></div>
-          <p className="text-[var(--text-secondary)]">Loading...</p>
+      <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Back Button Skeleton */}
+          <div className="mb-6">
+            <Skeleton height="1.5rem" width="10rem" />
+          </div>
+
+          {/* Header Skeleton */}
+          <div className="mb-8">
+            <Skeleton height="2rem" width="18rem" className="mb-2" />
+            <Skeleton height="1rem" width="35rem" />
+          </div>
+
+          {/* Form Sections Skeleton */}
+          <div className="space-y-6">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="pt-4 border-t-2 border-[var(--core-gold)] pb-6 mb-6">
+                <Skeleton height="1.5rem" width="12rem" className="mb-4" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="space-y-2">
+                      <Skeleton height="0.875rem" width="8rem" />
+                      <Skeleton height="2.5rem" width="100%" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Submit Button Skeleton */}
+          <div className="mt-6 pt-6 border-t border-[var(--border)] flex justify-end gap-3">
+            <Skeleton height="2.5rem" width="8rem" />
+            <Skeleton height="2.5rem" width="10rem" />
+          </div>
         </div>
       </main>
     );

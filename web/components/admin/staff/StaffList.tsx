@@ -9,6 +9,7 @@ import { usePermissions } from '@/lib/hooks/usePermissions';
 import { USER_ROLES } from '@/lib/api/users';
 import { Select } from '@/components/ui/select';
 import { StaffDepartmentAssignment } from './StaffDepartmentAssignment';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface StaffListProps {
   filters?: UserFilters;
@@ -127,8 +128,71 @@ export function StaffList({ filters, onFiltersChange, onEdit }: StaffListProps) 
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <p className="text-[var(--text-secondary)]">Loading staff...</p>
+      <div className="space-y-4">
+        {/* Filters Skeleton */}
+        <div className="bg-[var(--surface)] rounded-lg p-4">
+          <div className="flex flex-wrap gap-4 items-center">
+            <Skeleton height="2.5rem" width="100%" className="max-w-md" />
+            <Skeleton height="2.5rem" width="10rem" />
+            <Skeleton height="2.5rem" width="12rem" />
+            <Skeleton height="2.5rem" width="8rem" />
+            <Skeleton height="2.5rem" width="8rem" />
+          </div>
+        </div>
+
+        {/* Table Skeleton */}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-[var(--border)]">
+                <th className="text-left p-4">
+                  <Skeleton height="1rem" width="6rem" />
+                </th>
+                <th className="text-left p-4">
+                  <Skeleton height="1rem" width="8rem" />
+                </th>
+                <th className="text-left p-4">
+                  <Skeleton height="1rem" width="6rem" />
+                </th>
+                <th className="text-left p-4">
+                  <Skeleton height="1rem" width="10rem" />
+                </th>
+                <th className="text-right p-4">
+                  <Skeleton height="1rem" width="6rem" />
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i} className="border-b border-[var(--border)]">
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      <Skeleton height="2rem" width="2rem" variant="circular" />
+                      <Skeleton height="1rem" width="12rem" />
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <Skeleton height="1rem" width="16rem" />
+                  </td>
+                  <td className="p-4">
+                    <Skeleton height="1.25rem" width="8rem" />
+                  </td>
+                  <td className="p-4">
+                    <div className="flex flex-wrap gap-1">
+                      <Skeleton height="1.25rem" width="6rem" />
+                      <Skeleton height="1.25rem" width="6rem" />
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center justify-end gap-2">
+                      <Skeleton height="1.5rem" width="1.5rem" variant="circular" />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }

@@ -7,6 +7,7 @@ import { getUser, type User } from '@/lib/api/users';
 import { getDepartments, type Department } from '@/lib/api/departments';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { USER_ROLES, USER_STATUSES } from '@/lib/api/users';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function formatDate(dateString: string | null | undefined): string {
   if (!dateString) return '—';
@@ -113,8 +114,46 @@ export default function UserDetailPage() {
     return (
       <PermissionGuard>
         <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-[var(--text-secondary)]">Loading user details...</div>
+          <div className="max-w-6xl mx-auto">
+            {/* Back Button Skeleton */}
+            <div className="mb-6">
+              <Skeleton height="1.5rem" width="5rem" />
+            </div>
+
+            {/* Header Skeleton */}
+            <div className="mb-8 flex items-start justify-between">
+              <div className="flex items-center gap-4">
+                <Skeleton height="4rem" width="4rem" variant="circular" />
+                <div className="space-y-2">
+                  <Skeleton height="2rem" width="16rem" />
+                  <Skeleton height="1rem" width="20rem" />
+                </div>
+              </div>
+              <Skeleton height="2rem" width="7rem" />
+            </div>
+
+            {/* User Information Skeleton */}
+            <div className="pt-4 border-t-2 border-[var(--core-gold)] pb-6 mb-6">
+              <Skeleton height="1.5rem" width="14rem" className="mb-4" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="space-y-1">
+                    <Skeleton height="0.875rem" width="8rem" />
+                    <Skeleton height="1.25rem" width="12rem" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Departments Skeleton */}
+            <div className="pt-6 border-t border-[var(--core-gold)] pb-6">
+              <Skeleton height="1.5rem" width="12rem" className="mb-4" />
+              <div className="flex flex-wrap gap-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} height="2rem" width="8rem" variant="rectangular" className="rounded-lg" />
+                ))}
+              </div>
+            </div>
           </div>
         </main>
       </PermissionGuard>
