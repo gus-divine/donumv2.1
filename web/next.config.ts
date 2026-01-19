@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
+  // Add empty turbopack config to allow production builds with Turbopack
+  // while keeping webpack config for dev mode file watching
+  turbopack: {},
 };
 
 export default nextConfig;
