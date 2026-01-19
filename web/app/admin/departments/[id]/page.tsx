@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { PermissionGuard } from '@/components/admin/shared/PermissionGuard';
+import { DepartmentForm } from '@/components/admin/departments/DepartmentForm';
+import { DepartmentStaffAssignment } from '@/components/admin/departments/DepartmentStaffAssignment';
 import { getDepartment, type Department } from '@/lib/api/departments';
 import { getUsers, type User } from '@/lib/api/users';
 import { getDepartmentPermissions } from '@/lib/api/departments';
