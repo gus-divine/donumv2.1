@@ -288,8 +288,7 @@ export function AdminApplicationEditForm({
         requested_amount: requestedAmount ? parseFloat(requestedAmount) : undefined,
         notes: notes !== '' ? notes : undefined,
         internal_notes: internalNotes !== '' ? internalNotes : undefined,
-        // Keep status as draft if it's draft, otherwise don't change it
-        ...(application.status === 'draft' ? { status: 'draft' as const } : {}),
+        // Don't change status when saving draft - only update form fields
       };
 
       await updateApplication(application.id, appUpdate);
