@@ -35,9 +35,10 @@ interface DepartmentListProps {
   onEdit: (department: Department) => void;
   onViewPermissions: (department: Department) => void;
   onManageStaff: (department: Department) => void;
+  onViewDetails?: (department: Department) => void;
 }
 
-export function DepartmentList({ onEdit, onViewPermissions, onManageStaff }: DepartmentListProps) {
+export function DepartmentList({ onEdit, onViewPermissions, onManageStaff, onViewDetails }: DepartmentListProps) {
   const { session, loading: authLoading } = useAuth();
   const { canEdit, canDelete } = usePermissions('/admin/departments');
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -264,7 +265,11 @@ export function DepartmentList({ onEdit, onViewPermissions, onManageStaff }: Dep
             </thead>
             <tbody>
               {filteredDepartments.map((dept) => (
-            <tr key={dept.id} className="border-b border-[var(--border)] hover:bg-[var(--surface-hover)]">
+            <tr 
+              key={dept.id} 
+              className="border-b border-[var(--border)] hover:bg-[var(--surface-hover)] cursor-pointer transition-colors"
+              onClick={() => onViewDetails ? onViewDetails(dept) : undefined}
+            >
               <td className="p-4">
                 <div className="flex items-center gap-2">
                   <div
@@ -307,17 +312,17 @@ export function DepartmentList({ onEdit, onViewPermissions, onManageStaff }: Dep
               </td>
               <td className="p-4">
                 <span
-                  className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                  className={`text-xs font-medium ${
                     dept.is_active
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-gray-600 dark:text-gray-400'
                   }`}
                 >
                   {dept.is_active ? 'Active' : 'Inactive'}
                 </span>
               </td>
               <td className="p-4">
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                   {canEdit('/admin/departments') && (
                     <>
                       <button

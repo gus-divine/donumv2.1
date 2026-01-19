@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { PermissionGuard } from '@/components/admin/shared/PermissionGuard';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { DepartmentList } from '@/components/admin/departments/DepartmentList';
@@ -12,6 +13,7 @@ import type { Department } from '@/lib/api/departments';
 type ViewMode = 'list' | 'create' | 'edit' | 'permissions' | 'staff';
 
 export default function DepartmentsPage() {
+  const router = useRouter();
   const { canEdit } = usePermissions('/admin/departments');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
@@ -47,19 +49,23 @@ export default function DepartmentsPage() {
   }
 
   function handleCancel() {
-    setViewMode('list');
-    setSelectedDepartment(null);
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      setViewMode('list');
+      setSelectedDepartment(null);
+    }
   }
 
   return (
     <PermissionGuard>
-      <main className="min-h-screen p-8">
+      <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
         {(viewMode === 'create' || viewMode === 'edit' || viewMode === 'permissions' || viewMode === 'staff') && (
           <button
             onClick={handleCancel}
-            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-4 transition-colors"
+            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-6 transition-colors"
           >
-            ← Back to Departments
+            ← Back
           </button>
         )}
         {viewMode === 'list' && (
@@ -67,15 +73,15 @@ export default function DepartmentsPage() {
             <div>
               <h1 className="text-2xl font-bold text-[var(--text-primary)]">Departments</h1>
               <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                Manage departments and configure their page permissions.
+                Manage departments and configure their page permissions. Click on a department to view its details.
               </p>
             </div>
             {canEdit('/admin/departments') && (
               <button
                 onClick={handleCreate}
-                className="px-4 py-2 bg-[var(--core-blue)] text-white rounded-lg hover:bg-[var(--core-blue-light)] transition-colors"
+                className="px-3 py-1.5 text-sm font-medium text-[var(--core-blue)] dark:text-gray-400 hover:text-[var(--core-blue-light)] dark:hover:text-gray-300 transition-colors"
               >
-                Create Department
+                + Create Department
               </button>
             )}
           </div>
@@ -86,6 +92,7 @@ export default function DepartmentsPage() {
           onEdit={handleEdit}
           onViewPermissions={handleViewPermissions}
           onManageStaff={handleManageStaff}
+          onViewDetails={(dept) => router.push(`/admin/departments/${dept.id}`)}
         />
       )}
 
