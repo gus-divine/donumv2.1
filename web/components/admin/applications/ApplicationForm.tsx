@@ -5,6 +5,7 @@ import {
   updateApplication, 
   type Application, 
   type UpdateApplicationInput,
+  type ApplicationStatus,
   APPLICATION_STATUSES,
   approveApplication,
   rejectApplication,
@@ -39,7 +40,7 @@ interface ApplicationFormProps {
 
 export function ApplicationForm({ application, onSuccess, onCancel, viewMode = false }: ApplicationFormProps) {
   const router = useRouter();
-  const [status, setStatus] = useState<UpdateApplicationInput['status']>(application.status);
+  const [status, setStatus] = useState<ApplicationStatus>(application.status);
   const [requestedAmount, setRequestedAmount] = useState(application.requested_amount?.toString() || '');
   const [purpose, setPurpose] = useState(application.purpose || '');
   const [notes, setNotes] = useState(application.notes || '');
