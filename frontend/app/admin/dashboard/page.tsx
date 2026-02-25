@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth/auth-context';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import { PermissionGuard } from '@/components/admin/shared/PermissionGuard';
 import { MetricCard } from '@/components/admin/dashboard/MetricCard';
 import { StatusDistributionChart } from '@/components/admin/finance/StatusDistributionChart';
@@ -36,29 +38,39 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [loanStatusDist, setLoanStatusDist] = useState<LoanStatusDistribution[]>([]);
   const [paymentStatusDist, setPaymentStatusDist] = useState<PaymentStatusDistribution[]>([]);
+  const [userProfile, setUserProfile] = useState<{ first_name: string | null; last_name: string | null } | null>(null);
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [user]);
 
   async function loadDashboardData() {
     try {
       setLoading(true);
       setError(null);
 
-      const [statsData, activityData, loanDistData, paymentDistData] = await Promise.all([
+      const supabase = createSupabaseClient();
+      const fetchProfile = user
+        ? supabase.from('donum_accounts').select('first_name, last_name').eq('id', user.id).single()
+        : Promise.resolve({ data: null });
+
+      const [profileResult, statsData, activityData, loanDistData, paymentDistData] = await Promise.all([
+        fetchProfile,
         getDashboardStats(),
         getRecentActivity(8),
         getLoanStatusDistribution(),
         getPaymentStatusDistribution(),
       ]);
 
+      const profileData = profileResult?.data;
+      setUserProfile(profileData ? { first_name: profileData.first_name, last_name: profileData.last_name } : null);
       setStats(statsData);
       setRecentActivity(activityData);
       setLoanStatusDist(loanDistData);
@@ -214,7 +226,11 @@ export default function AdminDashboardPage() {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Admin Dashboard</h1>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+              Welcome back, {userProfile?.first_name || userProfile?.last_name
+                ? `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim()
+                : user?.user_metadata?.first_name || user?.email?.split('@')[0] || 'there'}!
+            </h1>
             <p className="mt-2 text-sm text-[var(--text-secondary)]">
               Overview of your Donum 2.1 system — monitor activity, track performance, and manage operations
             </p>

@@ -46,6 +46,7 @@ export default function MemberDashboardPage() {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [upcomingPayments, setUpcomingPayments] = useState<LoanPayment[]>([]);
   const [assignedStaff, setAssignedStaff] = useState<{ name: string; email: string } | null>(null);
+  const [userProfile, setUserProfile] = useState<{ first_name: string | null; last_name: string | null } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,6 +64,14 @@ export default function MemberDashboardPage() {
     
     try {
       const supabase = createSupabaseClient();
+      
+      // Load user profile (name from donum_accounts - stays in sync with profile page edits)
+      const { data: profileData } = await supabase
+        .from('donum_accounts')
+        .select('first_name, last_name')
+        .eq('id', user.id)
+        .single();
+      setUserProfile(profileData ? { first_name: profileData.first_name, last_name: profileData.last_name } : null);
       
       // Load loans
       const loansData = await getLoans({ applicant_id: user.id });
@@ -260,7 +269,9 @@ export default function MemberDashboardPage() {
     );
   }
 
-  const userName = user?.user_metadata?.first_name || user?.email?.split('@')[0] || 'there';
+  const userName = userProfile?.first_name || userProfile?.last_name
+    ? `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim()
+    : user?.user_metadata?.first_name || user?.email?.split('@')[0] || 'there';
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">

@@ -55,6 +55,7 @@ export default function ProspectDashboardPage() {
   });
   const [documents, setDocuments] = useState<Document[]>([]);
   const [assignedStaff, setAssignedStaff] = useState<{ name: string; email: string } | null>(null);
+  const [userProfile, setUserProfile] = useState<{ first_name: string | null; last_name: string | null } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { openChatForApplication, toggleChatPanel } = useChatPanel();
@@ -84,12 +85,13 @@ export default function ProspectDashboardPage() {
       const docs = await getDocumentsByApplicantId(user.id);
       setDocuments(docs);
       
-      // Load user data
+      // Load user data (name from donum_accounts - stays in sync with profile page edits)
       const { data: userData } = await supabase
         .from('donum_accounts')
         .select('first_name, last_name, email')
         .eq('id', user.id)
         .single();
+      setUserProfile(userData ? { first_name: userData.first_name, last_name: userData.last_name } : null);
       
       // Load assigned staff
       const { data: assignment } = await supabase
@@ -373,7 +375,9 @@ export default function ProspectDashboardPage() {
   const progressSteps = getProgressSteps();
   const completedSteps = progressSteps.filter(s => s.completed).length;
   const nextSteps = getNextSteps();
-  const userName = user?.user_metadata?.first_name || user?.email?.split('@')[0] || 'there';
+  const userName = userProfile?.first_name || userProfile?.last_name
+    ? `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim()
+    : user?.user_metadata?.first_name || user?.email?.split('@')[0] || 'there';
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[var(--background)] via-[var(--surface)]/30 to-[var(--background)] p-8">
