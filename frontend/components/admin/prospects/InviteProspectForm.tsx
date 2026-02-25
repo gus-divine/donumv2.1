@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { createSupabaseClient } from '@/lib/supabase/client';
 
 interface InviteProspectFormProps {
   onSuccess: () => void;
@@ -20,9 +21,15 @@ export function InviteProspectForm({ onSuccess, onCancel }: InviteProspectFormPr
     setError(null);
 
     try {
+      const supabase = createSupabaseClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
       const res = await fetch('/api/admin/users/invite', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token && { Authorization: `Bearer ${session.access_token}` }),
+        },
         body: JSON.stringify({
           email: email.trim(),
           first_name: firstName.trim() || undefined,

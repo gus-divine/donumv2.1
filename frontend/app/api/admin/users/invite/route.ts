@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { requireAdmin } from '@/lib/api/auth-utils';
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = createSupabaseServerClient();
     const body = await request.json();
     const { email, first_name, last_name } = body;

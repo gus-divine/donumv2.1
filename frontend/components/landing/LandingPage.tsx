@@ -53,7 +53,7 @@ export default function LandingPage() {
   };
 
   const handleMembersClick = () => {
-    router.push('/auth/signin');
+    router.push('/auth/signin?redirect=/members/dashboard');
   };
 
   const handlePartnersClick = () => {
@@ -65,7 +65,7 @@ export default function LandingPage() {
   };
 
   const handleTeamClick = () => {
-    router.push('/auth/signin?redirect=/admin/dashboard');
+    router.push('/auth/signin?redirect=/team/dashboard');
   };
 
   if (!mounted) {

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
 import { getDocumentsByApplicantId, type Document, type DocumentType } from '@/lib/api/documents';
 import DocumentUpload from '@/components/documents/DocumentUpload';
+import { DocumentDownloadLink } from '@/components/documents/DocumentDownloadLink';
 import { Download, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -298,13 +299,13 @@ export default function ProspectDocumentsPage() {
                                     </span>
                                   )}
                                   {document.status === 'approved' && (
-                                    <a
-                                      href={`/api/documents/${document.id}/download`}
+                                    <DocumentDownloadLink
+                                      documentId={document.id}
                                       className="p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                                       title="Download"
                                     >
                                       <Download className="w-4 h-4" />
-                                    </a>
+                                    </DocumentDownloadLink>
                                   )}
                                 </div>
                                 <p className="text-xs text-[var(--text-secondary)]">

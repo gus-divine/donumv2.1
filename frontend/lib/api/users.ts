@@ -314,9 +314,14 @@ export async function updateUser(id: string, input: UpdateUserInput): Promise<Us
 }
 
 export async function deleteUser(id: string): Promise<void> {
-  // Use API route for proper deletion (handles both donum_accounts and auth user)
+  const supabase = createSupabaseClient();
+  const { data: { session } } = await supabase.auth.getSession();
+
   const response = await fetch(`/api/admin/users/${id}`, {
     method: 'DELETE',
+    headers: {
+      ...(session?.access_token && { Authorization: `Bearer ${session.access_token}` }),
+    },
   });
 
   if (!response.ok) {

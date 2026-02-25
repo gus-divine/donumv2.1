@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getDocuments, reviewDocument, deleteDocument, type Document, type DocumentFilters } from '@/lib/api/documents';
+import { DocumentDownloadLink } from '@/components/documents/DocumentDownloadLink';
 import { CheckCircle, XCircle, Clock, Download, Trash2, FileText } from 'lucide-react';
 import { RejectionReasonDialog } from '@/components/ui/rejection-reason-dialog';
 
@@ -194,15 +195,13 @@ export default function DocumentList({ filters, showActions = true, onDocumentUp
 
           {showActions && (
             <div className="flex items-center gap-1 ml-4">
-              <a
-                href={`/api/documents/${document.id}/download`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <DocumentDownloadLink
+                documentId={document.id}
                 className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                 title="Download"
               >
                 <Download className="w-4 h-4" />
-              </a>
+              </DocumentDownloadLink>
               {document.status === 'pending' && (
                 <>
                   <button

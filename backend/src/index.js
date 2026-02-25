@@ -4,7 +4,11 @@ import cors from 'cors';
 const app = express();
 const PORT = process.env.PORT || 4003;
 
-app.use(cors({ origin: true }));
+// Restrict CORS to app origins (comma-separated in CORS_ORIGINS, or allow all in dev)
+const corsOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
+  : ['http://localhost:3000', 'http://localhost:2003', 'http://admin.localhost:3000', 'http://admin.localhost:2003'];
+app.use(cors({ origin: corsOrigins, credentials: true }));
 app.use(express.json());
 
 // Health check
