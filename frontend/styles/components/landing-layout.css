@@ -157,6 +157,16 @@
   margin: 0 auto;
 }
 
+.legal-desktop-break {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .legal-desktop-break {
+    display: block;
+  }
+}
+
 @media (max-width: 480px) {
   .landing-footer {
     font-size: 10px;

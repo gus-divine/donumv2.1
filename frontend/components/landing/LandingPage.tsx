@@ -190,7 +190,13 @@ export default function LandingPage() {
           <footer className="landing-footer">
             <div className="landing-footer-copyright">© 2026 DONUM. All Rights Reserved.</div>
             <div className="landing-footer-legal">
-              Legal structure and regulatory compliance: The Donum family of companies includes Donum LLC, the donor-facing insurance representative; Donum Capital, the investor-facing general partner; and the Donum Charitable Lending Fund (DCLF1). All entities operate in compliance with U.S. Treasury regulations and applicable tax laws. NOTE: Nonprofit cannot violate the Donum Statement of Faith.
+              Legal structure and regulatory compliance: The Donum family of companies includes Donum LLC, the
+              donor-facing insurance representative; Donum Capital, the investor-facing general partner; and the
+              Donum Charitable Lending Fund (DCLF1).
+              <br className="legal-desktop-break" />
+              All entities operate in compliance with U.S. Treasury regulations and applicable tax laws.
+              <br className="legal-desktop-break" />
+              NOTE: Nonprofit cannot violate the Donum Statement of Faith.
             </div>
           </footer>
         </div>
