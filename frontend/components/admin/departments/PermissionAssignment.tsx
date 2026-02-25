@@ -52,15 +52,30 @@ export function PermissionAssignment({ department, onClose }: PermissionAssignme
   }
 
   function updatePermission(pagePath: string, field: 'can_view' | 'can_edit' | 'can_delete', value: boolean) {
-    setPermissions((prev) => ({
-      ...prev,
-      [pagePath]: {
-        ...prev[pagePath],
+    setPermissions((prev) => {
+      const current = prev[pagePath] || {
+        page_path: pagePath,
+        can_view: false,
+        can_edit: false,
+        can_delete: false,
+      };
+
+      const updated: PagePermission = {
+        ...current,
         [field]: value,
-        can_edit: field === 'can_view' && !value ? false : prev[pagePath]?.can_edit || false,
-        can_delete: field === 'can_view' && !value ? false : prev[pagePath]?.can_delete || false,
-      },
-    }));
+      };
+
+      // If view is disabled, edit/delete must also be disabled.
+      if (field === 'can_view' && !value) {
+        updated.can_edit = false;
+        updated.can_delete = false;
+      }
+
+      return {
+        ...prev,
+        [pagePath]: updated,
+      };
+    });
   }
 
   async function handleSave() {
