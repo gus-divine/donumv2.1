@@ -24,7 +24,7 @@ export function getPortalBaseUrl(subdomain: PortalSubdomain): string {
     const hostname = parts[0];
     const port = parts[1];
 
-    // Check if we're already on a subdomain
+    // Check if we're already on a subdomain (getSubdomainFromHost is now exported)
     const currentSubdomain = getSubdomainFromHost(host);
     if (currentSubdomain === subdomain) {
       return `${protocol}//${host}`;
@@ -44,7 +44,7 @@ export function getPortalBaseUrl(subdomain: PortalSubdomain): string {
   return `${url.protocol}//${newHost}${url.port ? ':' + url.port : ''}`;
 }
 
-function getSubdomainFromHost(host: string): string | null {
+export function getSubdomainFromHost(host: string): string | null {
   const hostname = host.split(':')[0];
   const parts = hostname.split('.');
 
@@ -55,6 +55,13 @@ function getSubdomainFromHost(host: string): string | null {
     return parts[0];
   }
   return null;
+}
+
+/** True when on admin/team/partner subdomain (not member, not main domain) */
+export function isOnStaffPortalSubdomain(): boolean {
+  if (typeof window === 'undefined') return false;
+  const sub = getSubdomainFromHost(window.location.host);
+  return sub === 'admin' || sub === 'team' || sub === 'partner';
 }
 
 const SUBDOMAINS = new Set(['admin', 'team', 'partner', 'member']);

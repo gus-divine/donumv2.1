@@ -53,7 +53,7 @@ export default function LandingPage() {
   };
 
   const handleMembersClick = () => {
-    router.push('/auth/signin?redirect=/members/dashboard');
+    router.push('/auth/signin?redirect=' + encodeURIComponent('/user'));
   };
 
   const handlePartnersClick = () => {

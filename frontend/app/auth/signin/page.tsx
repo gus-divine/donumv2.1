@@ -27,6 +27,26 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const getAllowedRedirectPrefixes = (currentRole: string): string[] => {
+    if (currentRole === 'donum_member' || currentRole === 'donum_prospect') return ['/user'];
+    if (currentRole === 'donum_staff') return ['/team'];
+    if (currentRole === 'donum_admin' || currentRole === 'donum_super_admin') return ['/admin'];
+    if (currentRole === 'donum_partner') return ['/partners'];
+    return [];
+  };
+
+  const getValidatedRedirect = (rawRedirect: string | null, currentRole: string): string | null => {
+    if (!rawRedirect) return null;
+
+    // Allow only internal absolute paths and block protocol-relative/external URLs.
+    if (!rawRedirect.startsWith('/') || rawRedirect.startsWith('//')) {
+      return null;
+    }
+
+    const allowedPrefixes = getAllowedRedirectPrefixes(currentRole);
+    return allowedPrefixes.some((prefix) => rawRedirect.startsWith(prefix)) ? rawRedirect : null;
+  };
+
   // Check for redirect parameter, email confirmation, and messages
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -71,8 +91,9 @@ export default function SignInPage() {
         return '/user/prospect/dashboard';
       })();
 
-      if (redirectUrl) {
-        router.push(redirectUrl);
+      const safeRedirect = getValidatedRedirect(redirectUrl, role);
+      if (safeRedirect) {
+        router.push(safeRedirect);
         return;
       }
 
