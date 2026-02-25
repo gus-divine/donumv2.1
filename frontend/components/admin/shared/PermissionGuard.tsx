@@ -24,6 +24,12 @@ export function PermissionGuard({
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(true);
 
+  // Permissions are currently stored under /admin/* page paths.
+  // Team pages mirror admin capabilities, so map /team/* to /admin/* for checks.
+  const permissionPath = pathname.startsWith('/team/')
+    ? pathname.replace('/team/', '/admin/')
+    : pathname;
+
   useEffect(() => {
     async function checkPermission() {
       // Wait for auth to finish loading
@@ -64,7 +70,7 @@ export function PermissionGuard({
           const canAccess = await canUserAccessPage(
             role as UserRole,
             departments,
-            pathname
+            permissionPath
           );
 
           if (!canAccess) {
@@ -93,7 +99,7 @@ export function PermissionGuard({
     }
 
     checkPermission();
-  }, [user, role, departments, loading, pathname]);
+  }, [user, role, departments, loading, permissionPath]);
 
   // Show fallback while checking
   if (checking || loading) {
@@ -119,7 +125,10 @@ export function PermissionGuard({
           You don't have permission to access this page. Please contact your administrator if you believe this is an error.
         </p>
         <button
-          onClick={() => router.push('/admin/dashboard')}
+          onClick={() => {
+            const dashboardPath = role === 'donum_staff' ? '/team/dashboard' : '/admin/dashboard';
+            router.push(dashboardPath);
+          }}
           className="px-4 py-2 bg-[var(--core-blue)] text-white rounded hover:bg-[var(--core-blue-light)] transition-colors"
         >
           Go to Dashboard
