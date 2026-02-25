@@ -1,0 +1,48 @@
+name: donum2.1
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: donum2.1-frontend
+    container_name: Donum2.1-Frontend
+    ports:
+      - "2003:80"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    env_file:
+      - .env.local
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - PORT=80
+    command: sh -c "npm run dev -- -p 80"
+    depends_on:
+      - backend
+    networks:
+      - donum2.1-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: donum2.1-backend
+    container_name: Donum2.1-Backend
+    ports:
+      - "4003:4003"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    env_file:
+      - .env.local
+    environment:
+      - PORT=4003
+    command: npm run dev
+    networks:
+      - donum2.1-network
+
+networks:
+  donum2.1-network:
+    name: donum2.1-network

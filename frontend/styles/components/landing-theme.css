@@ -1,0 +1,139 @@
+/* ============================================
+   Landing Page Theme Elements - Donum Theme
+   ============================================ */
+
+/* Theme Toggle */
+.theme-toggle-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.theme-toggle-btn {
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  outline: none;
+}
+
+.theme-toggle-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.theme-icon-sun, .theme-icon-moon {
+  transition: opacity 0.3s ease;
+}
+
+[data-theme="light"] .theme-icon-sun {
+  opacity: 0;
+}
+
+[data-theme="dark"] .theme-icon-moon {
+  opacity: 0;
+}
+
+/* Moving Gradient Background - Donum brand colors (navy + gold) */
+.landing-page::before {
+  content: '';
+  position: absolute;
+  inset: -100%;
+  width: 300%;
+  height: 300%;
+  background:
+    radial-gradient(
+      ellipse 50% 50% at 20% 30%,
+      rgba(0, 51, 102, 0.55) 0%,
+      rgba(0, 34, 68, 0.3) 40%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 45% 45% at 80% 70%,
+      rgba(212, 175, 55, 0.45) 0%,
+      rgba(184, 148, 31, 0.22) 40%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60% 60% at 60% 20%,
+      rgba(0, 64, 128, 0.38) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 40% 40% at 30% 80%,
+      rgba(212, 175, 55, 0.35) 0%,
+      transparent 50%
+    );
+  animation: none;
+  z-index: 0;
+  pointer-events: none;
+}
+
+[data-theme="dark"] .landing-page::before {
+  background:
+    radial-gradient(
+      ellipse 50% 50% at 20% 30%,
+      rgba(0, 51, 102, 0.6) 0%,
+      rgba(0, 34, 68, 0.35) 40%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 45% 45% at 80% 70%,
+      rgba(212, 175, 55, 0.5) 0%,
+      rgba(184, 148, 31, 0.25) 40%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60% 60% at 60% 20%,
+      rgba(0, 64, 128, 0.4) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 40% 40% at 30% 80%,
+      rgba(212, 175, 55, 0.4) 0%,
+      transparent 50%
+    );
+}
+
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .landing-page::before {
+    animation: none;
+    transform: translate(0, 0) scale(1);
+  }
+
+  .action-button {
+    transition: none;
+  }
+
+  .action-button::before {
+    transition: none;
+  }
+
+  .theme-toggle-btn {
+    transition: none;
+  }
+
+  .theme-icon-sun,
+  .theme-icon-moon {
+    transition: none;
+  }
+
+  .landing-logo {
+    transition: none;
+  }
+
+  .button-icon {
+    transition: none;
+  }
+}

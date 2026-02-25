@@ -1,0 +1,70 @@
+/* Theme Utilities - Reusable classes for consistent styling */
+
+/* Typography utilities */
+.text-heading { @apply text-lg font-semibold text-[var(--text-primary)]; }
+.text-caption { font-size: 12px; color: var(--text-primary); }
+
+/* Animation utilities */
+.animate-fade-in { animation: fadeIn var(--transition-normal) ease-out; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Admin panel specific utilities */
+.admin-header {
+  @apply border-b border-[var(--border)] backdrop-blur-sm sticky top-0 z-[1000];
+  background-color: color-mix(in srgb, var(--surface) 50%, transparent);
+}
+
+.admin-sidebar {
+  @apply h-screen bg-[var(--surface)] text-[var(--text-primary)];
+  @apply z-[1001] shadow-[var(--shadow-lg)] flex-shrink-0 fixed top-0 left-0;
+}
+
+/* Dark theme adjustments for admin components */
+[data-theme="dark"] .admin-sidebar {
+  @apply border-r border-[var(--border)];
+}
+
+[data-theme="dark"] .admin-header {
+  background-color: color-mix(in srgb, var(--surface) 80%, transparent);
+}
+
+.admin-main {
+  @apply transition-all duration-300 p-6;
+}
+
+/* When chat panel is open: on mobile, don't shrink main (chat overlays) */
+@media (max-width: 639px) {
+  .admin-main.chat-panel-open {
+    padding-right: 0 !important;
+  }
+}
+
+/* Chat panel: full width on mobile for better overlay experience */
+@media (max-width: 639px) {
+  .chat-panel {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    border-radius: 0 !important;
+  }
+}
+
+/* Header quick access: more compact on small screens */
+@media (max-width: 639px) {
+  .admin-header .header-quick-access {
+    gap: 0.5rem;
+  }
+}
+
+/* Form utilities */
+.form-group {
+  @apply space-y-2;
+}
+
+.form-error {
+  @apply text-sm text-[var(--error)] mt-1;
+}

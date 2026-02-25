@@ -1,23 +1,25 @@
-# Donum 2.1 Development Server - Simple Start Script
+# Donum 2.1 Development Server - Docker Start Script
 # This script should be run directly in PowerShell terminal
-# Sets up environment variables and starts Next.js dev server
+# Sets up environment variables and starts Next.js dev server in Docker
 
 <#
 .SYNOPSIS
-    Starts Donum 2.1 development services (Next.js Frontend)
+    Starts Donum 2.1 development services (Next.js Frontend) in Docker
 
 .DESCRIPTION
     Starts Donum 2.1 development services using Docker:
-    - Next.js Development Server (port 3000)
+    - Next.js Development Server (port 2003 -> container port 80)
 
     Automatically detects and stops existing processes, then starts Docker containers.
     Requires Docker Desktop to be installed and running.
 #>
 
 #region Configuration
-$NEXTJS_PORT = 3000
+$NEXTJS_PORT = 2003
+$BACKEND_PORT = 4003
+$CONTAINER_PORT = 80
 $PROJECT_ROOT = $PSScriptRoot
-$WEB_DIR = Join-Path $PROJECT_ROOT "web"
+$COMPOSE_FILE = Join-Path $PROJECT_ROOT "docker-compose.yml"
 #endregion
 
 #region Helper Functions
@@ -109,7 +111,7 @@ function Test-DockerContainersRunning {
         }
 
         $projectContainers = @()
-        $containerNames = @("Donum2.1")
+        $containerNames = @("Donum2.1-Frontend", "Donum2.1-Backend")
         
         foreach ($container in $containers) {
             if ($container -in $containerNames) {
@@ -172,15 +174,14 @@ function Stop-DockerContainers {
         Write-Host "Stopping Docker containers..." -ForegroundColor Yellow
         
         # Try docker-compose down first (preferred)
-        $composeFile = Join-Path $WEB_DIR "docker-compose.yml"
-        if (Test-Path $composeFile) {
-            Push-Location $WEB_DIR
+        if (Test-Path $COMPOSE_FILE) {
+            Push-Location $PROJECT_ROOT
             docker-compose down 2>&1 | Out-Null
             Pop-Location
         }
 
         # Also stop individual containers if they exist
-        $containerNames = @("Donum2.1")
+        $containerNames = @("Donum2.1-Frontend", "Donum2.1-Backend")
         foreach ($containerName in $containerNames) {
             docker stop $containerName 2>&1 | Out-Null
             docker rm $containerName 2>&1 | Out-Null
@@ -205,15 +206,14 @@ function Start-DockerContainers {
     try {
         Write-Host "Starting Docker containers..." -ForegroundColor Cyan
         
-        $composeFile = Join-Path $WEB_DIR "docker-compose.yml"
-        $devComposeFile = Join-Path $WEB_DIR "docker-compose.dev.yml"
+        $devComposeFile = Join-Path $PROJECT_ROOT "docker-compose.dev.yml"
         
-        if (-not (Test-Path $composeFile)) {
+        if (-not (Test-Path $COMPOSE_FILE)) {
             Write-Host "docker-compose.yml not found. Cannot start Docker containers." -ForegroundColor Yellow
             return $false
         }
 
-        Push-Location $WEB_DIR
+        Push-Location $PROJECT_ROOT
         
         # Try to start Docker Desktop if it's not running
         $dockerRunning = docker info 2>&1 | Out-Null
@@ -245,6 +245,7 @@ function Start-DockerContainers {
         if ($LASTEXITCODE -eq 0) {
             Write-Host "Docker containers started successfully!" -ForegroundColor Green
             Write-Host "Frontend: http://localhost:$NEXTJS_PORT" -ForegroundColor Cyan
+            Write-Host "Backend:  http://localhost:$BACKEND_PORT" -ForegroundColor Cyan
             Pop-Location
             return $true
         } else {
@@ -256,36 +257,6 @@ function Start-DockerContainers {
         Write-Host "Error starting Docker containers: $_" -ForegroundColor Red
         Pop-Location
         return $false
-    }
-}
-
-<#
-.SYNOPSIS
-    Loads environment variables from .env file
-#>
-function Load-EnvFile {
-    param([string]$FilePath)
-
-    if (-not (Test-Path $FilePath)) {
-        return
-    }
-
-    try {
-        Write-Host "Loading $FilePath..." -ForegroundColor Cyan
-        Get-Content $FilePath | ForEach-Object {
-            $line = $_.Trim()
-            # Skip comments and empty lines
-            if ($line -and -not $line.StartsWith("#")) {
-                if ($line -match '^\s*([^#][^=]+)=(.*)$') {
-                    $key = $matches[1].Trim()
-                    $value = $matches[2].Trim().Trim('"').Trim("'")
-                    [Environment]::SetEnvironmentVariable($key, $value, "Process")
-                }
-            }
-        }
-        Write-Host "Environment loaded from $FilePath" -ForegroundColor Green
-    } catch {
-        Write-Warning "Failed to load $FilePath : $_"
     }
 }
 
@@ -313,7 +284,7 @@ try {
         exit 1
     }
 
-    Write-Host "Donum 2.1 Development Server - Smart Start" -ForegroundColor Green
+    Write-Host "Donum 2.1 Development Server - Docker Start" -ForegroundColor Green
     Write-Host "=".PadRight(50, "=") -ForegroundColor Gray
 
     # Check if running in Cursor
@@ -356,7 +327,7 @@ try {
     if (-not $dockerAvailable) {
         Write-Host ""
         Write-Host "[ERROR] Docker is not available!" -ForegroundColor Red
-        Write-Host "   This script now requires Docker to run." -ForegroundColor Yellow
+        Write-Host "   This script requires Docker to run." -ForegroundColor Yellow
         Write-Host "   Please install Docker Desktop and ensure it's running." -ForegroundColor Yellow
         Write-Host ""
         exit 1
@@ -370,15 +341,27 @@ try {
         Write-Host ""
         Write-Host "[SUCCESS] Services started in Docker!" -ForegroundColor Green
         Write-Host "Frontend: http://localhost:$NEXTJS_PORT" -ForegroundColor Cyan
+        Write-Host "Backend:  http://localhost:$BACKEND_PORT" -ForegroundColor Cyan
         Write-Host ""
-        Write-Host "To stop: docker-compose down (from web directory)" -ForegroundColor Gray
-        Write-Host "To view logs: docker-compose logs -f (from web directory)" -ForegroundColor Gray
+        
+        # Wait a moment for the server to be ready
+        Write-Host "Waiting for server to be ready..." -ForegroundColor Yellow
+        Start-Sleep -Seconds 5
+        
+        # Open browser
+        $url = "http://localhost:$NEXTJS_PORT"
+        Write-Host "Opening browser at $url..." -ForegroundColor Cyan
+        Start-Process $url
+        
+        Write-Host ""
+        Write-Host "To stop: docker-compose down (from project root)" -ForegroundColor Gray
+        Write-Host "To view logs: docker-compose logs -f (from project root)" -ForegroundColor Gray
         exit 0
     } else {
         Write-Host ""
         Write-Host "[ERROR] Failed to start Docker containers!" -ForegroundColor Red
         Write-Host "   Please check Docker Desktop is running and try again." -ForegroundColor Yellow
-        Write-Host "   Or run manually: cd web && docker-compose up" -ForegroundColor Gray
+        Write-Host "   Or run manually: docker-compose up (from project root)" -ForegroundColor Gray
         exit 1
     }
 
