@@ -7,6 +7,7 @@ import { ProspectSidebar } from '@/components/prospect/shared/ProspectSidebar';
 import { ThemeToggle } from '@/components/admin/shared/ThemeToggle';
 import { ChatPanel } from '@/components/chat/ChatPanel';
 import { ChatPanelProvider, useChatPanel } from '@/lib/contexts/ChatPanelContext';
+import { useUnreadChatCount } from '@/lib/hooks/useUnreadChatCount';
 import { getApplications } from '@/lib/api/applications';
 import { usePathname } from 'next/navigation';
 import { MessageSquare } from 'lucide-react';
@@ -105,6 +106,7 @@ function ProspectLayoutInner({
 }) {
   const { user } = useAuth();
   const { chatPanelOpen, chatPanelWidth, toggleChatPanel, setApplicationContextFromPage } = useChatPanel();
+  const { unreadCount } = useUnreadChatCount(chatPanelOpen);
 
   // Register application context on every prospect page so chat works from any step
   useEffect(() => {
@@ -156,7 +158,7 @@ function ProspectLayoutInner({
               </div>
               <button
                 onClick={toggleChatPanel}
-                className={`p-2 rounded-lg transition-colors ${
+                className={`relative p-2 rounded-lg transition-colors ${
                   chatPanelOpen
                     ? 'bg-[var(--core-blue)]/15 text-[var(--core-blue)]'
                     : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
@@ -165,6 +167,11 @@ function ProspectLayoutInner({
                 aria-label={chatPanelOpen ? 'Close messages' : 'Open messages'}
               >
                 <MessageSquare className="w-5 h-5" />
+                {!chatPanelOpen && unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold leading-4 text-center">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </button>
               <ThemeToggle />
             </div>

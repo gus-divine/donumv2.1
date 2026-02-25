@@ -235,3 +235,15 @@ export async function getRecentStaffDmConversations(
     .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime())
     .slice(0, limit);
 }
+
+/**
+ * Super-admin only: erase a full staff DM conversation.
+ */
+export async function deleteStaffDmConversation(threadId: string): Promise<void> {
+  const supabase = createSupabaseClient();
+  const { error } = await supabase
+    .from('staff_dm_threads')
+    .delete()
+    .eq('id', threadId);
+  if (error) throw error;
+}

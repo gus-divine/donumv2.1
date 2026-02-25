@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { X, Send, User, MessageSquare, ChevronDown, ArrowLeft, ChevronLeft, ChevronRight, MessageCircle, Lock, Plus } from 'lucide-react';
+import { X, Send, User, MessageSquare, ChevronDown, ArrowLeft, ChevronLeft, ChevronRight, MessageCircle, Lock, Plus, Trash2 } from 'lucide-react';
 import {
   getApplicationMessages,
   sendApplicationMessage,
@@ -14,6 +14,8 @@ import {
   getRecentConversations,
   getOrCreateDirectThread,
   getOptionsForNewConversation,
+  deleteApplicationConversation,
+  deleteDirectConversation,
   type MessageRecipient,
   type DirectMessage,
   type ConversationSummary,
@@ -24,6 +26,7 @@ import {
   getStaffDmMessages,
   sendStaffDmMessage,
   getRecentStaffDmConversations,
+  deleteStaffDmConversation,
   type StaffDmMessage,
   type StaffDmConversationSummary,
 } from '@/lib/api/staff-messaging';
@@ -140,6 +143,7 @@ export function ChatPanel() {
   const [showNewConversationPicker, setShowNewConversationPicker] = useState(false);
   const [newConversationOptions, setNewConversationOptions] = useState<NewConversationOption[]>([]);
   const [newConversationOptionsLoading, setNewConversationOptionsLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const widthRef = useRef(chatPanelWidth);
   const realtimeChannelRef = useRef<ReturnType<ReturnType<typeof createSupabaseClient>['channel']> | null>(null);
@@ -150,6 +154,7 @@ export function ChatPanel() {
   const applicationId = currentApplication?.applicationId ?? null;
   const applicantName = currentApplication?.applicantName;
   const isStaff = role && ['donum_staff', 'donum_admin', 'donum_super_admin'].includes(role);
+  const isSuperAdmin = role === 'donum_super_admin';
 
   useEffect(() => {
     widthRef.current = chatPanelWidth;
@@ -458,11 +463,11 @@ export function ChatPanel() {
       return;
     }
     if (!applicationId) return;
+    if (currentThread.type === 'general' && isStaff) return; // support thread is prospect-only
     setInput('');
     setSending(true);
     try {
       if (currentThread.type === 'general') {
-        if (isStaff) return; // support thread is prospect-only
         const newMsg = await sendApplicationMessage(
           applicationId,
           content,
@@ -529,6 +534,42 @@ export function ChatPanel() {
     setCurrentApplication(null);
     setCurrentStaffDm(null);
     setConversationsExpanded(true);
+  };
+
+  const handleDeleteConversation = async () => {
+    if (!isSuperAdmin || deleting) return;
+    if (!currentApplication && !currentStaffDm) return;
+
+    const targetLabel = currentStaffDm
+      ? `conversation with ${currentStaffDm.teammateName}`
+      : currentThread.type === 'general'
+        ? `support conversation for ${applicantName || 'this application'}`
+        : `direct conversation with ${currentThread.staffName || 'staff member'}`;
+
+    const confirmed = window.confirm(
+      `Erase ${targetLabel}? This permanently deletes the conversation and cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    setDeleting(true);
+    try {
+      if (currentStaffDm) {
+        await deleteStaffDmConversation(currentStaffDm.threadId);
+      } else if (applicationId && currentThread.type === 'general') {
+        await deleteApplicationConversation(applicationId);
+      } else if (applicationId && currentThread.staffId) {
+        await deleteDirectConversation(applicationId, currentThread.staffId);
+      }
+
+      setMessages([]);
+      goBackToList();
+      refreshConversations();
+    } catch (err) {
+      console.error('[ChatPanel] Error deleting conversation:', err);
+      window.alert('Unable to erase this conversation. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   if (!chatPanelOpen) return null;
@@ -799,13 +840,26 @@ export function ChatPanel() {
               )}
             </div>
           </div>
-          <button
-            onClick={handleClose}
-            className="p-2 rounded-md text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-colors shrink-0"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {isSuperAdmin && (currentApplication || currentStaffDm) && (
+              <button
+                onClick={handleDeleteConversation}
+                disabled={deleting}
+                className="p-2 rounded-md text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Erase conversation"
+                aria-label="Erase conversation"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+            <button
+              onClick={handleClose}
+              className="p-2 rounded-md text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Thread selector - below header */}
@@ -847,7 +901,14 @@ export function ChatPanel() {
                       >
                         {r.type === 'general' ? (
                           <>
-                            <span title="Support conversation cannot be erased" className="flex-shrink-0">
+                            <span
+                              title={
+                                isSuperAdmin
+                                  ? 'Support conversation can be erased by super admin'
+                                  : 'Support conversation cannot be erased by staff/applicants'
+                              }
+                              className="flex-shrink-0"
+                            >
                               <Lock className="w-3.5 h-3.5 opacity-70" aria-hidden="true" />
                             </span>
                             {r.label || 'Support'}

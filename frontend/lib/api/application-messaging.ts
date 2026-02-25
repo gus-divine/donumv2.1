@@ -209,6 +209,15 @@ export async function getUnreadMessageCount(lastViewedAt: string | null): Promis
     if (m.sender_id !== user.id) count++;
   }
 
+  const { data: staffDmMsgs } = await supabase
+    .from('staff_dm_messages')
+    .select('id, sender_id, created_at')
+    .gt('created_at', since);
+
+  for (const m of staffDmMsgs || []) {
+    if (m.sender_id !== user.id) count++;
+  }
+
   return count;
 }
 
@@ -407,4 +416,40 @@ export async function sendDirectMessage(
     .single();
 
   return { ...data, sender: sender || undefined };
+}
+
+/**
+ * Super-admin only: erase general conversation for an application.
+ */
+export async function deleteApplicationConversation(applicationId: string): Promise<void> {
+  const supabase = createSupabaseClient();
+  const { error } = await supabase
+    .from('application_messages')
+    .delete()
+    .eq('application_id', applicationId);
+  if (error) throw error;
+}
+
+/**
+ * Super-admin only: erase direct conversation for an application+staff pair.
+ */
+export async function deleteDirectConversation(
+  applicationId: string,
+  staffId: string
+): Promise<void> {
+  const supabase = createSupabaseClient();
+  const { data: thread } = await supabase
+    .from('direct_message_threads')
+    .select('id')
+    .eq('application_id', applicationId)
+    .eq('staff_id', staffId)
+    .single();
+
+  if (!thread?.id) return;
+
+  const { error } = await supabase
+    .from('direct_message_threads')
+    .delete()
+    .eq('id', thread.id);
+  if (error) throw error;
 }

@@ -17,15 +17,20 @@ export function useUnreadChatCount(chatPanelOpen: boolean) {
   }, []);
 
   useEffect(() => {
-    markAsRead();
+    if (chatPanelOpen) {
+      markAsRead();
+    }
   }, [chatPanelOpen, markAsRead]);
 
   useEffect(() => {
     if (chatPanelOpen) return;
-    const lastViewed = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
-    if (!lastViewed) return;
 
     const fetchCount = () => {
+      const lastViewed = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+      if (!lastViewed) {
+        setUnreadCount(0);
+        return;
+      }
       getUnreadMessageCount(lastViewed)
         .then(setUnreadCount)
         .catch(() => setUnreadCount(0));
