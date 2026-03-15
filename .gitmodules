@@ -1,0 +1,3 @@
+[submodule "donum-calculator"]
+	path = donum-calculator
+	url = https://github.com/DonumDev/donum-calculator.git
